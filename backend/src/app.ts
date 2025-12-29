@@ -1,9 +1,10 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { AppError } from "./core/errors/AppError.js";
 import { HealthController } from "./core/controllers/HealthController.js";
 import { API_ROOT, ENDPOINTS } from "./constants/api.constants.js";
+import { gymAuthRouter } from "./modules/gym/authentication/presentation/AuthRouter.js";
 
 
 class App {
@@ -24,18 +25,18 @@ class App {
 
     private setupRoutes(): void {
         // health check
-        this.app.get(`${API_ROOT.V1}${ENDPOINTS.SYSTEM.HEALTH}`, HealthController.check)
+        this.app.get(`${API_ROOT.V1}${ENDPOINTS.SYSTEM.HEALTH}`, HealthController.check);
 
 
 
         // Import and use your module routers here
-        // this.app.use('/api/v1/gyms', gymRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymAuthRouter);
         // this.app.use('/api/v1/super-admin', superAdminRouter);
     }
 
     private setupErrorHandling(): void {
         // Global Error Middleware
-        this.app.use((err: Error, req: Request, res: Response) => {
+        this.app.use((err: Error, req: Request, res: Response, _next: NextFunction) => {
             if (err instanceof AppError) {
                 return res.status(err.statusCode).json({
                     status: "error",
@@ -60,5 +61,6 @@ export default new App().app;
 Note: verbatimModuleSyntax in tsconfig.json is false; 
 if true, only import type {Application, Request, Response, NextFunction}
 typescript automatically infer types. 
+_next : Yes, I know this variable exists, I’m intentionally not using it . without _ , eslint show warning. 
 */
 

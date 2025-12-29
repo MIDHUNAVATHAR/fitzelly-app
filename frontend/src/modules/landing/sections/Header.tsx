@@ -1,9 +1,37 @@
 import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import SignInModal from '../components/SignInModal';
+import SignUpModal from '../components/SignUpModal';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+    const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
+    const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        setIsLoggedIn(!!token);
+
+        // Listen for storage changes in case login happens in another tab or component update
+        const handleStorageChange = () => {
+            setIsLoggedIn(!!localStorage.getItem('token'));
+        }
+        window.addEventListener('storage', handleStorageChange);
+
+        // Custom event for same-window updates (e.g., after login)
+        window.addEventListener('auth-change', handleStorageChange);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('auth-change', handleStorageChange);
+        };
+    }, []);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -54,9 +82,21 @@ export default function Header() {
                         <button className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
                             Member Login
                         </button>
-                        <button className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors">
-                            Gym Signin
-                        </button>
+                        {isLoggedIn ? (
+                            <button
+                                onClick={() => navigate('/gym/dashboard')}
+                                className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
+                            >
+                                Gym Dashboard
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => setIsSignInModalOpen(true)}
+                                className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
+                            >
+                                Gym Signin
+                            </button>
+                        )}
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -89,12 +129,63 @@ export default function Header() {
                         <button className="text-left text-slate-300 hover:text-white font-medium">
                             Member Login
                         </button>
-                        <button className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center">
-                            Gym Signin
-                        </button>
+                        {isLoggedIn ? (
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    navigate('/gym/dashboard');
+                                }}
+                                className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center cursor-pointer"
+                            >
+                                Gym Dashboard
+                            </button>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    setIsMobileMenuOpen(false);
+                                    setIsSignInModalOpen(true);
+                                }}
+                                className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center cursor-pointer"
+                            >
+                                Gym Signin
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
+            {/* Sign In Modal */}
+            <SignInModal
+                isOpen={isSignInModalOpen}
+                onClose={() => setIsSignInModalOpen(false)}
+                onSwitchToSignUp={() => {
+                    setIsSignInModalOpen(false);
+                    setIsSignUpModalOpen(true);
+                }}
+                onForgotPassword={() => {
+                    setIsSignInModalOpen(false);
+                    setIsForgotPasswordModalOpen(true);
+                }}
+            />
+
+            {/* Sign Up Modal */}
+            <SignUpModal
+                isOpen={isSignUpModalOpen}
+                onClose={() => setIsSignUpModalOpen(false)}
+                onSwitchToSignIn={() => {
+                    setIsSignUpModalOpen(false);
+                    setIsSignInModalOpen(true);
+                }}
+            />
+
+            {/* Forgot Password Modal */}
+            <ForgotPasswordModal
+                isOpen={isForgotPasswordModalOpen}
+                onClose={() => setIsForgotPasswordModalOpen(false)}
+                onSwitchToSignIn={() => {
+                    setIsForgotPasswordModalOpen(false);
+                    setIsSignInModalOpen(true);
+                }}
+            />
         </header>
     );
 }

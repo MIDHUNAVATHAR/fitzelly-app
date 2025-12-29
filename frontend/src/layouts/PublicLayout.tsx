@@ -11,6 +11,7 @@ export default function PublicLayout({ children }: PublicLayoutProps) {
         <div className="min-h-screen font-sans selection:bg-teal-500/30">
             <Header />
             <main className="flex-grow">
+                {/* children holds many components */}
                 {children}
             </main>
             <Footer />

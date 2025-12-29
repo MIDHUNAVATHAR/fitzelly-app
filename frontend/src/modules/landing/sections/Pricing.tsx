@@ -1,6 +1,11 @@
 import { Check } from 'lucide-react';
+import { useState } from 'react';
+import SignInModal from '../components/SignInModal';
+import SignUpModal from '../components/SignUpModal';
 
 export default function Pricing() {
+  const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
+  const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
   const features = [
     "Unlimited clients & trainers",
     "All portal features (Client & Trainer)",
@@ -42,7 +47,10 @@ export default function Pricing() {
               <Check className="w-4 h-4" /> 30-day free trial included
             </div>
 
-            <button className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(0,255,213,0.3)] hover:shadow-[0_0_30px_rgba(0,255,213,0.5)] mb-8 cursor-pointer">
+            <button
+              onClick={() => setIsSignUpModalOpen(true)}
+              className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(0,255,213,0.3)] hover:shadow-[0_0_30px_rgba(0,255,213,0.5)] mb-8 cursor-pointer"
+            >
               Start Free Trial
             </button>
 
@@ -64,6 +72,25 @@ export default function Pricing() {
           </div>
         </div>
       </div>
+
+      {/* Modals */}
+      <SignInModal
+        isOpen={isSignInModalOpen}
+        onClose={() => setIsSignInModalOpen(false)}
+        onSwitchToSignUp={() => {
+          setIsSignInModalOpen(false);
+          setIsSignUpModalOpen(true);
+        }}
+      />
+
+      <SignUpModal
+        isOpen={isSignUpModalOpen}
+        onClose={() => setIsSignUpModalOpen(false)}
+        onSwitchToSignIn={() => {
+          setIsSignUpModalOpen(false);
+          setIsSignInModalOpen(true);
+        }}
+      />
     </section>
   );
 }
