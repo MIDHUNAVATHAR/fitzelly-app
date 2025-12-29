@@ -2,9 +2,10 @@ import { Gym } from "../../domain/entities/Gym.js";
 import { SignupGymResponseDTO } from "../../domain/dtos/SignupGymDTO.js";
 
 export class GymDTOMapper {
-    static toResponseDTO(gym: Gym, token: string): SignupGymResponseDTO {
+    static toResponseDTO(gym: Gym, accessToken: string, refreshToken: string): SignupGymResponseDTO {
         return {
-            token,
+            accessToken,
+            refreshToken,
             user: {
                 id: gym.id,
                 name: gym.name,

@@ -43,12 +43,12 @@ export function useSignIn() {
 
         setIsLoading(true);
         try {
-            const response = await AuthService.login({ email, password });
+            await AuthService.login({ email, password });
 
             // Store token/user - implementing basic localStorage for now
             // In a real app, use a Context or Redux store
-            localStorage.setItem('token', response.token);
-            localStorage.setItem('user', JSON.stringify(response.user));
+            // localStorage.setItem('token', response.token);
+            // localStorage.setItem('user', JSON.stringify(response.user));
 
             window.dispatchEvent(new Event('auth-change'));
 

@@ -5,7 +5,8 @@ export interface SignupGymRequestDTO {
 }
 
 export interface SignupGymResponseDTO {
-    token: string;
+    accessToken: string;
+    refreshToken: string;
     user: {
         id: string;
         name: string;

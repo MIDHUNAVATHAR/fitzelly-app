@@ -16,4 +16,9 @@ export class MongooseGymRepository implements IGymRepository {
         if (!gymDoc) return null;
         return GymPersistenceMapper.toDomain(gymDoc);
     }
+
+    async findById(id: string): Promise<Gym | null> {
+        const gymDoc = await GymModel.findById(id);
+        return gymDoc ? GymPersistenceMapper.toDomain(gymDoc) : null; 
+    }
 }

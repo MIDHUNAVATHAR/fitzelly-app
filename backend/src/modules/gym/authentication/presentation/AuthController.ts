@@ -52,9 +52,27 @@ export class AuthController {
 
             const resultDTO = await useCase.execute(requestDTO);
 
+            // Set Cookies
+            res.cookie('accessToken', resultDTO.accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax', // Lax is better for navigation from landing page often
+                maxAge: 15 * 60 * 1000 // 15 min
+            });
+
+            res.cookie('refreshToken', resultDTO.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+
+            // Remove tokens from response body logic
+            const { accessToken, refreshToken, ...responsePayload } = resultDTO;
+
             res.status(201).json({
                 status: "success",
-                ...resultDTO
+                ...responsePayload
             });
         } catch (error) {
             next(error);
@@ -78,13 +96,46 @@ export class AuthController {
 
             const resultDTO = await useCase.execute(requestDTO);
 
+            // Set Cookies
+            res.cookie('accessToken', resultDTO.accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 15 * 60 * 1000 // 15 min
+            });
+
+            res.cookie('refreshToken', resultDTO.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+
+            const { accessToken, refreshToken, ...responsePayload } = resultDTO;
+
             res.status(200).json({
                 status: "success",
-                ...resultDTO
+                ...responsePayload
             });
 
         } catch (error) {
             next(error);
         }
     }
+
+    static async verifyToken(req: Request, res: Response, next: NextFunction) {
+        // middleware attaches user to req
+        const user = (req as any).user;
+
+        return res.status(200).json({
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                email: user.email
+            }
+        })
+    }
 }
+
+

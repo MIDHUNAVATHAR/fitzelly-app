@@ -1,6 +1,5 @@
 export interface LoginResponse {
     message: string;
-    token: string;
     user: any;
 }
 
@@ -52,6 +51,7 @@ export const AuthService = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -71,6 +71,7 @@ export const AuthService = {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
+                credentials: 'include'
             });
 
             if (!response.ok) {
@@ -78,9 +79,34 @@ export const AuthService = {
                 throw new Error(errorData.message || 'Login failed');
             }
 
+
             return await response.json();
         } catch (error: any) {
             throw new Error(error.message || 'Network error occurred');
+        }
+    },
+
+    verifyToken: async (): Promise<any> => {
+        try {
+            console.log("Checking token...");
+            const response = await fetch(`${BASE_URL}/gym-auth/auth/me`, {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            console.log("Token check status:", response.status);
+
+            if (!response.ok) {
+                console.log("Token invalid or expired");
+                return null;
+            }
+            const data = await response.json();
+            console.log("User verified:", data);
+            return data;
+        } catch (error) {
+            console.error("Token verification error:", error);
+            return null;
         }
     }
 };

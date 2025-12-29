@@ -19,3 +19,8 @@ export class HealthController {
         res.status(200).json(healthData)
     }
 }
+
+/*
+normal method , we must create an object to call it
+static method directly using the classname 
+*/

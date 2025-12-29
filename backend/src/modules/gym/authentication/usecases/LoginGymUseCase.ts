@@ -1,9 +1,11 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { TokenService } from "../../../../infrastructure/security/TokenService.js";
 import { IGymRepository } from "../domain/repositories/IGymRepository.js";
 import { AppError } from "../../../../core/errors/AppError.js";
 import { LoginGymRequestDTO, LoginGymResponseDTO } from "../domain/dtos/LoginGymDTO.js";
 import { GymDTOMapper } from "../presentation/mappers/GymDTOMapper.js";
+// Redis removed
+
 
 export class LoginGymUseCase {
     constructor(private gymRepository: IGymRepository) { }
@@ -22,11 +24,14 @@ export class LoginGymUseCase {
         }
 
         // 3. Generate Token
-        // In a real app, use a proper ConfigService
-        const secret = process.env.JWT_SECRET || "default_secret_key_change_me";
-        const token = jwt.sign({ id: gym.id, role: 'gym_owner' }, secret, { expiresIn: '1d' });
+        // Use TokenService
+        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym_owner' });
+        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym_owner' });
+
+        // Redis removed
+
 
         // 4. Return Response
-        return GymDTOMapper.toResponseDTO(gym, token);
+        return GymDTOMapper.toResponseDTO(gym, accessToken, refreshToken);
     }
 }

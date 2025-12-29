@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { TokenService } from "../../../../infrastructure/security/TokenService.js";
 import { IGymRepository } from "../domain/repositories/IGymRepository.js";
 import { Gym } from "../domain/entities/Gym.js";
 import { AppError } from "../../../../core/errors/AppError.js";
 import { SignupGymRequestDTO, SignupGymResponseDTO } from "../domain/dtos/SignupGymDTO.js";
 import { GymDTOMapper } from "../presentation/mappers/GymDTOMapper.js";
+
+
 import { OtpModel } from "../infrastructure/persistence/mongoose/OtpSchema.js"; // Direct access for now, cleaner to use Repo
 
 export interface CompleteSignupRequest extends SignupGymRequestDTO {
@@ -51,9 +53,12 @@ export class SignupGymUseCase {
         await OtpModel.deleteOne({ email: request.email });
 
         // 6. Generate Token
-        const secret = process.env.JWT_SECRET || "default_secret_key_change_me";
-        const token = jwt.sign({ id: createdGym.id, role: 'gym_owner' }, secret, { expiresIn: '1d' });
+        const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym_owner' });
+        const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym_owner' });
 
-        return GymDTOMapper.toResponseDTO(createdGym, token);
+      
+
+
+        return GymDTOMapper.toResponseDTO(createdGym, accessToken, refreshToken);
     }
 }

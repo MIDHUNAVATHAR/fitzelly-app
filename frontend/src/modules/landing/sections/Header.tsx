@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SignInModal from '../components/SignInModal';
 import SignUpModal from '../components/SignUpModal';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
+import { AuthService } from '../../auth/services/AuthService';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -15,21 +16,33 @@ export default function Header() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        setIsLoggedIn(!!token);
+        const verifyAuth = async () => {
+            try {
+                const user = await AuthService.verifyToken();
 
-        // Listen for storage changes in case login happens in another tab or component update
-        const handleStorageChange = () => {
-            setIsLoggedIn(!!localStorage.getItem('token'));
-        }
-        window.addEventListener('storage', handleStorageChange);
+                if (user) {
+                    console.log("Auth verified: Logged in");
+                    setIsLoggedIn(true);
+                } else {
+                    console.log("Auth verified: Not logged in");
+                    setIsLoggedIn(false);
+                }
+            } catch (err) {
+                console.log(err);
+                setIsLoggedIn(false);
+            }
+        };
 
-        // Custom event for same-window updates (e.g., after login)
-        window.addEventListener('auth-change', handleStorageChange);
+        verifyAuth();
+
+        const handleAuthChange = () => {
+            verifyAuth();
+        };
+
+        window.addEventListener('auth-change', handleAuthChange);
 
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
-            window.removeEventListener('auth-change', handleStorageChange);
+            window.removeEventListener('auth-change', handleAuthChange);
         };
     }, []);
 

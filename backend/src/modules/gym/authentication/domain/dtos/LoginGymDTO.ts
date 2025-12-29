@@ -4,7 +4,8 @@ export interface LoginGymRequestDTO {
 }
 
 export interface LoginGymResponseDTO {
-    token: string;
+    accessToken: string;
+    refreshToken: string;
     user: {
         id: string;
         name: string;

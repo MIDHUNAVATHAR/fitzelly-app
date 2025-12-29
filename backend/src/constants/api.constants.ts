@@ -6,6 +6,8 @@ export const API_ROOT = {
 
 export const ENDPOINTS = {
     SYSTEM: SYSTEM_ROUTES,
+    GYM_AUTH: GYM_AUTH_ROUTES,
+    
     MODULES: MODULE_ROUTES,
-    GYM_AUTH: GYM_AUTH_ROUTES
+   
 }
