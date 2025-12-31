@@ -92,19 +92,19 @@ export default function Header() {
                     <nav className="hidden md:flex items-center gap-8">
                         <button
                             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-900 hover:text-slate-900'}`}
                         >
                             Home
                         </button>
                         <button
                             onClick={() => scrollToSection('features')}
-                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-900 hover:text-slate-900'}`}
                         >
                             Features
                         </button>
                         <button
                             onClick={() => scrollToSection('pricing')}
-                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-900 hover:text-slate-900'}`}
                         >
                             Pricing
                         </button>
