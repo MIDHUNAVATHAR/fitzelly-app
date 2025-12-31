@@ -108,5 +108,24 @@ export const AuthService = {
             console.error("Token verification error:", error);
             return null;
         }
+    },
+
+    logout: async (): Promise<void> => {
+        try {
+            const response = await fetch(`${BASE_URL}/gym-auth/logout`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include'
+            });
+
+            if (!response.ok) {
+                throw new Error('Logout failed');
+            }
+
+            // Dispatch auth-change event to update UI
+            window.dispatchEvent(new Event('auth-change'));
+        } catch (error: any) {
+            throw new Error(error.message || 'Logout failed');
+        }
     }
 };

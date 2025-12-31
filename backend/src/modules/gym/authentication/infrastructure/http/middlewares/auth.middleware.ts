@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import dotenv from 'dotenv';
 dotenv.config();
-import { MongooseGymRepository } from "../infrastructure/persistence/mongoose/MongooseGymRepository.js";
+import { GymRepositoryImpl } from "../../repositories/GymRepositoryImpl.js";
 
 export const authenticate = async (
     req: Request,
@@ -17,7 +17,7 @@ export const authenticate = async (
         }
 
         const payload: any = jwt.verify(token, process.env.JWT_SECRET!);
-        const repo = new MongooseGymRepository();
+        const repo = new GymRepositoryImpl();
         const user = await repo.findById(payload.id);
 
         if (!user) {
@@ -25,7 +25,7 @@ export const authenticate = async (
         }
 
         (req as any).user = user;
-        
+
         next();
     } catch {
         return res.status(401).json({ message: "Invalid or expired token" });

@@ -1,17 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import { SignupGymUseCase, CompleteSignupRequest } from "../usecases/SignupGymUseCase.js";
-import { InitiateSignupUseCase } from "../usecases/InitiateSignupUseCase.js";
-import { LoginGymUseCase } from "../usecases/LoginGymUseCase.js";
-import { MongooseGymRepository } from "../infrastructure/persistence/mongoose/MongooseGymRepository.js";
-import { LoginGymRequestDTO } from "../domain/dtos/LoginGymDTO.js";
+import { SignupGymUseCase, CompleteSignupRequest } from "../../application/usecases/SignupGymUseCase.js";
+import { InitiateSignupUseCase } from "../../application/usecases/InitiateSignupUseCase.js";
+import { LoginGymUseCase } from "../../application/usecases/LoginGymUseCase.js";
+import { GymRepositoryImpl } from "../../infrastructure/repositories/GymRepositoryImpl.js";
+import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
 
-export class AuthController {
+export class GymController {
 
     // Step 1: Request OTP
     static async initiateSignup(req: Request, res: Response, next: NextFunction) {
         console.log("Received initiateSignup Request:", req.body);
         try {
-            const repo = new MongooseGymRepository();
+            const repo = new GymRepositoryImpl();
             const useCase = new InitiateSignupUseCase(repo);
 
             const { email } = req.body;
@@ -35,7 +35,7 @@ export class AuthController {
     // Step 2: Verify OTP & Create Account
     static async completeSignup(req: Request, res: Response, next: NextFunction) {
         try {
-            const repo = new MongooseGymRepository();
+            const repo = new GymRepositoryImpl();
             const useCase = new SignupGymUseCase(repo);
 
             const requestDTO: CompleteSignupRequest = {
@@ -81,7 +81,7 @@ export class AuthController {
 
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const repo = new MongooseGymRepository();
+            const repo = new GymRepositoryImpl();
             const useCase = new LoginGymUseCase(repo);
 
             const requestDTO: LoginGymRequestDTO = {
@@ -135,6 +135,30 @@ export class AuthController {
                 email: user.email
             }
         })
+    }
+
+    static async logout(req: Request, res: Response, next: NextFunction) {
+        try {
+            // Clear both access and refresh tokens
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax'
+            });
+
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax'
+            });
+
+            return res.status(200).json({
+                status: "success",
+                message: "Logged out successfully"
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 }
 

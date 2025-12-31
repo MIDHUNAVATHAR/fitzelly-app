@@ -48,9 +48,13 @@ export class MailService {
         } catch (error) {
             console.error("[MailService] Failed to send email via SMTP. Falling back to console log for development.");
             console.error(error);
+
             console.log("=================================================");
             console.log(`[FALLBACK] OTP for ${to}: ${otp}`);
             console.log("=================================================");
+
+            // CRITICAL: We throw the error so the Controller knows it failed
+            throw new Error("SMTP_ERROR: Could not send verification email.")
         }
     }
 }

@@ -1,13 +1,11 @@
 import bcrypt from 'bcryptjs';
-import { TokenService } from "../../../../infrastructure/security/TokenService.js";
-import { IGymRepository } from "../domain/repositories/IGymRepository.js";
-import { Gym } from "../domain/entities/Gym.js";
-import { AppError } from "../../../../core/errors/AppError.js";
-import { SignupGymRequestDTO, SignupGymResponseDTO } from "../domain/dtos/SignupGymDTO.js";
-import { GymDTOMapper } from "../presentation/mappers/GymDTOMapper.js";
-
-
-import { OtpModel } from "../infrastructure/persistence/mongoose/OtpSchema.js"; // Direct access for now, cleaner to use Repo
+import { TokenService } from "../../infrastructure/services/TokenService.js";
+import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
+import { Gym } from "../../domain/entities/Gym.js";
+import { AppError } from "../../../../../core/errors/AppError.js";
+import { SignupGymRequestDTO, SignupGymResponseDTO } from "../dtos/SignupGymDTO.js";
+import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
+import { OtpModel } from "../../infrastructure/database/mongoose/OtpSchema.js"; // Direct access for now, cleaner to use Repo
 
 export interface CompleteSignupRequest extends SignupGymRequestDTO {
     otp: string;
@@ -56,9 +54,7 @@ export class SignupGymUseCase {
         const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym_owner' });
         const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym_owner' });
 
-      
-
-
+        
         return GymDTOMapper.toResponseDTO(createdGym, accessToken, refreshToken);
     }
 }

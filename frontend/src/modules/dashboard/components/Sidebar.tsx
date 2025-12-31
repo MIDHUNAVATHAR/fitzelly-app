@@ -5,10 +5,12 @@ import {
     Menu, X
 } from 'lucide-react';
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { AuthService } from '../../auth/services/AuthService';
 
 export default function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
 
     const menuItems = [
         { icon: LayoutDashboard, label: 'Dashboard', path: '/gym/dashboard' },
@@ -27,6 +29,17 @@ export default function Sidebar() {
         { icon: Bell, label: 'Notifications', path: '/gym/notifications' },
         { icon: Settings, label: 'Settings', path: '/gym/settings' },
     ];
+
+    const handleLogout = async () => {
+        try {
+            await AuthService.logout();
+            navigate('/');
+        } catch (error) {
+            console.error('Logout failed:', error);
+            // Still navigate even if logout fails
+            navigate('/');
+        }
+    };
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
@@ -91,11 +104,7 @@ export default function Sidebar() {
                     {/* Logout Section */}
                     <div className="p-4 border-t border-slate-100">
                         <button
-                            onClick={() => {
-                                localStorage.removeItem('token');
-                                localStorage.removeItem('user');
-                                window.location.href = '/';
-                            }}
+                            onClick={handleLogout}
                             className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-500 hover:bg-red-50 rounded-xl transition-colors"
                         >
                             <LogOut size={20} />

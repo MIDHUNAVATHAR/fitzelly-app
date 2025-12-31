@@ -1,10 +1,9 @@
 import bcrypt from 'bcryptjs';
-import { TokenService } from "../../../../infrastructure/security/TokenService.js";
-import { IGymRepository } from "../domain/repositories/IGymRepository.js";
-import { AppError } from "../../../../core/errors/AppError.js";
-import { LoginGymRequestDTO, LoginGymResponseDTO } from "../domain/dtos/LoginGymDTO.js";
-import { GymDTOMapper } from "../presentation/mappers/GymDTOMapper.js";
-// Redis removed
+import { TokenService } from "../../infrastructure/services/TokenService.js";
+import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
+import { AppError } from "../../../../../core/errors/AppError.js";
+import { LoginGymRequestDTO, LoginGymResponseDTO } from "../dtos/LoginGymDTO.js";
+import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
 
 
 export class LoginGymUseCase {
@@ -27,8 +26,6 @@ export class LoginGymUseCase {
         // Use TokenService
         const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym_owner' });
         const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym_owner' });
-
-        // Redis removed
 
 
         // 4. Return Response

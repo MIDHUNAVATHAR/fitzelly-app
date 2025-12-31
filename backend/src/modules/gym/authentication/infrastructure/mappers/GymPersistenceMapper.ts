@@ -1,5 +1,5 @@
 import { Gym } from "../../domain/entities/Gym.js";
-import { GymDocument } from "../persistence/mongoose/GymSchema.js";
+import { GymDocument } from "../database/mongoose/GymSchema.js";
 
 export class GymPersistenceMapper {
     static toDomain(doc: GymDocument): Gym {
