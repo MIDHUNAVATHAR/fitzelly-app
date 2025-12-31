@@ -24,8 +24,7 @@ class App {
             cors({
                 origin: [
                     "http://localhost:5173",
-                    // "https://zonia-noninfected-dawne.ngrok-free.dev",
-                ],
+                    "https://fitzelly-kb5f02xgd-midhunzellys-projects.vercel.app"],
                 credentials: true,
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
                 allowedHeaders: ["Content-Type", "Authorization"],

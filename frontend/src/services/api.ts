@@ -7,10 +7,10 @@ export const api = axios.create({
 })
 
 api.interceptors.request.use((config) => {
-    // console.log("🔥 INTERCEPTOR RUNNING");
-    // console.log("TOKEN:", localStorage.getItem("token"));
-    config.headers.Authorization = `Bearer ${localStorage.getItem("token")}`;
-
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
@@ -18,8 +18,10 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response?.status === 401) {
-            //localStorage.removeItem("token");
-            // window.location.href = "/login";
+            // Optional: Handle token expiration globally
+            // localStorage.removeItem("accessToken");
+            // localStorage.removeItem("userRole");
+            // window.dispatchEvent(new Event('auth-change'));
         }
         return Promise.reject(error);
     }

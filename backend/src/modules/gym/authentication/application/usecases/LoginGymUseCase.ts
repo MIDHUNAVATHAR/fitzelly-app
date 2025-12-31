@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
 import { TokenService } from "../../infrastructure/services/TokenService.js";
 import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
+import { IPasswordHasher } from "../../domain/services/IPasswordHasher.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { LoginGymRequestDTO, LoginGymResponseDTO } from "../dtos/LoginGymDTO.js";
 import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
@@ -8,7 +8,10 @@ import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
 
 
 export class LoginGymUseCase {
-    constructor(private gymRepository: IGymRepository) { }
+    constructor(
+        private gymRepository: IGymRepository,
+        private passwordHasher: IPasswordHasher
+    ) { }
 
     async execute(request: LoginGymRequestDTO): Promise<LoginGymResponseDTO> {
         // 1. Check if gym exists
@@ -17,8 +20,8 @@ export class LoginGymUseCase {
             throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
 
-        // 2. Validate Password
-        const isPasswordValid = await bcrypt.compare(request.password, gym.passwordHash);
+        // 2. Validate Password using domain service
+        const isPasswordValid = await this.passwordHasher.compare(request.password, gym.passwordHash);
         if (!isPasswordValid) {
             throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }

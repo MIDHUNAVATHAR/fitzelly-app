@@ -1,7 +1,7 @@
-import bcrypt from 'bcryptjs';  //this need to move in infrastructure layer 
 import { TokenService } from "../../infrastructure/services/TokenService.js";
 import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
 import { IOtpRepository } from "../../domain/repositories/IOtpRepository.js";
+import { IPasswordHasher } from "../../domain/services/IPasswordHasher.js";
 import { Gym } from "../../domain/entities/Gym.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { SignupGymRequestDTO, SignupGymResponseDTO } from "../dtos/SignupGymDTO.js";
@@ -15,7 +15,8 @@ export interface CompleteSignupRequest extends SignupGymRequestDTO {
 export class SignupGymUseCase {
     constructor(
         private gymRepository: IGymRepository,
-        private otpRepository: IOtpRepository
+        private otpRepository: IOtpRepository,
+        private passwordHasher: IPasswordHasher
     ) { }
 
     async execute(request: CompleteSignupRequest): Promise<SignupGymResponseDTO> {
@@ -31,9 +32,8 @@ export class SignupGymUseCase {
             throw new AppError("Email already in use", HttpStatus.BAD_REQUEST);
         }
 
-        // 3. Hash Password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(request.password, salt);
+        // 3. Hash Password using domain service
+        const hashedPassword = await this.passwordHasher.hash(request.password);
 
         // 4. Create Entity 
         const gymToCreate = new Gym(

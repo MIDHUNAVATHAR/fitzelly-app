@@ -1,6 +1,6 @@
-import bcrypt from 'bcryptjs';
 import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
 import { IOtpRepository } from "../../domain/repositories/IOtpRepository.js";
+import { IPasswordHasher } from "../../domain/services/IPasswordHasher.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
 import { ResetPasswordRequestDTO } from "../dtos/ForgotPasswordDTO.js";
@@ -12,7 +12,8 @@ import { ResetPasswordRequestDTO } from "../dtos/ForgotPasswordDTO.js";
 export class ResetPasswordUseCase {
     constructor(
         private gymRepository: IGymRepository,
-        private otpRepository: IOtpRepository
+        private otpRepository: IOtpRepository,
+        private passwordHasher: IPasswordHasher
     ) { }
 
     async execute(request: ResetPasswordRequestDTO): Promise<void> {
@@ -28,9 +29,8 @@ export class ResetPasswordUseCase {
             throw new AppError("User not found", HttpStatus.NOT_FOUND);
         }
 
-        // 3. Hash new password
-        const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(request.newPassword, salt);
+        // 3. Hash new password using domain service
+        const hashedPassword = await this.passwordHasher.hash(request.newPassword);
 
         // 4. Update password using domain method (maintains immutability)
         const updatedGym = gym.updatePassword(hashedPassword);

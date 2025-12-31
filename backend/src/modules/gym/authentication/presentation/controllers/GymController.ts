@@ -2,9 +2,11 @@ import { Request, Response, NextFunction } from "express";
 import { SignupGymUseCase, CompleteSignupRequest } from "../../application/usecases/SignupGymUseCase.js";
 import { InitiateSignupUseCase } from "../../application/usecases/InitiateSignupUseCase.js";
 import { LoginGymUseCase } from "../../application/usecases/LoginGymUseCase.js";
+import { ResetPasswordUseCase } from "../../application/usecases/ResetPasswordUseCase.js";
 import { GymRepositoryImpl } from "../../infrastructure/repositories/GymRepositoryImpl.js";
 import { OtpRepositoryImpl } from "../../infrastructure/repositories/OtpRepositoryImpl.js";
 import { EmailServiceImpl } from "../../infrastructure/services/EmailServiceImpl.js";
+import { BcryptPasswordHasher } from "../../infrastructure/services/BcryptPasswordHasher.js";
 import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 
@@ -45,7 +47,8 @@ export class GymController {
         try {
             const gymRepo = new GymRepositoryImpl();
             const otpRepo = new OtpRepositoryImpl();
-            const useCase = new SignupGymUseCase(gymRepo, otpRepo);
+            const passwordHasher = new BcryptPasswordHasher();
+            const useCase = new SignupGymUseCase(gymRepo, otpRepo, passwordHasher);
 
             const requestDTO: CompleteSignupRequest = {   //CompleteSignpRequest is the extension for SignupDTO 
                 gymName: req.body.gymName,
@@ -87,7 +90,8 @@ export class GymController {
     static async login(req: Request, res: Response, next: NextFunction) {
         try {
             const repo = new GymRepositoryImpl();
-            const useCase = new LoginGymUseCase(repo);
+            const passwordHasher = new BcryptPasswordHasher();
+            const useCase = new LoginGymUseCase(repo, passwordHasher);
 
             const requestDTO: LoginGymRequestDTO = {
                 email: req.body.email,
@@ -191,8 +195,8 @@ export class GymController {
         try {
             const gymRepo = new GymRepositoryImpl();
             const otpRepo = new OtpRepositoryImpl();
-            const { ResetPasswordUseCase } = await import("../../application/usecases/ResetPasswordUseCase.js");
-            const useCase = new ResetPasswordUseCase(gymRepo, otpRepo);
+            const passwordHasher = new BcryptPasswordHasher();
+            const useCase = new ResetPasswordUseCase(gymRepo, otpRepo, passwordHasher);
 
             const { email, otp, newPassword } = req.body;
 

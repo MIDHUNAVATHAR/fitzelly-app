@@ -1,8 +1,5 @@
 import { useState } from 'react';
-
-const API_URL = import.meta.env.VITE_API_URL;
-const API_VERSION = import.meta.env.VITE_API_VERSION;
-const BASE_URL = `${API_URL}/api/${API_VERSION}`;
+import { api } from '../../../services/api';
 
 type UserRole = 'gym' | 'client' | 'trainer';
 
@@ -26,21 +23,11 @@ export const useForgotPassword = (role: UserRole = 'gym') => {
 
         try {
             const endpoint = getAuthEndpoint(role);
-            const response = await fetch(`${BASE_URL}/${endpoint}/forgot-password/initiate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to send OTP');
-            }
-
+            await api.post(`/${endpoint}/forgot-password/initiate`, { email });
             return true;
         } catch (err: any) {
-            setError(err.message || 'Network error occurred');
+            console.error("useForgotPassword Error:", err);
+            setError(err.response?.data?.message || err.message || 'Network error occurred');
             return false;
         } finally {
             setIsLoading(false);
@@ -57,21 +44,11 @@ export const useForgotPassword = (role: UserRole = 'gym') => {
 
         try {
             const endpoint = getAuthEndpoint(role);
-            const response = await fetch(`${BASE_URL}/${endpoint}/forgot-password/reset`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp, newPassword }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to reset password');
-            }
-
+            await api.post(`/${endpoint}/forgot-password/reset`, { email, otp, newPassword });
             return true;
         } catch (err: any) {
-            setError(err.message || 'Network error occurred');
+            console.error("useForgotPassword Error:", err);
+            setError(err.response?.data?.message || err.message || 'Network error occurred');
             return false;
         } finally {
             setIsLoading(false);

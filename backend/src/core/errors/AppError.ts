@@ -1,7 +1,9 @@
+import { HttpStatus } from "../../constants/statusCodes.constants.js";
+
 export class AppError extends Error {
     public readonly statusCode: number;
 
-    constructor(message: string, statusCode = 400) {
+    constructor(message: string, statusCode: number = HttpStatus.BAD_REQUEST) {
         super(message);
         this.statusCode = statusCode;
         Object.setPrototypeOf(this, new.target.prototype);
@@ -9,20 +11,20 @@ export class AppError extends Error {
 }
 
 export class UnauthorizedError extends AppError {
-    constructor() {
-        super("Unauthorized", 404)
+    constructor(message: string = "Unauthorized") {
+        super(message, HttpStatus.UNAUTHORIZED)
     }
 }
 
 export class ForbiddenError extends AppError {
-    constructor() {
-        super("Access denied", 403);
+    constructor(message: string = "Access denied") {
+        super(message, HttpStatus.FORBIDDEN);
     }
 }
 
 export class NotFoundError extends AppError {
     constructor(resource: string) {
-        super(`${resource} not found`, 404);
+        super(`${resource} not found`, HttpStatus.NOT_FOUND);
     }
 }
 
