@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
 import { useSignIn } from '../../auth/hooks/useSignIn';
@@ -11,7 +11,10 @@ interface SignInModalProps {
     onForgotPassword?: () => void;
 }
 
+type UserRole = 'gym' | 'client' | 'trainer';
+
 export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgotPassword }: SignInModalProps) {
+    const [selectedRole, setSelectedRole] = useState<UserRole>('gym');
     const {
         email, setEmail,
         password, setPassword,
@@ -19,7 +22,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
         generalError,
         fieldErrors,
         handleSignIn
-    } = useSignIn();
+    } = useSignIn(selectedRole); // Pass selectedRole to hook
 
     // Prevent background scrolling when modal is open
     useEffect(() => {
@@ -58,6 +61,42 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                     >
                         <X size={20} />
                     </button>
+                </div>
+
+                {/* Role Toggle */}
+                <div className="mb-6">
+                    <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedRole('gym')}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'gym'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                                }`}
+                        >
+                            Gym
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedRole('client')}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'client'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                                }`}
+                        >
+                            Client
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setSelectedRole('trainer')}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'trainer'
+                                ? 'bg-white text-slate-900 shadow-sm'
+                                : 'text-slate-600 hover:text-slate-900'
+                                }`}
+                        >
+                            Trainer
+                        </button>
+                    </div>
                 </div>
 
                 {/* Form */}

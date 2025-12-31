@@ -13,6 +13,7 @@ export default function Header() {
     const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
     const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [userRole, setUserRole] = useState<string | null>(null);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -23,13 +24,16 @@ export default function Header() {
                 if (user) {
                     console.log("Auth verified: Logged in");
                     setIsLoggedIn(true);
+                    setUserRole(localStorage.getItem('userRole'));
                 } else {
                     console.log("Auth verified: Not logged in");
                     setIsLoggedIn(false);
+                    setUserRole(null);
                 }
             } catch (err) {
                 console.log(err);
                 setIsLoggedIn(false);
+                setUserRole(null);
             }
         };
 
@@ -45,6 +49,16 @@ export default function Header() {
             window.removeEventListener('auth-change', handleAuthChange);
         };
     }, []);
+
+    const getDashboardInfo = () => {
+        const role = userRole || 'gym';
+        return {
+            path: `/${role}/dashboard`,
+            label: `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`
+        };
+    };
+
+    const dashboard = getDashboardInfo();
 
     useEffect(() => {
         const handleScroll = () => {
@@ -77,6 +91,12 @@ export default function Header() {
                     {/* Desktop Navigation */}
                     <nav className="hidden md:flex items-center gap-8">
                         <button
+                            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                            className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
+                        >
+                            Home
+                        </button>
+                        <button
                             onClick={() => scrollToSection('features')}
                             className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}
                         >
@@ -92,22 +112,19 @@ export default function Header() {
 
                     {/* Desktop Auth Buttons */}
                     <div className="hidden md:flex items-center gap-4">
-                        <button className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-600 hover:text-slate-900'}`}>
-                            Member Login
-                        </button>
                         {isLoggedIn ? (
                             <button
-                                onClick={() => navigate('/gym/dashboard')}
+                                onClick={() => navigate(dashboard.path)}
                                 className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
                             >
-                                Gym Dashboard
+                                {dashboard.label}
                             </button>
                         ) : (
                             <button
                                 onClick={() => setIsSignInModalOpen(true)}
                                 className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
                             >
-                                Gym Signin
+                                Signin
                             </button>
                         )}
                     </div>
@@ -127,6 +144,15 @@ export default function Header() {
                 <div className="md:hidden bg-slate-900 absolute top-full left-0 right-0 border-t border-slate-800 p-4">
                     <div className="flex flex-col space-y-4">
                         <button
+                            onClick={() => {
+                                window.scrollTo({ top: 0, behavior: 'smooth' });
+                                setIsMobileMenuOpen(false);
+                            }}
+                            className="text-left text-slate-300 hover:text-white font-medium"
+                        >
+                            Home
+                        </button>
+                        <button
                             onClick={() => scrollToSection('features')}
                             className="text-left text-slate-300 hover:text-white font-medium"
                         >
@@ -139,18 +165,15 @@ export default function Header() {
                             Pricing
                         </button>
                         <div className="h-px bg-slate-800 my-2"></div>
-                        <button className="text-left text-slate-300 hover:text-white font-medium">
-                            Member Login
-                        </button>
                         {isLoggedIn ? (
                             <button
                                 onClick={() => {
                                     setIsMobileMenuOpen(false);
-                                    navigate('/gym/dashboard');
+                                    navigate(dashboard.path);
                                 }}
                                 className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center cursor-pointer"
                             >
-                                Gym Dashboard
+                                {dashboard.label}
                             </button>
                         ) : (
                             <button
@@ -160,7 +183,7 @@ export default function Header() {
                                 }}
                                 className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center cursor-pointer"
                             >
-                                Gym Signin
+                                Signin
                             </button>
                         )}
                     </div>

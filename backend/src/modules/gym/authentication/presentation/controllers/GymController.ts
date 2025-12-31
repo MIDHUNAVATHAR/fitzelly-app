@@ -3,7 +3,10 @@ import { SignupGymUseCase, CompleteSignupRequest } from "../../application/useca
 import { InitiateSignupUseCase } from "../../application/usecases/InitiateSignupUseCase.js";
 import { LoginGymUseCase } from "../../application/usecases/LoginGymUseCase.js";
 import { GymRepositoryImpl } from "../../infrastructure/repositories/GymRepositoryImpl.js";
+import { OtpRepositoryImpl } from "../../infrastructure/repositories/OtpRepositoryImpl.js";
+import { EmailServiceImpl } from "../../infrastructure/services/EmailServiceImpl.js";
 import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
+import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 
 export class GymController {
 
@@ -11,20 +14,25 @@ export class GymController {
     static async initiateSignup(req: Request, res: Response, next: NextFunction) {
         console.log("Received initiateSignup Request:", req.body);
         try {
-            const repo = new GymRepositoryImpl();
-            const useCase = new InitiateSignupUseCase(repo);
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const emailService = new EmailServiceImpl();
+            const useCase = new InitiateSignupUseCase(gymRepo, otpRepo, emailService);
 
             const { email } = req.body;
 
             if (!email) {
-                res.status(400).json({ status: "error", message: "Email is required" });
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Email is required"
+                });
                 return;
             }
 
             await useCase.execute({ email });
 
-            res.status(200).json({
-                status: "success",
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
                 message: "OTP sent to email successfully"
             });
         } catch (error) {
@@ -35,10 +43,11 @@ export class GymController {
     // Step 2: Verify OTP & Create Account
     static async completeSignup(req: Request, res: Response, next: NextFunction) {
         try {
-            const repo = new GymRepositoryImpl();
-            const useCase = new SignupGymUseCase(repo);
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const useCase = new SignupGymUseCase(gymRepo, otpRepo);
 
-            const requestDTO: CompleteSignupRequest = {
+            const requestDTO: CompleteSignupRequest = {   //CompleteSignpRequest is the extension for SignupDTO 
                 gymName: req.body.gymName,
                 email: req.body.email,
                 password: req.body.password,
@@ -46,20 +55,16 @@ export class GymController {
             };
 
             if (!requestDTO.gymName || !requestDTO.email || !requestDTO.password || !requestDTO.otp) {
-                res.status(400).json({ status: "error", message: "Missing required fields" });
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Missing required fields"
+                });
                 return;
             }
 
             const resultDTO = await useCase.execute(requestDTO);
 
-            // Set Cookies
-            res.cookie('accessToken', resultDTO.accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax', // Lax is better for navigation from landing page often
-                maxAge: 15 * 60 * 1000 // 15 min
-            });
-
+            // Set refresh token in HTTP-only cookie
             res.cookie('refreshToken', resultDTO.refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -67,11 +72,11 @@ export class GymController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            // Remove tokens from response body logic
-            const { accessToken, refreshToken, ...responsePayload } = resultDTO;
+            // Return access token in response body for localStorage
+            const { refreshToken, ...responsePayload } = resultDTO;
 
-            res.status(201).json({
-                status: "success",
+            res.status(HttpStatus.CREATED).json({
+                status: ResponseStatus.SUCCESS,
                 ...responsePayload
             });
         } catch (error) {
@@ -90,20 +95,16 @@ export class GymController {
             };
 
             if (!requestDTO.email || !requestDTO.password) {
-                res.status(400).json({ status: "error", message: "Missing email or password" });
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Missing email or password"
+                });
                 return;
             }
 
             const resultDTO = await useCase.execute(requestDTO);
 
-            // Set Cookies
-            res.cookie('accessToken', resultDTO.accessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 15 * 60 * 1000 // 15 min
-            });
-
+            // Set refresh token in HTTP-only cookie
             res.cookie('refreshToken', resultDTO.refreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -111,10 +112,11 @@ export class GymController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            const { accessToken, refreshToken, ...responsePayload } = resultDTO;
+            // Return access token in response body for localStorage
+            const { refreshToken, ...responsePayload } = resultDTO;
 
-            res.status(200).json({
-                status: "success",
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
                 ...responsePayload
             });
 
@@ -127,7 +129,7 @@ export class GymController {
         // middleware attaches user to req
         const user = (req as any).user;
 
-        return res.status(200).json({
+        return res.status(HttpStatus.OK).json({
             success: true,
             user: {
                 id: user.id,
@@ -139,22 +141,83 @@ export class GymController {
 
     static async logout(req: Request, res: Response, next: NextFunction) {
         try {
-            // Clear both access and refresh tokens
-            res.clearCookie('accessToken', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax'
-            });
-
+            // Clear refresh token cookie
             res.clearCookie('refreshToken', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: 'lax'
             });
 
-            return res.status(200).json({
-                status: "success",
+            return res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
                 message: "Logged out successfully"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // Forgot Password Flow
+    static async initiateForgotPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const emailService = new EmailServiceImpl();
+            const { InitiateForgotPasswordUseCase } = await import("../../application/usecases/InitiateForgotPasswordUseCase.js");
+            const useCase = new InitiateForgotPasswordUseCase(gymRepo, otpRepo, emailService);
+
+            const { email } = req.body;
+
+            if (!email) {
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Email is required"
+                });
+                return;
+            }
+
+            await useCase.execute({ email });
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                message: "If this email exists, an OTP has been sent"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async resetPassword(req: Request, res: Response, next: NextFunction) {
+        try {
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const { ResetPasswordUseCase } = await import("../../application/usecases/ResetPasswordUseCase.js");
+            const useCase = new ResetPasswordUseCase(gymRepo, otpRepo);
+
+            const { email, otp, newPassword } = req.body;
+
+            if (!email || !otp || !newPassword) {
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Email, OTP, and new password are required"
+                });
+                return;
+            }
+
+            // Validate password strength (optional but recommended)
+            if (newPassword.length < 6) {
+                res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Password must be at least 6 characters long"
+                });
+                return;
+            }
+
+            await useCase.execute({ email, otp, newPassword });
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                message: "Password reset successfully"
             });
         } catch (error) {
             next(error);

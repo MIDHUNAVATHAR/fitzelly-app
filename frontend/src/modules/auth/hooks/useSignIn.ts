@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 
-export function useSignIn() {
+type UserRole = 'gym' | 'client' | 'trainer';
+
+export function useSignIn(role: UserRole = 'gym') {
     const navigate = useNavigate();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -43,20 +45,22 @@ export function useSignIn() {
 
         setIsLoading(true);
         try {
-            await AuthService.login({ email, password });
-
-            // Store token/user - implementing basic localStorage for now
-            // In a real app, use a Context or Redux store
-            // localStorage.setItem('token', response.token);
-            // localStorage.setItem('user', JSON.stringify(response.user));
+            await AuthService.login({ email, password, role });
 
             window.dispatchEvent(new Event('auth-change'));
 
+            // Navigate to role-specific dashboard
+            const dashboardRoutes = {
+                gym: '/gym/dashboard',
+                client: '/client/dashboard',
+                trainer: '/trainer/dashboard'
+            };
+
             if (onSuccess) {
-                // onSuccess(); // Don't close modal manually, let route change handle it to prevent flash
-                navigate('/gym/dashboard');
+                console.log(`useSignIn: Login success, navigating to ${dashboardRoutes[role]}`);
+                onSuccess(); // Close the modal
+                navigate(dashboardRoutes[role]);
             }
-            // TODO: Redirect to dashboard logic here
 
         } catch (error: any) {
             setGeneralError(error.message);

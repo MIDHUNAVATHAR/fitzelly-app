@@ -2,6 +2,7 @@ import { X, ArrowLeft, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
+import { useForgotPassword } from '../../auth/hooks/useForgotPassword';
 
 interface ForgotPasswordModalProps {
     isOpen: boolean;
@@ -10,17 +11,22 @@ interface ForgotPasswordModalProps {
 }
 
 type Step = 'EMAIL' | 'OTP' | 'RESET_PASSWORD' | 'SUCCESS';
+type UserRole = 'gym' | 'client' | 'trainer';
 
 export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn }: ForgotPasswordModalProps) {
     const [step, setStep] = useState<Step>('EMAIL');
+    const [selectedRole, setSelectedRole] = useState<UserRole>('gym');
     const [email, setEmail] = useState('');
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
 
     // Timer state
     const [timeLeft, setTimeLeft] = useState(90);
     const [canResend, setCanResend] = useState(false);
+
+    const { isLoading, error: apiError, initiateForgotPassword, resetPassword } = useForgotPassword(selectedRole);
 
     // Prevent background scrolling
     useEffect(() => {
@@ -35,10 +41,12 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
             if (!isOpen) {
                 setTimeout(() => {
                     setStep('EMAIL');
+                    setSelectedRole('gym');
                     setEmail('');
                     setOtp('');
                     setNewPassword('');
                     setConfirmPassword('');
+                    setError('');
                 }, 300);
             }
         };
@@ -57,21 +65,61 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
         return () => clearInterval(timer);
     }, [step, timeLeft]);
 
-    const handleSendOtp = () => {
-        // API call to send OTP would go here
-        setStep('OTP');
-        setTimeLeft(30);
-        setCanResend(false);
+    const handleSendOtp = async () => {
+        setError('');
+
+        if (!email) {
+            setError('Please enter your email');
+            return;
+        }
+
+        const success = await initiateForgotPassword(email);
+
+        if (success) {
+            setStep('OTP');
+            setTimeLeft(90);
+            setCanResend(false);
+        } else if (apiError) {
+            setError(apiError);
+        }
     };
 
     const handleVerifyOtp = () => {
-        // API call to verify OTP would go here
+        setError('');
+
+        if (!otp || otp.length !== 6) {
+            setError('Please enter a valid 6-digit OTP');
+            return;
+        }
+
         setStep('RESET_PASSWORD');
     };
 
-    const handleResetPassword = () => {
-        // API call to update password
-        setStep('SUCCESS');
+    const handleResetPassword = async () => {
+        setError('');
+
+        if (!newPassword || !confirmPassword) {
+            setError('Please fill in all fields');
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setError('Password must be at least 6 characters long');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError('Passwords do not match');
+            return;
+        }
+
+        const success = await resetPassword(email, otp, newPassword);
+
+        if (success) {
+            setStep('SUCCESS');
+        } else if (apiError) {
+            setError(apiError);
+        }
     };
 
     const formatTime = (seconds: number) => {
@@ -117,6 +165,51 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
                     </button>
                 </div>
 
+                {/* Role Toggle - Only show on EMAIL step */}
+                {step === 'EMAIL' && (
+                    <div className="mb-6">
+                        <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedRole('gym')}
+                                className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'gym'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                            >
+                                Gym
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedRole('client')}
+                                className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'client'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                            >
+                                Client
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSelectedRole('trainer')}
+                                className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'trainer'
+                                    ? 'bg-white text-slate-900 shadow-sm'
+                                    : 'text-slate-600 hover:text-slate-900'
+                                    }`}
+                            >
+                                Trainer
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Error Message */}
+                {(error || apiError) && (
+                    <div className="mb-4 bg-red-50 text-red-600 text-sm p-3 rounded-lg border border-red-100">
+                        {error || apiError}
+                    </div>
+                )}
+
                 {/* Step 1: Email Input */}
                 {step === 'EMAIL' && (
                     <form className="space-y-5" onSubmit={(e) => { e.preventDefault(); handleSendOtp(); }}>
@@ -132,9 +225,15 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
                             />
                         </div>
                         <button
-                            className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer"
+                            type="submit"
+                            disabled={isLoading}
+                            className={`w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            Send OTP
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                'Send OTP'
+                            )}
                         </button>
                         <div className="text-center">
                             <button
@@ -156,7 +255,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
                             <input
                                 type="text"
                                 value={otp}
-                                onChange={(e) => setOtp(e.target.value)}
+                                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
                                 placeholder="Enter 6-digit OTP"
                                 maxLength={6}
                                 className="w-full pl-4 pr-10 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 placeholder:text-slate-400 transition-all tracking-widest text-center text-lg font-bold"
@@ -182,6 +281,7 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
                         </div>
 
                         <button
+                            type="submit"
                             className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer"
                         >
                             Verify & Proceed
@@ -205,9 +305,15 @@ export default function ForgotPasswordModal({ isOpen, onClose, onSwitchToSignIn 
                             placeholder="••••••••"
                         />
                         <button
-                            className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer mt-2"
+                            type="submit"
+                            disabled={isLoading}
+                            className={`w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer mt-2 flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
                         >
-                            Reset Password
+                            {isLoading ? (
+                                <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                'Reset Password'
+                            )}
                         </button>
                     </form>
                 )}

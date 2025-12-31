@@ -23,6 +23,24 @@ export default function App() {
           }
         />
 
+        {/* Client & Trainer Dashboard Placeholders */}
+        <Route
+          path="/client/dashboard"
+          element={
+            <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white font-bold text-2xl">
+              Client Dashboard (Coming Soon)
+            </div>
+          }
+        />
+        <Route
+          path="/trainer/dashboard"
+          element={
+            <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white font-bold text-2xl">
+              Trainer Dashboard (Coming Soon)
+            </div>
+          }
+        />
+
         {/* 404 - Redirect to home for now */}
         <Route path="*" element={<LandingPage />} />
       </Routes>

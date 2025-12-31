@@ -16,7 +16,9 @@ export const GYM_AUTH_ROUTES = {
     SIGNUP_COMPLETE: "/signup/complete",
     LOGIN: "/login",
     LOGOUT: "/logout",
-    VERIFY_TOKEN: "/auth/me"
+    VERIFY_TOKEN: "/auth/me",
+    FORGOT_PASSWORD_INIT: "/forgot-password/initiate",
+    RESET_PASSWORD: "/forgot-password/reset"
 } as const;
 
 
@@ -24,6 +26,8 @@ export const GYM_AUTH_ROUTES = {
 
 // USING IN APP.TS 
 export const MODULE_ROUTES = {
-    GYM_AUTH: "/gym-auth"
+    GYM_AUTH: "/gym-auth",
+    CLIENT_AUTH: "/client-auth",
+    TRAINER_AUTH: "/trainer-auth"
 } as const;
 

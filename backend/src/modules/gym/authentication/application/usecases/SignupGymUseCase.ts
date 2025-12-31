@@ -1,34 +1,34 @@
-import bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';  //this need to move in infrastructure layer 
 import { TokenService } from "../../infrastructure/services/TokenService.js";
 import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
+import { IOtpRepository } from "../../domain/repositories/IOtpRepository.js";
 import { Gym } from "../../domain/entities/Gym.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { SignupGymRequestDTO, SignupGymResponseDTO } from "../dtos/SignupGymDTO.js";
 import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
-import { OtpModel } from "../../infrastructure/database/mongoose/OtpSchema.js"; // Direct access for now, cleaner to use Repo
+import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
 
 export interface CompleteSignupRequest extends SignupGymRequestDTO {
     otp: string;
 }
 
 export class SignupGymUseCase {
-    constructor(private gymRepository: IGymRepository) { }
+    constructor(
+        private gymRepository: IGymRepository,
+        private otpRepository: IOtpRepository
+    ) { }
 
     async execute(request: CompleteSignupRequest): Promise<SignupGymResponseDTO> {
         // 1. Verify OTP
-        const otpRecord = await OtpModel.findOne({ email: request.email });
-        if (!otpRecord) {
-            throw new AppError("OTP expired or not found. Please request again.", 400);
-        }
-
-        if (otpRecord.otp !== request.otp) {
-            throw new AppError("Invalid OTP", 400);
+        const isOtpValid = await this.otpRepository.verifyOtp(request.email, request.otp);
+        if (!isOtpValid) {
+            throw new AppError("Invalid or expired OTP. Please request again.", HttpStatus.BAD_REQUEST);
         }
 
         // 2. Check if email exists (Double check for safety)
         const existingGym = await this.gymRepository.findByEmail(request.email);
         if (existingGym) {
-            throw new AppError("Email already in use", 400);
+            throw new AppError("Email already in use", HttpStatus.BAD_REQUEST);
         }
 
         // 3. Hash Password
@@ -47,14 +47,14 @@ export class SignupGymUseCase {
 
         const createdGym = await this.gymRepository.create(gymToCreate);
 
-        // 5. Delete OTP used
-        await OtpModel.deleteOne({ email: request.email });
+        // 5. OTP is automatically deleted by TTL index when it expires
+        // No manual deletion needed
 
         // 6. Generate Token
         const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym_owner' });
         const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym_owner' });
 
-        
+
         return GymDTOMapper.toResponseDTO(createdGym, accessToken, refreshToken);
     }
 }

@@ -4,6 +4,7 @@ import { IGymRepository } from "../../domain/repositories/IGymRepository.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { LoginGymRequestDTO, LoginGymResponseDTO } from "../dtos/LoginGymDTO.js";
 import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
+import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
 
 
 export class LoginGymUseCase {
@@ -13,13 +14,13 @@ export class LoginGymUseCase {
         // 1. Check if gym exists
         const gym = await this.gymRepository.findByEmail(request.email);
         if (!gym) {
-            throw new AppError("Invalid credentials", 401);
+            throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
 
         // 2. Validate Password
         const isPasswordValid = await bcrypt.compare(request.password, gym.passwordHash);
         if (!isPasswordValid) {
-            throw new AppError("Invalid credentials", 401);
+            throw new AppError("Invalid credentials", HttpStatus.UNAUTHORIZED);
         }
 
         // 3. Generate Token

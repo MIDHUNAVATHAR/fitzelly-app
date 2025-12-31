@@ -42,6 +42,18 @@ class App {
 
 
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymAuthRouter);
+
+        // Placeholder routers for Client and Trainer
+        const notImplemented = (req: Request, res: Response) => {
+            res.status(501).json({
+                status: "error",
+                message: "Authentication for this role is not yet implemented."
+            });
+        };
+
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, notImplemented);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, notImplemented);
+
         // this.app.use('/api/v1/super-admin', superAdminRouter);
     }
 
