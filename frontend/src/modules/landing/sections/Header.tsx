@@ -124,7 +124,7 @@ export default function Header() {
                                 onClick={() => setIsSignInModalOpen(true)}
                                 className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
                             >
-                                Signin
+                                Sign In
                             </button>
                         )}
                     </div>
@@ -183,7 +183,7 @@ export default function Header() {
                                 }}
                                 className="w-full bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors text-center cursor-pointer"
                             >
-                                SignIn
+                                Sign In
                             </button>
                         )}
                     </div>
