@@ -70,10 +70,11 @@ export class GymController {
             const resultDTO = await useCase.execute(requestDTO);
 
             // Set refresh token in HTTP-only cookie
+            // Set refresh token in HTTP-only cookie
             res.cookie('refreshToken', resultDTO.refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
@@ -111,10 +112,11 @@ export class GymController {
             const resultDTO = await useCase.execute(requestDTO);
 
             // Set refresh token in HTTP-only cookie
+            // Set refresh token in HTTP-only cookie
             res.cookie('refreshToken', resultDTO.refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: true,
+                sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
@@ -167,21 +169,31 @@ export class GymController {
             // Set Refresh Token (HTTP Only)
             res.cookie('refreshToken', resultDTO.refreshToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: true, // Required for SameSite=None
+                sameSite: 'none',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            // Set Access Token (HTTP Only) - Enable this if using full cookie auth
+            // Set Access Token (HTTP Only)
             res.cookie('accessToken', resultDTO.accessToken, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
+                secure: true, // Required for SameSite=None
+                sameSite: 'none',
                 maxAge: 15 * 60 * 1000 // 15 mins
             });
 
             // Redirect to Dashboard
-            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/gym/dashboard`);
+            let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+            // Remove trailing slash if present
+            if (frontendUrl.endsWith('/')) {
+                frontendUrl = frontendUrl.slice(0, -1);
+            }
+
+            const redirectUrl = `${frontendUrl}/gym/dashboard`;
+            console.log("Google Login Success, Redirecting to:", redirectUrl);
+
+            res.redirect(redirectUrl);
+
 
         } catch (error) {
             console.error("Google Callback Error:", error);
