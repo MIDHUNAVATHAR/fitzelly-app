@@ -14,3 +14,5 @@ export class GymDTOMapper {
         };
     }
 }
+
+//mappers helps to filter out passwordhash,createdat,updatedat etc from the gym doc and give to frontend

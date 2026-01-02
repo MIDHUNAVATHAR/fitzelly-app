@@ -10,6 +10,9 @@ export class Gym {
 
     /**
      * Creates a new Gym instance with updated password
+     * 
+     * 
+     * 
      * Maintains immutability by returning a new instance
      */
     updatePassword(newPasswordHash: string): Gym {

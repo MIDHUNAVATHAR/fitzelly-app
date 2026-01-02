@@ -10,6 +10,17 @@ export const SYSTEM_ROUTES = {
 /* ===============================
            GYM AUTH
 ================================*/
+export const MODULE_ROUTES = {
+    GYM_AUTH: "/gym-auth",
+    // CLIENT_AUTH: "/client-auth",
+    // TRAINER_AUTH: "/trainer-auth"
+} as const;
+
+
+
+
+
+//in routers...........
 
 export const GYM_AUTH_ROUTES = {
     SIGNUP_INIT: "/signup/initiate",
@@ -24,10 +35,4 @@ export const GYM_AUTH_ROUTES = {
 
 
 
-// USING IN APP.TS 
-export const MODULE_ROUTES = {
-    GYM_AUTH: "/gym-auth",
-    CLIENT_AUTH: "/client-auth",
-    TRAINER_AUTH: "/trainer-auth"
-} as const;
 
