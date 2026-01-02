@@ -3,7 +3,7 @@ import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
 import { useSignUp } from '../../auth/hooks/useSignUp';
-import { useGoogleLogin } from '@react-oauth/google';
+import { API_BASE_URL } from '../../../config/api';
 
 interface SignUpModalProps {
     isOpen: boolean;
@@ -27,17 +27,9 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
         reset
     } = useSignUp();
 
-    const googleLogin = useGoogleLogin({
-        flow: 'auth-code',
-        ux_mode: 'redirect',
-        redirect_uri: window.location.origin + '/google-callback',
-        onSuccess: () => { },
-        onError: () => console.log('Login Failed')
-    });
-
     const handleGoogleLoginClick = () => {
-        localStorage.setItem('loginRole', 'gym'); // Default to gym for signup
-        googleLogin();
+        // Default role is gym for signup modal
+        window.location.href = `${API_BASE_URL}/gym-auth/auth/google?role=gym`;
     };
 
     // Prevent background scrolling and reset form on close

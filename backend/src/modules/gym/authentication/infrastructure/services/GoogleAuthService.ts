@@ -13,6 +13,18 @@ export class GoogleAuthService {
         );
     }
 
+    generateAuthUrl(state?: string): string {
+        return this.client.generateAuthUrl({
+            access_type: 'offline',
+            scope: [
+                'https://www.googleapis.com/auth/userinfo.profile',
+                'https://www.googleapis.com/auth/userinfo.email',
+                'openid'
+            ],
+            ...(state ? { state } : {})
+        });
+    }
+
     async verifyToken(tokenOrCode: string): Promise<{ email: string; name: string; googleId: string; picture?: string }> {
         let token = tokenOrCode;
 

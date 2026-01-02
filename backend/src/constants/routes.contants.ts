@@ -30,7 +30,9 @@ export const GYM_AUTH_ROUTES = {
     VERIFY_TOKEN: "/auth/me",
     FORGOT_PASSWORD_INIT: "/forgot-password/initiate",
     RESET_PASSWORD: "/forgot-password/reset",
-    GOOGLE_LOGIN: "/google-login"
+    GOOGLE_LOGIN: "/google-login",
+    GOOGLE_AUTH_INIT: "/auth/google",
+    GOOGLE_AUTH_CALLBACK: "/auth/google/callback"
 } as const;
 
 

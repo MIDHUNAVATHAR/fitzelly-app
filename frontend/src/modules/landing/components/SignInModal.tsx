@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
 import { useSignIn } from '../../auth/hooks/useSignIn';
-import { useGoogleLogin } from '@react-oauth/google';
+import { API_BASE_URL } from '../../../config/api';
 
 interface SignInModalProps {
     isOpen: boolean;
@@ -25,17 +25,8 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
         handleSignIn
     } = useSignIn(selectedRole);
 
-    const googleLogin = useGoogleLogin({
-        flow: 'auth-code',
-        ux_mode: 'redirect',
-        redirect_uri: window.location.origin + '/google-callback',
-        onSuccess: () => { },
-        onError: () => console.log('Login Failed')
-    });
-
     const handleGoogleLoginClick = () => {
-        localStorage.setItem('loginRole', selectedRole);
-        googleLogin();
+        window.location.href = `${API_BASE_URL}/gym-auth/auth/google?role=${selectedRole}`;
     };
 
     // Prevent background scrolling when modal is open
@@ -86,7 +77,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'gym'
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
-                                }`}
+                                } `}
                         >
                             Gym
                         </button>
@@ -96,7 +87,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'client'
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
-                                }`}
+                                } `}
                         >
                             Client
                         </button>
@@ -106,7 +97,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                             className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'trainer'
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
-                                }`}
+                                } `}
                         >
                             Trainer
                         </button>
@@ -157,7 +148,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                     <button
                         type="submit"
                         disabled={isLoading}
-                        className={`w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                        className={`w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3.5 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(0,255,213,0.39)] hover:shadow-[0_6px_20px_rgba(0,255,213,0.23)] transform hover:-translate-y-0.5 cursor-pointer flex items-center justify-center ${isLoading ? 'opacity-70 cursor-not-allowed' : ''} `}
                     >
                         {isLoading ? (
                             <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin"></div>

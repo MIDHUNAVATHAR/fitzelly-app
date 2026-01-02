@@ -131,6 +131,65 @@ export class GymController {
         }
     }
 
+    // Traditional Redirect Flow
+    static async initiateGoogleLogin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const role = (req.query.role as string) || 'gym';
+            const state = JSON.stringify({ role });
+
+            const googleAuthService = new GoogleAuthService();
+            const url = googleAuthService.generateAuthUrl(state);
+            res.redirect(url);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async handleGoogleCallback(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { code, error } = req.query;
+
+            if (error) {
+                return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=google_auth_failed`);
+            }
+
+            if (!code) {
+                return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=no_code`);
+            }
+
+            const gymRepo = new GymRepositoryImpl();
+            const googleAuthService = new GoogleAuthService();
+            const useCase = new GoogleAuthGymUseCase(gymRepo, googleAuthService);
+
+            // Create account / Login
+            const resultDTO = await useCase.execute(code as string);
+
+            // Set Refresh Token (HTTP Only)
+            res.cookie('refreshToken', resultDTO.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+
+            // Set Access Token (HTTP Only) - Enable this if using full cookie auth
+            res.cookie('accessToken', resultDTO.accessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 15 * 60 * 1000 // 15 mins
+            });
+
+            // Redirect to Dashboard
+            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/gym/dashboard`);
+
+        } catch (error) {
+            console.error("Google Callback Error:", error);
+            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=login_failed`);
+        }
+    }
+
+    // JSON API Flow (Deprecated but kept for reference or mobile)
     static async googleLogin(req: Request, res: Response, next: NextFunction) {
         try {
             const gymRepo = new GymRepositoryImpl();
