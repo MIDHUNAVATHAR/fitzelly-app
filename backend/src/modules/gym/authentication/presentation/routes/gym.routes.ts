@@ -9,6 +9,7 @@ const router = Router();
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.SIGNUP_INIT, GymController.initiateSignup);
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.SIGNUP_COMPLETE, GymController.completeSignup);
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.LOGIN, GymController.login);
+router.post(ROUTER_ENDPOINTS.GYM_AUTH.GOOGLE_LOGIN, GymController.googleLogin);
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.LOGOUT, GymController.logout);
 
 // Forgot Password Routes

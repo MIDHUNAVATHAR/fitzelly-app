@@ -97,6 +97,28 @@ export const AuthService = {
         }
     },
 
+    googleLogin: async (credential: string, role: string = 'gym'): Promise<LoginResponse> => {
+        try {
+            const endpoint = getAuthEndpoint(role);
+            const response = await api.post(`/${endpoint}/google-login`, { token: credential });
+            const data = response.data;
+
+            if (data.accessToken) {
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('userRole', role);
+            }
+
+            return data;
+        } catch (error: any) {
+            console.error("AuthService Google Login Error Details:", {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+            });
+            throw new Error(error.response?.data?.message || 'Google Login failed');
+        }
+    },
+
     verifyToken: async (): Promise<any> => {
         try {
             const accessToken = localStorage.getItem('accessToken');

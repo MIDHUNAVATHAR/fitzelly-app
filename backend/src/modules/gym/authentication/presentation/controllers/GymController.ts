@@ -7,6 +7,8 @@ import { GymRepositoryImpl } from "../../infrastructure/repositories/GymReposito
 import { OtpRepositoryImpl } from "../../infrastructure/repositories/OtpRepositoryImpl.js";
 import { EmailServiceImpl } from "../../infrastructure/services/EmailServiceImpl.js";
 import { BcryptPasswordHasher } from "../../infrastructure/services/BcryptPasswordHasher.js";
+import { GoogleAuthService } from "../../infrastructure/services/GoogleAuthService.js";
+import { GoogleAuthGymUseCase } from "../../application/usecases/GoogleAuthGymUseCase.js";
 import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 
@@ -107,6 +109,44 @@ export class GymController {
             }
 
             const resultDTO = await useCase.execute(requestDTO);
+
+            // Set refresh token in HTTP-only cookie
+            res.cookie('refreshToken', resultDTO.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax',
+                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+            });
+
+            // Return access token in response body for localStorage
+            const { refreshToken, ...responsePayload } = resultDTO;
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                ...responsePayload
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async googleLogin(req: Request, res: Response, next: NextFunction) {
+        try {
+            const gymRepo = new GymRepositoryImpl();
+            const googleAuthService = new GoogleAuthService();
+            const useCase = new GoogleAuthGymUseCase(gymRepo, googleAuthService);
+
+            const { token } = req.body;
+
+            if (!token) {
+                return res.status(HttpStatus.BAD_REQUEST).json({
+                    status: ResponseStatus.ERROR,
+                    message: "Google Token is required"
+                });
+            }
+
+            const resultDTO = await useCase.execute(token);
 
             // Set refresh token in HTTP-only cookie
             res.cookie('refreshToken', resultDTO.refreshToken, {
