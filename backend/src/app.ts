@@ -26,12 +26,15 @@ class App {
         this.app.use(helmet()); // security headers
         this.app.use(
             cors({
-                origin: [
-                    "http://localhost:5173",
-                    "https://fitzelly-kb5f02xgd-midhunzellys-projects.vercel.app"],
+                origin: (origin, callback) => {
+                    // Allow requests with no origin (like mobile apps or curl requests)
+                    if (!origin) return callback(null, true);
+                    // Dynamically allow all origins for debugging
+                    return callback(null, true);
+                },
                 credentials: true,
                 methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                allowedHeaders: ["Content-Type", "Authorization"],
+                allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
             })
         );  // Enable CORS for our React frontend
         this.app.use(express.json()); // Body parser

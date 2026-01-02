@@ -4,6 +4,10 @@ import { API_BASE_URL } from "../config/api";
 export const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
+    headers: {
+        "ngrok-skip-browser-warning": "true",
+        "Content-Type": "application/json"
+    }
 })
 
 console.log("API Service Initialized with Base URL:", API_BASE_URL);
