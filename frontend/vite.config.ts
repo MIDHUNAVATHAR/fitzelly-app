@@ -6,6 +6,6 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    allowedHosts: ['zonia-noninfected-dawne.ngrok-free.dev']
+    allowedHosts: ['zonia-noninfected-dawne.ngrok-free.dev', "fitzelly-app.vercel.app"]
   }
 })

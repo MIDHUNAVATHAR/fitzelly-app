@@ -11,6 +11,8 @@ import { GoogleOAuthProvider } from '@react-oauth/google';
 export default function App() {
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+  console.log("checking........in app.tsx")
+
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
       <BrowserRouter>

@@ -43,3 +43,14 @@ Restart **BOTH** Frontend and Backend for changes to take effect.
 2.  You will be redirected to Google.
 3.  After login, you will be redirected back to `/google-callback`.
 4.  The app will verify the code and log you in.
+
+### ❓ FAQ: Why is the Redirect URI a Frontend URL?
+You might wonder why the Redirect URI (`http://localhost:5173/google-callback`) points to the Frontend and not the Backend (`http://localhost:5000/...`).
+
+**Reason:** In a React Single Page Application (SPA), we want the user to return to the **App UI** immediately to show a loading state or handle navigation.
+1.  **Frontend** sends user to Google.
+2.  Google redirects user back to **Frontend** (`/google-callback`) with a **Code**.
+3.  **Frontend** sends this **Code** to the **Backend** via API.
+4.  **Backend** exchanges the Code for Tokens. (Backend needs to know the original Redirect URI to verify the request with Google).
+
+So, the Redirect URI acts as the "landing page" for the auth process, which is why it is the Frontend URL.
