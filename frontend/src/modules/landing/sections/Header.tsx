@@ -12,26 +12,32 @@ export default function Header() {
     const [isSignInModalOpen, setIsSignInModalOpen] = useState(false);
     const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
     const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [userRole, setUserRole] = useState<string | null>(null);
+
+    // Initialize auth state from localStorage to prevent flash of "Sign In" button
+    const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('accessToken'));
+    const [userRole, setUserRole] = useState<string | null>(() => localStorage.getItem('userRole'));
     const navigate = useNavigate();
 
     useEffect(() => {
         const verifyAuth = async () => {
             try {
-                const user = await AuthService.verifyToken();
+                const response = await AuthService.verifyToken();
+                console.log(response)
 
-                if (user) {
-                    console.log("Auth verified: Logged in");
+                if (response && response.user) {
+                    console.log("Auth verified: Logged in", response);
                     setIsLoggedIn(true);
-                    setUserRole(localStorage.getItem('userRole'));
+                    // Get role from localStorage (set during login/signup)
+                    const storedRole = localStorage.getItem('userRole');
+                    setUserRole(storedRole);
+                    console.log("User role set to:", storedRole);
                 } else {
                     console.log("Auth verified: Not logged in");
                     setIsLoggedIn(false);
                     setUserRole(null);
                 }
             } catch (err) {
-                console.log(err);
+                console.error("Auth verification error:", err);
                 setIsLoggedIn(false);
                 setUserRole(null);
             }
@@ -40,6 +46,7 @@ export default function Header() {
         verifyAuth();
 
         const handleAuthChange = () => {
+            console.log("Auth change event received, re-verifying...");
             verifyAuth();
         };
 

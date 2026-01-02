@@ -26,13 +26,14 @@ export interface InitSignupPayload {
 }
 
 // Helper to get the correct auth endpoint based on role
-const getAuthEndpoint = (role: 'gym' | 'client' | 'trainer' = 'gym'): string => {
-    const endpoints = {
+// Helper to get the correct auth endpoint based on role
+const getAuthEndpoint = (role: string = 'gym'): string => {
+    const endpoints: Record<string, string> = {
         gym: 'gym-auth',
         client: 'client-auth',
         trainer: 'trainer-auth'
     };
-    return endpoints[role];
+    return endpoints[role] || 'gym-auth';
 };
 
 export const AuthService = {
@@ -49,12 +50,14 @@ export const AuthService = {
 
     register: async (payload: SignupPayload): Promise<LoginResponse> => {
         try {
-            const endpoint = getAuthEndpoint(payload.role || 'gym');
+            const role = payload.role || 'gym';
+            const endpoint = getAuthEndpoint(role);
             const response = await api.post(`/${endpoint}/signup/complete`, payload);
             const data = response.data;
 
             if (data.accessToken) {
                 localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('userRole', role);
             }
 
             return data;
@@ -67,11 +70,14 @@ export const AuthService = {
     login: async (payload: LoginPayload): Promise<LoginResponse> => {
         try {
             const role = payload.role || 'gym';
+            console.log("role : ", role)
             const endpoint = getAuthEndpoint(role);
             console.log(`AuthService: Logging in as ${role} at ${endpoint}`);
 
             const response = await api.post(`/${endpoint}/login`, payload);
+
             const data = response.data;
+
 
             if (data.accessToken) {
                 localStorage.setItem('accessToken', data.accessToken);
@@ -80,7 +86,13 @@ export const AuthService = {
 
             return data;
         } catch (error: any) {
-            console.error("AuthService Error:", error);
+            console.error("AuthService Error Details:", {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data,
+                url: error.config?.url,
+                baseURL: error.config?.baseURL
+            });
             throw new Error(error.response?.data?.message || 'Login failed');
         }
     },
@@ -90,8 +102,11 @@ export const AuthService = {
             const accessToken = localStorage.getItem('accessToken');
             if (!accessToken) return null;
 
+            const userRole = localStorage.getItem('userRole') as 'gym' | 'client' | 'trainer' | null;
+            const endpoint = getAuthEndpoint(userRole || 'gym');
+
             // Note: Interceptor adds the Authorization header
-            const response = await api.get('/gym-auth/auth/me');
+            const response = await api.get(`/${endpoint}/auth/me`);
             return response.data;
         } catch (error: any) {
             console.error("Token verification error:", error);

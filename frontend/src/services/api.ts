@@ -6,6 +6,8 @@ export const api = axios.create({
     withCredentials: true,
 })
 
+console.log("API Service Initialized with Base URL:", API_BASE_URL);
+
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -13,10 +15,10 @@ api.interceptors.request.use((config) => {
     }
     return config;
 });
-
 api.interceptors.response.use(
     (response) => response,
     (error) => {
+
         if (error.response?.status === 401) {
             // Optional: Handle token expiration globally
             // localStorage.removeItem("accessToken");

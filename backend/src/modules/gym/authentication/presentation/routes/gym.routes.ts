@@ -5,6 +5,7 @@ import { authenticate } from "../../infrastructure/http/middlewares/auth.middlew
 
 const router = Router();
 
+
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.SIGNUP_INIT, GymController.initiateSignup);
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.SIGNUP_COMPLETE, GymController.completeSignup);
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.LOGIN, GymController.login);
