@@ -189,44 +189,7 @@ export class GymController {
         }
     }
 
-    // JSON API Flow (Deprecated but kept for reference or mobile)
-    static async googleLogin(req: Request, res: Response, next: NextFunction) {
-        try {
-            const gymRepo = new GymRepositoryImpl();
-            const googleAuthService = new GoogleAuthService();
-            const useCase = new GoogleAuthGymUseCase(gymRepo, googleAuthService);
 
-            const { token } = req.body;
-
-            if (!token) {
-                return res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Google Token is required"
-                });
-            }
-
-            const resultDTO = await useCase.execute(token);
-
-            // Set refresh token in HTTP-only cookie
-            res.cookie('refreshToken', resultDTO.refreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax',
-                maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-            });
-
-            // Return access token in response body for localStorage
-            const { refreshToken, ...responsePayload } = resultDTO;
-
-            res.status(HttpStatus.OK).json({
-                status: ResponseStatus.SUCCESS,
-                ...responsePayload
-            });
-
-        } catch (error) {
-            next(error);
-        }
-    }
 
     static async verifyToken(req: Request, res: Response, next: NextFunction) {
         // middleware attaches user to req

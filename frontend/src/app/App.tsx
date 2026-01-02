@@ -6,7 +6,6 @@ const GymDashboard = lazy(() => import('../modules/dashboard/pages/GymDashboard'
 import './style.css';
 
 export default function App() {
-  console.log("checkking.......inside app.tx")
 
   return (
     <BrowserRouter>
