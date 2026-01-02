@@ -22,14 +22,16 @@ We have implemented the **Traditional Backend Redirect Mode**. This means the us
 
 ### Backend (`backend/.env`)
 Set the Redirect URI to match the Backend URL (not Frontend).
+**Also set `FRONTEND_URL` to your Vercel URL to redirect users correctly after login.**
 
 ```env
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
 GOOGLE_REDIRECT_URI=http://localhost:5000/api/v1/gym-auth/auth/google/callback
+FRONTEND_URL=https://your-vercel-app.vercel.app
 ```
 *(If using ngrok, update `GOOGLE_REDIRECT_URI` to the ngrok URL)*
-*(Also ensure `FRONTEND_URL` is set if you use it for redirection, e.g. `FRONTEND_URL=http://localhost:5173`)*
+*(If running locally, `FRONTEND_URL` defaults to `http://localhost:5173` if not set, but for Vercel you MUST set it)*
 
 ### Frontend (`frontend/.env`)
 Ensure `VITE_API_URL` points to your backend.
@@ -45,5 +47,5 @@ Restart **BOTH** Frontend and Backend for changes to take effect.
 1.  Click "Continue with Google".
 2.  Browser redirects to Backend -> Google.
 3.  Login on Google.
-4.  Browser redirects to Backend (`/callback`) -> Frontend (`/gym/dashboard`).
+4.  Browser redirects to Backend (`/callback`) -> Frontend (`FRONTEND_URL/gym/dashboard`).
 5.  You are logged in via Cookies.
