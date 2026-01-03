@@ -25,14 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async (shouldLoading = true) => {
         if (shouldLoading) setIsLoading(true);
 
-        // Optimization: Avoid 401 errors by only checking auth if we have a local hint
-        const storedRole = localStorage.getItem('userRole');
-        if (!storedRole) {
-            setUser(null);
-            setRole(null);
-            if (shouldLoading) setIsLoading(false);
-            return;
-        }
+        // Optimization removed: We must check auth because HttpOnly cookies might exist (e.g. via Google Auth redirect) even if localStorage is empty.
+        // The 401 error suppression in catch block handles the console cleaner.
 
         try {
             // 1. Probe as Gym Owner
