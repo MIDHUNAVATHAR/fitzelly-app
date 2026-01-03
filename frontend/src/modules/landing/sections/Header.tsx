@@ -73,7 +73,7 @@ export default function Header() {
                             onClick={() => scrollToSection('pricing')}
                             className={`font-medium transition-colors ${isScrolled ? 'text-slate-300 hover:text-white' : 'text-slate-900 hover:text-slate-900'}`}
                         >
-                            Pricing
+                            Pricingss
                         </button>
                     </nav>
 

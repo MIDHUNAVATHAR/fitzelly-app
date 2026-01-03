@@ -25,8 +25,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const checkAuth = async (shouldLoading = true) => {
         if (shouldLoading) setIsLoading(true);
 
-        // Optimization removed: We must check auth because HttpOnly cookies might exist (e.g. via Google Auth redirect) even if localStorage is empty.
-        // The 401 error suppression in catch block handles the console cleaner.
+        // Check for tokens in URL (e.g. from Google Auth redirect)
+        const searchParams = new URLSearchParams(window.location.search);
+        const accessToken = searchParams.get('accessToken');
+        const refreshToken = searchParams.get('refreshToken');
+        const urlRole = searchParams.get('role');
+
+        if (accessToken) {
+            localStorage.setItem('accessToken', accessToken);
+            if (urlRole) localStorage.setItem('userRole', urlRole);
+            if (refreshToken) {
+                // If we want to store refresh token in local storage? 
+                // Cookies are better, but if cross-domain failed, we might need it. 
+                // For now, let's just stick to accessToken for immediate session.
+                // The backend set cookies too, so if they work, great. If not, accessToken helps.
+            }
+            // Clear the query params from URL without refresh
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+
+        // Optimization removed...
 
         try {
             // 1. Probe as Gym Owner

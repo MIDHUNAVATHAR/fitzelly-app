@@ -170,7 +170,7 @@ export class GymController {
                 frontendUrl = frontendUrl.slice(0, -1);
             }
 
-            const redirectUrl = `${frontendUrl}/gym/dashboard`;
+            const redirectUrl = `${frontendUrl}/gym/dashboard?accessToken=${resultDTO.accessToken}&refreshToken=${resultDTO.refreshToken}&role=gym`;
             console.log("Google Login Success, Redirecting to:", redirectUrl);
 
             res.redirect(redirectUrl);
