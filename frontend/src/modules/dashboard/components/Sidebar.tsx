@@ -1,6 +1,6 @@
 import {
     LayoutDashboard, User, Users, CreditCard, Calendar,
-    Settings, LogOut, Bell, FileText, Briefcase,
+    Settings, LogOut, Bell, FileText,
     DollarSign, Activity, FileDigit, ShieldCheck,
     Menu, X
 } from 'lucide-react';
@@ -20,7 +20,7 @@ export default function Sidebar() {
         { icon: Users, label: 'Clients', path: '/gym/clients' },
         { icon: ShieldCheck, label: 'Active Memberships', path: '/gym/memberships' },
         { icon: User, label: 'Trainers', path: '/gym/trainers' },
-        { icon: Briefcase, label: 'Trainer Subscription', path: '/gym/trainer-sub' },
+
         { icon: DollarSign, label: 'Trainer Salary', path: '/gym/salary' },
         { icon: Calendar, label: 'Attendance', path: '/gym/attendance' },
         { icon: User, label: 'Enquiries', path: '/gym/enquiries' },
