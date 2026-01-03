@@ -38,11 +38,11 @@ export class SignupGymUseCase {
         // 4. Create Entity 
         const gymToCreate = new Gym(
             "",
-            request.gymName,
             request.email,
             hashedPassword,
             new Date(),
             new Date()
+            // name is optional and omitted
         );
 
         const createdGym = await this.gymRepository.create(gymToCreate);

@@ -13,7 +13,7 @@ interface SignUpModalProps {
 
 export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignUpModalProps) {
     const {
-        gymName, setGymName,
+        // gymName, setGymName, // removed
         email, setEmail,
         password, setPassword,
         confirmPassword, setConfirmPassword,
@@ -86,17 +86,6 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
                 {/* STEP 1: Details Form */}
                 {step === 'DETAILS' && (
                     <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleInitiateSignUp(); }}>
-                        <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-1">Gym Name</label>
-                            <input
-                                type="text"
-                                value={gymName}
-                                onChange={(e) => setGymName(e.target.value)}
-                                placeholder="Fit Zone"
-                                className="w-full px-4 py-3 bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent text-slate-900 placeholder:text-slate-400 transition-all"
-                            />
-                            {fieldErrors.gymName && <p className="text-red-500 text-xs mt-1">{fieldErrors.gymName}</p>}
-                        </div>
 
                         <div>
                             <label className="block text-sm font-semibold text-slate-700 mb-1">Email</label>

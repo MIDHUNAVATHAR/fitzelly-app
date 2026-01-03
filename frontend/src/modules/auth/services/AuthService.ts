@@ -13,7 +13,6 @@ export interface LoginPayload {
 }
 
 export interface SignupPayload {
-    gymName: string;
     email: string;
     password: string;
     otp: string;

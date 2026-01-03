@@ -6,10 +6,11 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { AuthService } from '../../auth/services/AuthService';
+import { useAuth } from '../../auth/context/AuthContext';
 
 export default function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const { logout } = useAuth();
     const navigate = useNavigate();
 
     const menuItems = [
@@ -32,7 +33,7 @@ export default function Sidebar() {
 
     const handleLogout = async () => {
         try {
-            await AuthService.logout();
+            await logout(); // Use context logout
             navigate('/');
         } catch (error) {
             console.error('Logout failed:', error);

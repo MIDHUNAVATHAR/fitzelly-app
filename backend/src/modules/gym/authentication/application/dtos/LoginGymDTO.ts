@@ -8,7 +8,7 @@ export interface LoginGymResponseDTO {
     refreshToken: string;
     user: {
         id: string;
-        name: string;
+        ownerName?: string;
         email: string;
     }
 }

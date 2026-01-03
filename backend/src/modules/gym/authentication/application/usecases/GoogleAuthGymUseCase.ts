@@ -27,11 +27,11 @@ export class GoogleAuthGymUseCase {
 
             const gymToCreate = new Gym(
                 "",
-                name,
                 email,
                 placeholderPasswordHash, // User must reset password if they want email/pass login later or we handle isGoogleAuth field in DB
                 new Date(),
-                new Date()
+                new Date(),
+                name // Google provided name -> ownerName
             );
 
             gym = await this.gymRepository.create(gymToCreate);

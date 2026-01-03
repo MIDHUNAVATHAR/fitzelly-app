@@ -5,17 +5,17 @@ export class GymPersistenceMapper {
     static toDomain(doc: GymDocument): Gym {
         return new Gym(
             doc._id.toString(),
-            doc.name,
             doc.email,
             doc.passwordHash,
             doc.createdAt,
-            doc.updatedAt
+            doc.updatedAt,
+            doc.ownerName
         );
     }
 
     static toPersistence(gym: Gym) {
         return {
-            name: gym.name,
+            ownerName: gym.ownerName,
             email: gym.email,
             passwordHash: gym.passwordHash
         };

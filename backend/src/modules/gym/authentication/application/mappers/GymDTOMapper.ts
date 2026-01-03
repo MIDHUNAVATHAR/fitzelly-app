@@ -8,7 +8,7 @@ export class GymDTOMapper {
             refreshToken,
             user: {
                 id: gym.id,
-                name: gym.name,
+                ...(gym.ownerName ? { ownerName: gym.ownerName } : {}),
                 email: gym.email
             }
         };

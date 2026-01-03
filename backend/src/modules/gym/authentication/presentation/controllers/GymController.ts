@@ -47,7 +47,6 @@ export class GymController {
             const useCase = new SignupGymUseCase(gymRepo, otpRepo, passwordHasher);
 
             const requestDTO: CompleteSignupRequest = {   //CompleteSignpRequest is the extension for SignupDTO 
-                gymName: req.body.gymName,
                 email: req.body.email,
                 password: req.body.password,
                 otp: req.body.otp
@@ -193,7 +192,7 @@ export class GymController {
             success: true,
             user: {
                 id: user.id,
-                name: user.name,
+                ...(user.ownerName ? { ownerName: user.ownerName } : {}),
                 email: user.email
             }
         })
@@ -204,8 +203,15 @@ export class GymController {
             // Clear refresh token cookie
             res.clearCookie('refreshToken', {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: 'lax'
+                secure: true,
+                sameSite: 'none'
+            });
+
+            // Clear access token cookie (used in Google Auth)
+            res.clearCookie('accessToken', {
+                httpOnly: true,
+                secure: true,
+                sameSite: 'none'
             });
 
             return res.status(HttpStatus.OK).json({

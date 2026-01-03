@@ -1,5 +1,4 @@
 export interface SignupGymRequestDTO {
-    gymName: string;
     email: string;
     password: string;
 }
@@ -9,7 +8,7 @@ export interface SignupGymResponseDTO {
     refreshToken: string;
     user: {
         id: string;
-        name: string;
+        ownerName?: string;
         email: string;
     }
 }

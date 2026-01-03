@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface GymDocument extends Document {
-    name: string;
+    ownerName: string;
     email: string;
     passwordHash: string;
     createdAt: Date;
@@ -9,7 +9,7 @@ export interface GymDocument extends Document {
 }
 
 const GymSchema = new Schema<GymDocument>({
-    name: { type: String, required: true },
+    ownerName: { type: String, required: false },
     email: { type: String, required: true, unique: true },
     passwordHash: { type: String, required: true },
 }, { timestamps: true });

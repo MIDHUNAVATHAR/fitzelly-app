@@ -3,7 +3,7 @@ import { AuthService } from '../services/AuthService';
 
 export function useSignUp() {
     // const navigate = useNavigate();
-    const [gymName, setGymName] = useState('');
+    // const [gymName, setGymName] = useState(''); // Removed
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,7 +14,7 @@ export function useSignUp() {
     const [isLoading, setIsLoading] = useState(false);
     const [generalError, setGeneralError] = useState('');
     const [fieldErrors, setFieldErrors] = useState<{
-        gymName?: string;
+        // gymName?: string;
         email?: string;
         password?: string;
         confirmPassword?: string;
@@ -25,7 +25,7 @@ export function useSignUp() {
         const errors: typeof fieldErrors = {};
         let isValid = true;
 
-        if (!gymName.trim()) { errors.gymName = 'Gym name is required'; isValid = false; }
+        // if (!gymName.trim()) { errors.gymName = 'Gym name is required'; isValid = false; }
         if (!email) { errors.email = 'Email is required'; isValid = false; }
         else if (!/\S+@\S+\.\S+/.test(email)) { errors.email = 'Please enter a valid email address'; isValid = false; }
         if (!password) { errors.password = 'Password is required'; isValid = false; }
@@ -61,7 +61,7 @@ export function useSignUp() {
         setIsLoading(true);
         try {
             await AuthService.register({
-                gymName,
+                // gymName, // Removed
                 email,
                 password,
                 otp
@@ -82,7 +82,7 @@ export function useSignUp() {
 
     const reset = () => {
         setStep('DETAILS');
-        setGymName('');
+        // setGymName(''); // Removed
         setEmail('');
         setPassword('');
         setConfirmPassword('');
@@ -92,7 +92,7 @@ export function useSignUp() {
     };
 
     return {
-        gymName, setGymName,
+        // gymName, setGymName, // Removed
         email, setEmail,
         password, setPassword,
         confirmPassword, setConfirmPassword,
