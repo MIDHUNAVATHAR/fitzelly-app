@@ -119,23 +119,17 @@ export const AuthService = {
         }
     },
 
-    verifyToken: async (): Promise<any> => {
+    verifyToken: async (role?: 'gym' | 'client' | 'trainer'): Promise<any> => {
         try {
-            const accessToken = localStorage.getItem('accessToken');
-            if (!accessToken) return null;
+            // Prioritize passed role, fallback to localStorage (for persistence), default to gym
+            const targetRole = role || (localStorage.getItem('userRole') as any) || 'gym';
+            const endpoint = getAuthEndpoint(targetRole);
 
-            const userRole = localStorage.getItem('userRole') as 'gym' | 'client' | 'trainer' | null;
-            const endpoint = getAuthEndpoint(userRole || 'gym');
-
-            // Note: Interceptor adds the Authorization header
             const response = await api.get(`/${endpoint}/auth/me`);
             return response.data;
         } catch (error: any) {
-            console.error("Token verification error:", error);
-            if (error.response?.status === 401) {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('userRole');
-            }
+            // console.error("Token verification error:", error); 
+            // Silent fail is better for probing
             return null;
         }
     },

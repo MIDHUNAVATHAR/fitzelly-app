@@ -25,13 +25,7 @@ export class GymController {
 
             const { email } = req.body;
 
-            if (!email) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Email is required"
-                });
-                return;
-            }
+
 
             await useCase.execute({ email });
 
@@ -59,13 +53,7 @@ export class GymController {
                 otp: req.body.otp
             };
 
-            if (!requestDTO.gymName || !requestDTO.email || !requestDTO.password || !requestDTO.otp) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Missing required fields"
-                });
-                return;
-            }
+
 
             const resultDTO = await useCase.execute(requestDTO);
 
@@ -101,13 +89,7 @@ export class GymController {
                 password: req.body.password
             };
 
-            if (!requestDTO.email || !requestDTO.password) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Missing email or password"
-                });
-                return;
-            }
+
 
             const resultDTO = await useCase.execute(requestDTO);
 
@@ -246,13 +228,7 @@ export class GymController {
 
             const { email } = req.body;
 
-            if (!email) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Email is required"
-                });
-                return;
-            }
+
 
             await useCase.execute({ email });
 
@@ -274,22 +250,7 @@ export class GymController {
 
             const { email, otp, newPassword } = req.body;
 
-            if (!email || !otp || !newPassword) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Email, OTP, and new password are required"
-                });
-                return;
-            }
 
-            // Validate password strength (optional but recommended)
-            if (newPassword.length < 6) {
-                res.status(HttpStatus.BAD_REQUEST).json({
-                    status: ResponseStatus.ERROR,
-                    message: "Password must be at least 6 characters long"
-                });
-                return;
-            }
 
             await useCase.execute({ email, otp, newPassword });
 

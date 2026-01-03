@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SignInModal from '../components/SignInModal';
 import SignUpModal from '../components/SignUpModal';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
-import { AuthService } from '../../auth/services/AuthService';
+import { useAuth } from '../../auth/context/AuthContext';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -13,59 +13,19 @@ export default function Header() {
     const [isSignUpModalOpen, setIsSignUpModalOpen] = useState(false);
     const [isForgotPasswordModalOpen, setIsForgotPasswordModalOpen] = useState(false);
 
-    // Initialize auth state from localStorage to prevent flash of "Sign In" button
-    const [isLoggedIn, setIsLoggedIn] = useState(() => !!localStorage.getItem('accessToken'));
-    const [userRole, setUserRole] = useState<string | null>(() => localStorage.getItem('userRole'));
+    const { user, role, isLoading } = useAuth();
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const verifyAuth = async () => {
-            try {
-                const response = await AuthService.verifyToken();
-                console.log(response)
-
-                if (response && response.user) {
-                    console.log("Auth verified: Logged in", response);
-                    setIsLoggedIn(true);
-                    // Get role from localStorage (set during login/signup)
-                    const storedRole = localStorage.getItem('userRole');
-                    setUserRole(storedRole);
-                    console.log("User role set to:", storedRole);
-                } else {
-                    console.log("Auth verified: Not logged in");
-                    setIsLoggedIn(false);
-                    setUserRole(null);
-                }
-            } catch (err) {
-                console.error("Auth verification error:", err);
-                setIsLoggedIn(false);
-                setUserRole(null);
-            }
-        };
-
-        verifyAuth();
-
-        const handleAuthChange = () => {
-            console.log("Auth change event received, re-verifying...");
-            verifyAuth();
-        };
-
-        window.addEventListener('auth-change', handleAuthChange);
-
-        return () => {
-            window.removeEventListener('auth-change', handleAuthChange);
-        };
-    }, []);
-
     const getDashboardInfo = () => {
-        const role = userRole || 'gym';
+        const currentRole = role || 'gym';
         return {
-            path: `/${role}/dashboard`,
-            label: `${role.charAt(0).toUpperCase() + role.slice(1)} Dashboard`
+            path: `/${currentRole}/dashboard`,
+            label: `${currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} Dashboard`
         };
     };
 
     const dashboard = getDashboardInfo();
+    const isLoggedIn = !!user;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -119,7 +79,9 @@ export default function Header() {
 
                     {/* Desktop Auth Buttons */}
                     <div className="hidden md:flex items-center gap-4">
-                        {isLoggedIn ? (
+                        {isLoading ? (
+                            <div className="w-6 h-6 border-2 border-[#00ffd5] border-t-transparent rounded-full animate-spin"></div>
+                        ) : isLoggedIn ? (
                             <button
                                 onClick={() => navigate(dashboard.path)}
                                 className="bg-[#00ffd5] text-slate-900 px-5 py-2.5 rounded-lg font-bold hover:bg-[#00e6c0] transition-colors cursor-pointer"
