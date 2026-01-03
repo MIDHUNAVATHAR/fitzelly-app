@@ -9,6 +9,7 @@ import './style.css';
 
 const GymDashboard = lazy(() => import('../modules/dashboard/pages/GymDashboard'));
 const GymDetails = lazy(() => import('../modules/dashboard/pages/GymDetails'));
+const GymPlans = lazy(() => import('../modules/dashboard/pages/GymPlans'));
 
 export default function App() {
 
@@ -41,6 +42,17 @@ export default function App() {
               <AuthGuard allowedRoles={['gym']}>
                 <Suspense fallback={<DashboardLoader />}>
                   <GymDetails />
+                </Suspense>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="/gym/plans"
+            element={
+              <AuthGuard allowedRoles={['gym']}>
+                <Suspense fallback={<DashboardLoader />}>
+                  <GymPlans />
                 </Suspense>
               </AuthGuard>
             }

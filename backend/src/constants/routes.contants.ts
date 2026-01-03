@@ -12,6 +12,7 @@ export const SYSTEM_ROUTES = {
 ================================*/
 export const MODULE_ROUTES = {
     GYM_AUTH: "/gym-auth",
+    GYM_PLAN: "/gym-plan",
     // CLIENT_AUTH: "/client-auth",
     // TRAINER_AUTH: "/trainer-auth"
 } as const;
