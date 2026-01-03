@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { AuthService } from '../services/AuthService';
 
 interface User {
@@ -11,7 +11,7 @@ interface AuthContextType {
     user: User | null;
     role: 'gym' | 'client' | 'trainer' | null;
     isLoading: boolean;
-    checkAuth: () => Promise<void>;
+    checkAuth: (shouldLoading?: boolean) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -22,8 +22,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [role, setRole] = useState<'gym' | 'client' | 'trainer' | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const checkAuth = async () => {
-        setIsLoading(true);
+    const checkAuth = async (shouldLoading = true) => {
+        if (shouldLoading) setIsLoading(true);
+
+        // Optimization: Avoid 401 errors by only checking auth if we have a local hint
+        const storedRole = localStorage.getItem('userRole');
+        if (!storedRole) {
+            setUser(null);
+            setRole(null);
+            if (shouldLoading) setIsLoading(false);
+            return;
+        }
+
         try {
             // 1. Probe as Gym Owner
             // We pass 'gym' explicitly to verifyToken usage of api endpoint /gym-auth/auth/me
@@ -46,12 +56,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setRole(null);
             localStorage.removeItem('userRole'); // Clear valid role if session invalid
 
-        } catch (error) {
-            console.error("Auth Check Failed", error);
+        } catch (error: any) {
+            // 401 is expected if user is not logged in
+            if (error?.response?.status !== 401) {
+                console.error("Auth Check Failed", error);
+            }
             setUser(null);
             setRole(null);
         } finally {
-            setIsLoading(false);
+            if (shouldLoading) setIsLoading(false);
         }
     };
 
@@ -67,8 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         checkAuth();
         // Listen for custom event if triggered elsewhere
-        window.addEventListener('auth-change', checkAuth);
-        return () => window.removeEventListener('auth-change', checkAuth);
+        const handleAuthChange = () => checkAuth();
+        window.addEventListener('auth-change', handleAuthChange);
+        return () => window.removeEventListener('auth-change', handleAuthChange);
     }, []);
 
     return (

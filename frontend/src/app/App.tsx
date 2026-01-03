@@ -8,6 +8,7 @@ import RedirectIfAuthenticated from '../modules/auth/components/RedirectIfAuthen
 import './style.css';
 
 const GymDashboard = lazy(() => import('../modules/dashboard/pages/GymDashboard'));
+const GymDetails = lazy(() => import('../modules/dashboard/pages/GymDetails'));
 
 export default function App() {
 
@@ -29,6 +30,17 @@ export default function App() {
               <AuthGuard allowedRoles={['gym']}>
                 <Suspense fallback={<DashboardLoader />}>
                   <GymDashboard />
+                </Suspense>
+              </AuthGuard>
+            }
+          />
+
+          <Route
+            path="/gym/details"
+            element={
+              <AuthGuard allowedRoles={['gym']}>
+                <Suspense fallback={<DashboardLoader />}>
+                  <GymDetails />
                 </Suspense>
               </AuthGuard>
             }

@@ -1,6 +1,6 @@
 import { useAuth } from "../context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { ReactNode } from "react";
+import type { ReactNode } from "react";
 
 export default function RedirectIfAuthenticated({ children }: { children: ReactNode }) {
     const { user, role, isLoading } = useAuth();

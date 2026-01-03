@@ -65,9 +65,9 @@ export default function Sidebar() {
                 ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                 md:top-0 md:relative pt-16 md:pt-0
             `}>
-                <div className="h-full flex flex-col overflow-y-auto custom-scrollbar">
-                    {/* Logo (Desktop) */}
-                    <div className="hidden md:flex items-center gap-3 p-6 border-b border-slate-100">
+                <div className="h-full flex flex-col">
+                    {/* Logo (Desktop) - Fixed at top */}
+                    <div className="hidden md:flex items-center gap-3 p-6 border-b border-slate-100 flex-shrink-0">
                         <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm">
                             <Activity className="text-slate-900 w-6 h-6" />
                         </div>
@@ -77,8 +77,8 @@ export default function Sidebar() {
                         </div>
                     </div>
 
-                    {/* Menu Items */}
-                    <nav className="flex-1 px-4 py-6 space-y-1">
+                    {/* Menu Items - Scrollable */}
+                    <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto custom-scrollbar">
                         {menuItems.map((item) => (
                             <NavLink
                                 key={item.path}
@@ -102,8 +102,8 @@ export default function Sidebar() {
                         ))}
                     </nav>
 
-                    {/* Logout Section */}
-                    <div className="p-4 border-t border-slate-100">
+                    {/* Logout Section - Fixed at bottom */}
+                    <div className="p-4 border-t border-slate-100 flex-shrink-0">
                         <button
                             onClick={handleLogout}
                             className="flex items-center gap-3 px-4 py-3 w-full text-left text-red-500 hover:bg-red-50 rounded-xl transition-colors"

@@ -193,6 +193,18 @@ export class GymController {
             user: {
                 id: user.id,
                 ...(user.ownerName ? { ownerName: user.ownerName } : {}),
+                ...(user.gymName ? { gymName: user.gymName } : {}),
+                ...(user.phone ? { phone: user.phone } : {}),
+                ...(user.description ? { description: user.description } : {}),
+                ...(user.address ? {
+                    address: {
+                        ...(user.address.street ? { street: user.address.street } : {}),
+                        ...(user.address.city ? { city: user.address.city } : {}),
+                        ...(user.address.state ? { state: user.address.state } : {}),
+                        ...(user.address.pincode ? { pincode: user.address.pincode } : {}),
+                        ...(user.address.mapLink ? { mapLink: user.address.mapLink } : {}),
+                    }
+                } : {}),
                 email: user.email
             }
         })
@@ -268,6 +280,8 @@ export class GymController {
             next(error);
         }
     }
+
+
 }
 
 

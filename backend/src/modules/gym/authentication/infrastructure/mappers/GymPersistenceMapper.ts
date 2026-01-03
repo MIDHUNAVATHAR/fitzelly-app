@@ -9,13 +9,33 @@ export class GymPersistenceMapper {
             doc.passwordHash,
             doc.createdAt,
             doc.updatedAt,
-            doc.ownerName
+            doc.ownerName,
+            doc.gymName,
+            doc.phone,
+            doc.description,
+            doc.address ? {
+                street: doc.address.street,
+                city: doc.address.city,
+                state: doc.address.state,
+                pincode: doc.address.pincode,
+                mapLink: doc.address.mapLink
+            } : undefined
         );
     }
 
     static toPersistence(gym: Gym) {
         return {
             ownerName: gym.ownerName,
+            gymName: gym.gymName,
+            phone: gym.phone,
+            description: gym.description,
+            address: gym.address ? {
+                street: gym.address.street,
+                city: gym.address.city,
+                state: gym.address.state,
+                pincode: gym.address.pincode,
+                mapLink: gym.address.mapLink
+            } : undefined,
             email: gym.email,
             passwordHash: gym.passwordHash
         };

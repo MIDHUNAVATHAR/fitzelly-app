@@ -6,7 +6,7 @@ import { AppError } from "./core/errors/AppError.js";
 import { HealthController } from "./core/controllers/HealthController.js";
 import { API_ROOT, ENDPOINTS } from "./constants/api.constants.js";
 import { gymAuthRouter } from "./modules/gym/authentication/presentation/routes/gym.routes.js";
-
+import { gymProfileRouter } from "./modules/gym/gym-profile/presentation/routes/gym-profile.routes.js";
 
 class App {
     public app: Application;
@@ -45,9 +45,8 @@ class App {
         // health check
         this.app.get(`${API_ROOT.V1}${ENDPOINTS.SYSTEM.HEALTH}`, HealthController.check);
 
-
-
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymAuthRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymProfileRouter);
 
         // Placeholder routers for Client and Trainer
         // const notImplemented = (req: Request, res: Response) => {

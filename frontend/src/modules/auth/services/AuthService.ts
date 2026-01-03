@@ -133,6 +133,18 @@ export const AuthService = {
         }
     },
 
+    updateProfile: async (payload: any): Promise<any> => {
+        try {
+            const role = localStorage.getItem('userRole') || 'gym';
+            const endpoint = getAuthEndpoint(role);
+            const response = await api.put(`/${endpoint}/profile`, payload);
+            return response.data;
+        } catch (error: any) {
+            console.error("Profile update failed:", error);
+            throw new Error(error.response?.data?.message || 'Profile update failed');
+        }
+    },
+
     logout: async (): Promise<void> => {
         try {
             const userRole = localStorage.getItem('userRole') as any;
