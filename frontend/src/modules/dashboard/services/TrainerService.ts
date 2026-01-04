@@ -8,6 +8,7 @@ export interface Trainer {
     specialization: string;
     monthlySalary: number;
     status: 'active' | 'blocked' | 'pending';
+    isEmailVerified: boolean;
     createdAt: string;
 }
 

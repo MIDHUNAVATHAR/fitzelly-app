@@ -26,6 +26,7 @@ export interface TrainerResponseDTO {
     specialization: string;
     monthlySalary: number;
     status: 'active' | 'blocked' | 'pending';
+    isEmailVerified: boolean;
     createdAt: Date;
 }
 

@@ -1,29 +1,25 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-export interface IGymTrainerDocument extends Document {
+export interface IGymClientDocument extends Document {
     gymId: mongoose.Types.ObjectId;
     fullName: string;
     email: string;
     phone: string;
-    specialization: string;
-    monthlySalary: number;
-    status: 'active' | 'blocked' | 'pending';
+    status: 'active' | 'inactive' | 'expired';
     isEmailVerified: boolean;
     isDelete: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
 
-const GymTrainerSchema = new Schema<IGymTrainerDocument>({
+const GymClientSchema = new Schema<IGymClientDocument>({
     gymId: { type: Schema.Types.ObjectId, ref: 'Gym', required: true },
     fullName: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    specialization: { type: String, default: '' },
-    monthlySalary: { type: Number, default: 0 },
-    status: { type: String, enum: ['active', 'blocked', 'pending'], default: 'pending' },
+    status: { type: String, enum: ['active', 'inactive', 'expired'], default: 'inactive' },
     isEmailVerified: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false }
 }, { timestamps: true });
 
-export const GymTrainerModel = mongoose.model<IGymTrainerDocument>('GymTrainer', GymTrainerSchema);
+export const GymClientModel = mongoose.model<IGymClientDocument>('GymClient', GymClientSchema);

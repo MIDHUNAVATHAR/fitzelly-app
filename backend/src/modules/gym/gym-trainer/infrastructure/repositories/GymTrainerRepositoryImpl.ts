@@ -14,6 +14,7 @@ export class GymTrainerRepositoryImpl implements IGymTrainerRepository {
             specialization: trainer.specialization,
             monthlySalary: trainer.monthlySalary,
             status: trainer.status,
+            isEmailVerified: trainer.isEmailVerified,
             isDelete: trainer.isDelete
         };
 
@@ -53,6 +54,7 @@ export class GymTrainerRepositoryImpl implements IGymTrainerRepository {
             specialization: trainer.specialization,
             monthlySalary: trainer.monthlySalary,
             status: trainer.status,
+            isEmailVerified: trainer.isEmailVerified,
             isDelete: trainer.isDelete,
             updatedAt: new Date()
         };
