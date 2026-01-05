@@ -2,7 +2,7 @@ import {
     LayoutDashboard, User, Users, CreditCard, Calendar,
     Settings, LogOut, Bell, FileText,
     IndianRupee, Activity, FileDigit, ShieldCheck,
-    Menu, X
+    Menu, X, Dumbbell
 } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -20,6 +20,7 @@ export default function Sidebar() {
         { icon: Users, label: 'Clients', path: '/gym/clients' },
         { icon: ShieldCheck, label: 'Active Memberships', path: '/gym/memberships' },
         { icon: User, label: 'Trainers', path: '/gym/trainers' },
+        { icon: Dumbbell, label: 'Equipment Slot', path: '/gym/equipment' },
 
         { icon: IndianRupee, label: 'Trainer Salary', path: '/gym/salary' },
         { icon: Calendar, label: 'Attendance', path: '/gym/attendance' },
