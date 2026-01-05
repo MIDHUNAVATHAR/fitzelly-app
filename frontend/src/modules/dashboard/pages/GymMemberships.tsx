@@ -63,7 +63,7 @@ export default function GymMemberships() {
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalMode, setModalMode] = useState<'view'>('view');
+    //const [modalMode, setModalMode] = useState<'view'>('view');
     const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
 
     // Toast State
