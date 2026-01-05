@@ -63,7 +63,6 @@ export default function GymMemberships() {
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
-    //const [modalMode, setModalMode] = useState<'view'>('view');
     const [selectedMembership, setSelectedMembership] = useState<Membership | null>(null);
 
     // Toast State
@@ -302,8 +301,7 @@ export default function GymMemberships() {
         setTimeout(() => setToast({ message: '', show: false }), 3000);
     };
 
-    const handleOpenModal = (mode: 'view', membership: Membership) => {
-        setModalMode(mode);
+    const handleOpenModal = (membership: Membership) => {
         setSelectedMembership(membership);
         setIsModalOpen(true);
     };
@@ -478,7 +476,7 @@ export default function GymMemberships() {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={() => handleOpenModal('view', membership)}
+                                                    onClick={() => handleOpenModal(membership)}
                                                     className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
                                                 >
                                                     <Eye size={18} />
