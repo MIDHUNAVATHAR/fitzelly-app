@@ -79,7 +79,9 @@ api.interceptors.response.use(
                 // If refresh fails, clear everything and redirect
                 localStorage.removeItem("accessToken");
                 localStorage.removeItem("userRole");
-                window.location.href = '/';
+                if (window.location.pathname !== '/') {
+                    window.location.href = '/';
+                }
                 return Promise.reject(err);
             } finally {
                 isRefreshing = false;
