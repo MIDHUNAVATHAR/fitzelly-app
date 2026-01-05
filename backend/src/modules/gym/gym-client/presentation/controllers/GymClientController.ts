@@ -81,7 +81,7 @@ export class GymClientController {
             const useCase = new DeleteClientUseCase(repo);
             const user = (req as any).user;
 
-            await useCase.execute(req.params.id, user.id);
+            await useCase.execute(req.params.id as string, user.id);
 
             res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,

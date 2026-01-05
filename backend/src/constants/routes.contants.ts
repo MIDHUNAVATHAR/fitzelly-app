@@ -15,6 +15,7 @@ export const MODULE_ROUTES = {
     GYM_PLAN: "/gym-plan",
     GYM_TRAINER: "/gym-trainer",
     GYM_CLIENT: "/gym-client",
+    GYM_MEMBERSHIP: "/gym-membership",
     // CLIENT_AUTH: "/client-auth",
     // TRAINER_AUTH: "/trainer-auth"
 } as const;

@@ -45,4 +45,18 @@ export class GymClient {
             new Date(),
         );
     }
+    updateStatus(newStatus: 'active' | 'inactive' | 'expired'): GymClient {
+        return new GymClient(
+            this.id,
+            this.gymId,
+            this.fullName,
+            this.email,
+            this.phone,
+            newStatus,
+            this.isEmailVerified,
+            this.isDelete,
+            this.createdAt,
+            new Date(),
+        );
+    }
 }

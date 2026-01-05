@@ -10,6 +10,7 @@ import { gymProfileRouter } from "./modules/gym/gym-profile/presentation/routes/
 import { gymTrainerRouter } from "./modules/gym/gym-trainer/presentation/routes/gym-trainer.routes.js";
 import { gymClientRouter } from "./modules/gym/gym-client/presentation/routes/gym-client.routes.js";
 import { gymPlanRouter } from "./modules/gym/gym-plan/presentation/routes/gym-plan.routes.js";
+import { gymMembershipRouter } from "./modules/gym/gym-membership/presentation/routes/gym-membership.routes.js";
 
 class App {
     public app: Application;
@@ -53,6 +54,7 @@ class App {
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_PLAN}`, gymPlanRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_TRAINER}`, gymTrainerRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_CLIENT}`, gymClientRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_MEMBERSHIP}`, gymMembershipRouter);
         // Actually constants usually have GYM_TRAINER. Let's check api.constants.
         // For now I'll use a new constant or just hardcode if needed, but wait, 
         // user said "in the backend, all trainer related codes belongs to gym-trainer folder"

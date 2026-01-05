@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
 
@@ -13,6 +13,18 @@ export default function GymClients() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
+    const filterRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (filterRef.current && !filterRef.current.contains(event.target as Node)) {
+                setIsFilterOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -149,23 +161,51 @@ export default function GymClients() {
                         className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
                     />
                 </div>
-                <div className="relative min-w-[200px]">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                        <Filter size={18} />
-                    </div>
-                    <select
-                        value={statusFilter}
-                        onChange={(e) => {
-                            setStatusFilter(e.target.value);
-                            setPage(1); // Reset to page 1 on filter change
-                        }}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all appearance-none cursor-pointer"
+                {/* Custom Dropdown Filter */}
+                <div className="relative" ref={filterRef}>
+                    <button
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors min-w-[160px] justify-between"
                     >
-                        <option value="">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="expired">Expired</option>
-                    </select>
+                        <div className="flex items-center gap-2">
+                            <Filter size={18} className="text-slate-400" />
+                            <span>
+                                {statusFilter === '' ? 'All Status' :
+                                    statusFilter === 'active' ? 'Active' :
+                                        statusFilter === 'inactive' ? 'Inactive' : 'Expired'}
+                            </span>
+                        </div>
+                        <ChevronDown size={16} className={`text-slate-400 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {isFilterOpen && (
+                        <div className="absolute top-full left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-2 z-20 animate-in fade-in zoom-in duration-200">
+                            {[
+                                { value: '', label: 'All Status' },
+                                { value: 'active', label: 'Active' },
+                                { value: 'inactive', label: 'Inactive' },
+                                { value: 'expired', label: 'Expired' }
+                            ].map((option) => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => {
+                                        setStatusFilter(option.value);
+                                        setPage(1);
+                                        setIsFilterOpen(false);
+                                    }}
+                                    className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center justify-between transition-colors
+                                        ${statusFilter === option.value
+                                            ? 'bg-orange-50 text-orange-600'
+                                            : 'text-slate-600 hover:bg-slate-50'
+                                        }
+                                    `}
+                                >
+                                    {option.label}
+                                    {statusFilter === option.value && <Check size={16} />}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
