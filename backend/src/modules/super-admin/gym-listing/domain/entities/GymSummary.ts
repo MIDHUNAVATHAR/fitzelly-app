@@ -1,0 +1,20 @@
+export class GymSummary {
+    constructor(
+        public readonly id: string,
+        public readonly gymName: string,
+        public readonly ownerName: string,
+        public readonly email: string,
+        public readonly phone: string,
+        public readonly city: string,
+        public readonly state: string,
+        public readonly joinedAt: Date
+    ) { }
+}
+
+export interface PaginatedGyms {
+    gyms: GymSummary[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}

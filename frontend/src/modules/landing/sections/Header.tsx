@@ -17,6 +17,14 @@ export default function Header() {
     const navigate = useNavigate();
 
     const getDashboardInfo = () => {
+        // Explicitly check for super-admin role
+        if (role === 'super-admin') {
+            return {
+                path: '/fitzelly-hq',
+                label: 'Super Admin Dashboard'
+            };
+        }
+
         const currentRole = role || 'gym';
         return {
             path: `/${currentRole}/dashboard`,

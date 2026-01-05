@@ -15,6 +15,7 @@ import { gymEquipmentRoutes } from "./modules/gym/gym-equipment/presentation/rou
 import { clientAuthRoutes } from "./modules/client/authentication/presentation/routes/clientAuthRoutes.js";
 import { trainerAuthRoutes } from "./modules/trainer/authentication/presentation/routes/trainerAuthRoutes.js";
 import { superAdminAuthRoutes } from "./modules/super-admin/authentication/presentation/routes/superAdminAuthRoutes.js";
+import { gymListingRouter } from "./modules/super-admin/gym-listing/presentation/routes/gymListingRoutes.js";
 
 class App {
     public app: Application;
@@ -60,6 +61,7 @@ class App {
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_AUTH}`, superAdminAuthRoutes);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_GYM_LISTING}`, gymListingRouter);
     }
 
     private setupErrorHandling(): void {

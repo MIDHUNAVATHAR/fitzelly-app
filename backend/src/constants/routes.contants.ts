@@ -19,7 +19,8 @@ export const MODULE_ROUTES = {
     GYM_EQUIPMENT: "/gym-equipment",
     CLIENT_AUTH: "/client-auth",
     TRAINER_AUTH: "/trainer-auth",
-    SUPER_ADMIN_AUTH: "/super-admin-auth"
+    SUPER_ADMIN_AUTH: "/super-admin-auth",
+    SUPER_ADMIN_GYM_LISTING: "/super-admin/gyms"
 } as const;
 
 
