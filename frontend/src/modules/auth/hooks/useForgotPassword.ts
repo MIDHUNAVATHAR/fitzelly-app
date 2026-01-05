@@ -44,7 +44,7 @@ export const useForgotPassword = (role: UserRole = 'gym') => {
 
         try {
             const endpoint = getAuthEndpoint(role);
-            await api.post(`/${endpoint}/forgot-password/reset`, { email, otp, newPassword });
+            await api.post(`/${endpoint}/forgot-password/complete`, { email, otp, password: newPassword, confirmPassword: newPassword });
             return true;
         } catch (err: any) {
             console.error("useForgotPassword Error:", err);

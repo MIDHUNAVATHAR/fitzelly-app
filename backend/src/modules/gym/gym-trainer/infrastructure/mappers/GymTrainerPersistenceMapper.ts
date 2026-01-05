@@ -13,7 +13,9 @@ export class GymTrainerPersistenceMapper {
             doc.specialization,
             doc.monthlySalary,
 
-            doc.isEmailVerified,
+            doc.password,
+
+            doc.isEmailVerified || false,
             doc.isDelete,
             doc.createdAt,
             doc.updatedAt
@@ -22,11 +24,12 @@ export class GymTrainerPersistenceMapper {
 
     static toPersistence(entity: GymTrainer): Partial<IGymTrainerDocument> {
         return {
-            _id: new mongoose.Types.ObjectId(entity.id) as any,
+            ...(entity.id && mongoose.Types.ObjectId.isValid(entity.id) ? { _id: new mongoose.Types.ObjectId(entity.id) as any } : {}),
             gymId: new mongoose.Types.ObjectId(entity.gymId),
             fullName: entity.fullName,
             email: entity.email,
             phone: entity.phone,
+            ...(entity.password ? { password: entity.password } : {}),
             specialization: entity.specialization,
             monthlySalary: entity.monthlySalary,
 

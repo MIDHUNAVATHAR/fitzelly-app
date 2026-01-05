@@ -5,6 +5,7 @@ interface User {
     id: string;
     name: string;
     email: string;
+    gymId?: string;
 }
 
 interface AuthContextType {
@@ -56,26 +57,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         try {
-            // 1. Probe as Gym Owner
-            // We pass 'gym' explicitly to verifyToken usage of api endpoint /gym-auth/auth/me
-            const gymResponse = await AuthService.verifyToken('gym');
+            const storedRole = localStorage.getItem('userRole');
 
-            if (gymResponse && gymResponse.user) {
-                setUser(gymResponse.user);
-                setRole('gym');
-                // Sync localStorage for legacy checks or other UI logic if needed
-                localStorage.setItem('userRole', 'gym');
-                return;
+            // Helper to verify specific role
+            const verifyRole = async (roleToCheck: 'gym' | 'client' | 'trainer') => {
+                try {
+                    const res = await AuthService.verifyToken(roleToCheck);
+                    if (res && res.user) {
+                        setUser(res.user);
+                        setRole(roleToCheck as any);
+                        localStorage.setItem('userRole', roleToCheck);
+                        return true;
+                    }
+                } catch (e) { /* ignore 401 */ }
+                return false;
+            };
+
+            // 1. Try stored role first
+            if (storedRole && ['gym', 'client', 'trainer'].includes(storedRole)) {
+                if (await verifyRole(storedRole as any)) return;
             }
 
-            // 2. Probe as Client (future)
-            // const clientResponse = await AuthService.verifyToken('client');
-            // if (clientResponse && clientResponse.user) { ... }
+            // 2. Fallback sequence (Gym -> Client -> Trainer), skipping what we already checked
+            if (storedRole !== 'gym' && await verifyRole('gym')) return;
+            if (storedRole !== 'client' && await verifyRole('client')) return;
+            if (storedRole !== 'trainer' && await verifyRole('trainer')) return;
 
             // If all fail
             setUser(null);
             setRole(null);
-            localStorage.removeItem('userRole'); // Clear valid role if session invalid
+            localStorage.removeItem('userRole');
+
 
         } catch (error: any) {
             // 401 is expected if user is not logged in

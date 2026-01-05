@@ -8,6 +8,8 @@ export interface IGymTrainerDocument extends Document {
     specialization: string;
     monthlySalary: number;
 
+    password?: string;
+    isEmailVerified: boolean;
     isEmailVerified: boolean;
     isDelete: boolean;
     createdAt: Date;
@@ -17,8 +19,9 @@ export interface IGymTrainerDocument extends Document {
 const GymTrainerSchema = new Schema<IGymTrainerDocument>({
     gymId: { type: Schema.Types.ObjectId, ref: 'Gym', required: true },
     fullName: { type: String, required: true },
-    email: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
     phone: { type: String, required: true },
+    password: { type: String },
     specialization: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },
 

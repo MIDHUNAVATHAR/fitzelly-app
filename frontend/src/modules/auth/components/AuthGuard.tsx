@@ -26,7 +26,8 @@ export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
     if (allowedRoles && role && !allowedRoles.includes(role)) {
         // Role mismatch redirect
         if (role === 'gym') return <Navigate to="/gym/dashboard" replace />;
-        // if (role === 'client') return <Navigate to="/client/dashboard" replace />;
+        if (role === 'client') return <Navigate to="/client/dashboard" replace />;
+        if (role === 'trainer') return <Navigate to="/trainer/dashboard" replace />;
         return <Navigate to="/" replace />;
     }
 

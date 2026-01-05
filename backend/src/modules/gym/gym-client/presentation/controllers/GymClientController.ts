@@ -6,6 +6,8 @@ import { DeleteClientUseCase } from "../../application/usecases/DeleteClientUseC
 import { GymClientRepositoryImpl } from "../../infrastructure/repositories/GymClientRepositoryImpl.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 import { CreateClientRequestDTO, UpdateClientRequestDTO } from "../../application/dtos/GymClientDTO.js";
+import { OtpRepositoryImpl } from "../../../../client/authentication/infrastructure/repositories/OtpRepositoryImpl.js";
+import { EmailServiceImpl } from "../../../authentication/infrastructure/services/EmailServiceImpl.js";
 
 export class GymClientController {
     static async createClient(req: Request, res: Response, next: NextFunction) {

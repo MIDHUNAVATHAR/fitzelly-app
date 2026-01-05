@@ -12,6 +12,8 @@ import { gymClientRouter } from "./modules/gym/gym-client/presentation/routes/gy
 import { gymPlanRouter } from "./modules/gym/gym-plan/presentation/routes/gym-plan.routes.js";
 import { gymMembershipRouter } from "./modules/gym/gym-membership/presentation/routes/gym-membership.routes.js";
 import { gymEquipmentRoutes } from "./modules/gym/gym-equipment/presentation/routes/gym-equipment.routes.js";
+import { clientAuthRoutes } from "./modules/client/authentication/presentation/routes/clientAuthRoutes.js";
+import { trainerAuthRoutes } from "./modules/trainer/authentication/presentation/routes/trainerAuthRoutes.js";
 
 class App {
     public app: Application;
@@ -24,24 +26,20 @@ class App {
     }
 
     private setupMiddlewares(): void {
+        this.app.use(
+            cors({
+                origin: ['http://localhost:5173', 'http://localhost:3000', 'https://zonia-noninfected-dawne.ngrok-free.dev'],
+                credentials: true,
+                methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+                allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning", "Access-Control-Allow-Origin"],
+                optionsSuccessStatus: 200
+            })
+        );
         this.app.use((req, res, next) => {
             console.log(`[Request] ${req.method} ${req.url}`);
             next();
         });
         this.app.use(helmet()); // security headers
-        this.app.use(
-            cors({
-                origin: (origin, callback) => {
-                    // Allow requests with no origin (like mobile apps or curl requests)
-                    if (!origin) return callback(null, true);
-                    // Dynamically allow all origins for debugging
-                    return callback(null, true);
-                },
-                credentials: true,
-                methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning"],
-            })
-        );  // Enable CORS for our React frontend
         this.app.use(express.json()); // Body parser
         this.app.use(cookieParser());
     }
@@ -57,23 +55,9 @@ class App {
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_CLIENT}`, gymClientRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_MEMBERSHIP}`, gymMembershipRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_EQUIPMENT}`, gymEquipmentRoutes);
-        // Actually constants usually have GYM_TRAINER. Let's check api.constants.
-        // For now I'll use a new constant or just hardcode if needed, but wait, 
-        // user said "in the backend, all trainer related codes belongs to gym-trainer folder"
-        // I will assume route needs to be mounted.
-        // I will check api.constants first to see if I need to add MODULE_ROUTES.GYM_TRAINER.
 
-
-        // Placeholder routers for Client and Trainer
-        // const notImplemented = (req: Request, res: Response) => {
-        //     res.status(501).json({
-        //         status: "error",
-        //         message: "Authentication for this role is not yet implemented."
-        //     });
-        // };
-
-        //this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, notImplemented);
-        //this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, notImplemented);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
 
         // this.app.use('/api/v1/super-admin', superAdminRouter);
     }

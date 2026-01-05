@@ -85,13 +85,7 @@ export const AuthService = {
 
             return data;
         } catch (error: any) {
-            console.error("AuthService Error Details:", {
-                message: error.message,
-                status: error.response?.status,
-                data: error.response?.data,
-                url: error.config?.url,
-                baseURL: error.config?.baseURL
-            });
+            // console.error("AuthService Error Details:", error); // Suppressed logs
             throw new Error(error.response?.data?.message || 'Login failed');
         }
     },

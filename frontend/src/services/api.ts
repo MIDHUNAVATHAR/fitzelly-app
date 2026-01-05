@@ -10,7 +10,7 @@ export const api = axios.create({
     }
 })
 
-console.log("API Service Initialized with Base URL:", API_BASE_URL);
+// console.log("API Service Initialized with Base URL:", API_BASE_URL);
 
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
@@ -44,6 +44,16 @@ api.interceptors.response.use(
         const originalRequest = error.config;
 
         if (error.response?.status === 401 && !originalRequest._retry) {
+            // Don't retry if the failed request was login, refresh, or any public auth-init endpoint
+            const isAuthRequest = originalRequest.url?.includes('/login') ||
+                originalRequest.url?.includes('/refresh') ||
+                originalRequest.url?.includes('/verify-otp') ||
+                originalRequest.url?.includes('/forgot-password');
+
+            if (isAuthRequest) {
+                return Promise.reject(error);
+            }
+
             if (isRefreshing) {
                 return new Promise(function (resolve, reject) {
                     failedQueue.push({ resolve, reject });

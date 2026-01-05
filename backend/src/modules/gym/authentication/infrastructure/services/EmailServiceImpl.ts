@@ -19,4 +19,8 @@ export class EmailServiceImpl implements IEmailService {
     //     // TODO: Implement welcome email
     //     throw new Error("Not implemented yet");
     // }
+
+    async sendClientInvitation(to: string, link: string, otp: string): Promise<void> {
+        await mailService.sendClientInvitation(to, link, otp);
+    }
 }

@@ -14,6 +14,9 @@ const GymTrainers = lazy(() => import('../modules/dashboard/pages/GymTrainers'))
 const GymClients = lazy(() => import('../modules/dashboard/pages/GymClients'));
 const GymMemberships = lazy(() => import('../modules/dashboard/pages/GymMemberships'));
 const GymEquipment = lazy(() => import('../modules/dashboard/pages/GymEquipment'));
+const ClientSetupPassword = lazy(() => import('../modules/auth/pages/ClientSetupPassword'));
+const ClientDashboard = lazy(() => import('../modules/dashboard/pages/ClientDashboard'));
+const TrainerDashboard = lazy(() => import('../modules/dashboard/pages/TrainerDashboard'));
 
 export default function App() {
 
@@ -27,6 +30,8 @@ export default function App() {
               <LandingPage />
             </RedirectIfAuthenticated>
           } />
+
+          <Route path="/client/setup-password" element={<Suspense fallback={<div>Loading...</div>}><ClientSetupPassword /></Suspense>} />
 
           {/* Protected Routes */}
           <Route
@@ -111,9 +116,9 @@ export default function App() {
             path="/client/dashboard"
             element={
               <AuthGuard allowedRoles={['client']}>
-                <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white font-bold text-2xl">
-                  Client Dashboard (Coming Soon)
-                </div>
+                <Suspense fallback={<DashboardLoader />}>
+                  <ClientDashboard />
+                </Suspense>
               </AuthGuard>
             }
           />
@@ -121,9 +126,9 @@ export default function App() {
             path="/trainer/dashboard"
             element={
               <AuthGuard allowedRoles={['trainer']}>
-                <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white font-bold text-2xl">
-                  Trainer Dashboard (Coming Soon)
-                </div>
+                <Suspense fallback={<DashboardLoader />}>
+                  <TrainerDashboard />
+                </Suspense>
               </AuthGuard>
             }
           />

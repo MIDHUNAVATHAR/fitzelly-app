@@ -14,17 +14,19 @@ export class GymClientPersistenceMapper {
             doc.isEmailVerified,
             doc.isDelete,
             doc.createdAt,
-            doc.updatedAt
+            doc.updatedAt,
+            doc.password
         );
     }
 
     static toPersistence(entity: GymClient): Partial<IGymClientDocument> {
         return {
-            _id: new mongoose.Types.ObjectId(entity.id) as any,
+            _id: entity.id ? new mongoose.Types.ObjectId(entity.id) as any : undefined,
             gymId: new mongoose.Types.ObjectId(entity.gymId),
             fullName: entity.fullName,
             email: entity.email,
             phone: entity.phone,
+            password: entity.password as string,
             status: entity.status,
             isEmailVerified: entity.isEmailVerified,
             isDelete: entity.isDelete,

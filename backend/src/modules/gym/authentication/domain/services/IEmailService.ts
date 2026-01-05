@@ -24,4 +24,6 @@ export interface IEmailService {
      * @param name - User's name
      */
     // sendWelcomeEmail?(to: string, name: string): Promise<void>;
+
+    sendClientInvitation(to: string, link: string, otp: string): Promise<void>;
 }

@@ -26,6 +26,12 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
         return GymClientPersistenceMapper.toDomain(doc);
     }
 
+    async findByEmail(email: string): Promise<GymClient | null> {
+        const doc = await GymClientModel.findOne({ email, isDelete: false });
+        if (!doc) return null;
+        return GymClientPersistenceMapper.toDomain(doc);
+    }
+
     async findByGymId(gymId: string, options?: { search?: string, skip?: number, limit?: number, status?: string }): Promise<{ clients: GymClient[], total: number }> {
         const query: any = { gymId: gymId, isDelete: false };
         if (options?.search) {
@@ -52,6 +58,7 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             fullName: client.fullName,
             email: client.email,
             phone: client.phone,
+            password: client.password,
             status: client.status,
             isEmailVerified: client.isEmailVerified,
             isDelete: client.isDelete,

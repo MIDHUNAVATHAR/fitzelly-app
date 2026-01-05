@@ -16,6 +16,8 @@ export class CreateTrainerUseCase {
             request.specialization || '',
             request.monthlySalary || 0,
 
+            undefined, // password (initially undefined)
+
             false, // isEmailVerified
             false,
             new Date(),

@@ -4,7 +4,9 @@ import { GymClient } from "../../domain/entities/GymClient.js";
 import { GymClientDTOMapper } from "../mappers/GymClientDTOMapper.js";
 
 export class CreateClientUseCase {
-    constructor(private gymClientRepository: IGymClientRepository) { }
+    constructor(
+        private gymClientRepository: IGymClientRepository
+    ) { }
 
     async execute(request: CreateClientRequestDTO): Promise<ClientResponseDTO> {
         const newClient = new GymClient(
@@ -21,6 +23,8 @@ export class CreateClientUseCase {
         );
 
         const createdClient = await this.gymClientRepository.create(newClient);
+
         return GymClientDTOMapper.toResponseDTO(createdClient);
     }
 }
+

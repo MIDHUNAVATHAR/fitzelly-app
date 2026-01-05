@@ -10,7 +10,24 @@ export class GymClient {
         public readonly isDelete: boolean,
         public readonly createdAt: Date,
         public readonly updatedAt: Date,
+        public readonly password?: string,
     ) { }
+
+    setPassword(password: string): GymClient {
+        return new GymClient(
+            this.id,
+            this.gymId,
+            this.fullName,
+            this.email,
+            this.phone,
+            this.status,
+            this.isEmailVerified,
+            this.isDelete,
+            this.createdAt,
+            new Date(),
+            password
+        );
+    }
 
     updateDetails(data: {
         fullName?: string;
@@ -28,6 +45,7 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
+            this.password
         );
     }
 
@@ -43,6 +61,7 @@ export class GymClient {
             true, // isDelete
             this.createdAt,
             new Date(),
+            this.password
         );
     }
     updateStatus(newStatus: 'active' | 'inactive' | 'expired'): GymClient {
@@ -57,6 +76,23 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
+            this.password
+        );
+    }
+
+    markAsVerified(): GymClient {
+        return new GymClient(
+            this.id,
+            this.gymId,
+            this.fullName,
+            this.email,
+            this.phone,
+            this.status,
+            true, // isEmailVerified
+            this.isDelete,
+            this.createdAt,
+            new Date(),
+            this.password
         );
     }
 }

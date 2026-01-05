@@ -8,6 +8,8 @@ export class GymTrainer {
         public readonly specialization: string,
         public readonly monthlySalary: number,
 
+        public readonly password: string | undefined,
+
         public readonly isEmailVerified: boolean,
         public readonly isDelete: boolean,
         public readonly createdAt: Date,
@@ -31,10 +33,32 @@ export class GymTrainer {
             data.specialization ?? this.specialization,
             data.monthlySalary ?? this.monthlySalary,
 
+            this.password,
+
             this.isEmailVerified,
             this.isDelete,
             this.createdAt,
             new Date(),
+        );
+    }
+
+    // New Auth Methods
+    setPassword(hashed: string): GymTrainer {
+        return new GymTrainer(
+            this.id, this.gymId, this.fullName, this.email, this.phone,
+            this.specialization, this.monthlySalary,
+            hashed,
+            this.isEmailVerified, this.isDelete, this.createdAt, new Date()
+        );
+    }
+
+    markAsVerified(): GymTrainer {
+        return new GymTrainer(
+            this.id, this.gymId, this.fullName, this.email, this.phone,
+            this.specialization, this.monthlySalary,
+            this.password,
+            true, // isVerified
+            this.isDelete, this.createdAt, new Date()
         );
     }
 
@@ -47,6 +71,8 @@ export class GymTrainer {
             this.phone,
             this.specialization,
             this.monthlySalary,
+
+            this.password,
 
             this.isEmailVerified,
             true, // isDelete

@@ -107,8 +107,11 @@ export default function GymTrainers() {
             }
             fetchTrainers();
             handleCloseModal();
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to save trainer", error);
+            // Extract error message if available from axios error or Error object
+            const msg = error.response?.data?.message || error.message || "Failed to save trainer";
+            showToastMessage(msg);
         }
     };
 
