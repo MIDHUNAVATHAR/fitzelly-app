@@ -15,7 +15,7 @@ export class CreateTrainerUseCase {
             request.phone,
             request.specialization || '',
             request.monthlySalary || 0,
-            'pending',
+
             false, // isEmailVerified
             false,
             new Date(),

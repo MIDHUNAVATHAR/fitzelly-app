@@ -24,7 +24,7 @@ export class UpdateTrainerUseCase {
             ...(request.phone ? { phone: request.phone } : {}),
             ...(request.specialization ? { specialization: request.specialization } : {}),
             ...(request.monthlySalary !== undefined ? { monthlySalary: request.monthlySalary } : {}),
-            ...(request.status ? { status: request.status } : {})
+
         });
 
         const result = await this.gymTrainerRepository.update(updatedTrainerEntity);

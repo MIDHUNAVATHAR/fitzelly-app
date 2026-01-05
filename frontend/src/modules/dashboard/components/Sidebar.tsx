@@ -1,7 +1,7 @@
 import {
     LayoutDashboard, User, Users, CreditCard, Calendar,
     Settings, LogOut, Bell, FileText,
-    DollarSign, Activity, FileDigit, ShieldCheck,
+    IndianRupee, Activity, FileDigit, ShieldCheck,
     Menu, X
 } from 'lucide-react';
 import { useState } from 'react';
@@ -21,11 +21,11 @@ export default function Sidebar() {
         { icon: ShieldCheck, label: 'Active Memberships', path: '/gym/memberships' },
         { icon: User, label: 'Trainers', path: '/gym/trainers' },
 
-        { icon: DollarSign, label: 'Trainer Salary', path: '/gym/salary' },
+        { icon: IndianRupee, label: 'Trainer Salary', path: '/gym/salary' },
         { icon: Calendar, label: 'Attendance', path: '/gym/attendance' },
         { icon: User, label: 'Enquiries', path: '/gym/enquiries' },
         { icon: CreditCard, label: 'Client Payments', path: '/gym/payments' },
-        { icon: DollarSign, label: 'Expenses', path: '/gym/expenses' },
+        { icon: IndianRupee, label: 'Expenses', path: '/gym/expenses' },
         { icon: Activity, label: 'Revenue Analysis', path: '/gym/revenue' },
         { icon: Bell, label: 'Notifications', path: '/gym/notifications' },
         { icon: Settings, label: 'Settings', path: '/gym/settings' },

@@ -15,7 +15,7 @@ export interface UpdateTrainerRequestDTO {
     phone?: string;
     specialization?: string;
     monthlySalary?: number;
-    status?: 'active' | 'blocked' | 'pending';
+
 }
 
 export interface TrainerResponseDTO {
@@ -25,7 +25,7 @@ export interface TrainerResponseDTO {
     phone: string;
     specialization: string;
     monthlySalary: number;
-    status: 'active' | 'blocked' | 'pending';
+
     isEmailVerified: boolean;
     createdAt: Date;
 }

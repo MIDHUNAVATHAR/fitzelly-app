@@ -155,14 +155,6 @@ export class GymController {
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
 
-            // Set Access Token (HTTP Only)
-            res.cookie('accessToken', resultDTO.accessToken, {
-                httpOnly: true,
-                secure: true, // Required for SameSite=None
-                sameSite: 'none',
-                maxAge: 15 * 60 * 1000 // 15 mins
-            });
-
             // Redirect to Dashboard
             let frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
             // Remove trailing slash if present
@@ -170,7 +162,9 @@ export class GymController {
                 frontendUrl = frontendUrl.slice(0, -1);
             }
 
-            const redirectUrl = `${frontendUrl}/gym/dashboard?accessToken=${resultDTO.accessToken}&refreshToken=${resultDTO.refreshToken}&role=gym`;
+            // Only pass accessToken in URL for localStorage
+            // refreshToken is already in HttpOnly cookie
+            const redirectUrl = `${frontendUrl}/gym/dashboard?accessToken=${resultDTO.accessToken}&role=gym`;
             console.log("Google Login Success, Redirecting to:", redirectUrl);
 
             res.redirect(redirectUrl);
@@ -219,12 +213,7 @@ export class GymController {
                 sameSite: 'none'
             });
 
-            // Clear access token cookie (used in Google Auth)
-            res.clearCookie('accessToken', {
-                httpOnly: true,
-                secure: true,
-                sameSite: 'none'
-            });
+
 
             return res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,
@@ -280,6 +269,25 @@ export class GymController {
             next(error);
         }
     }
+
+    static async refreshToken(req: Request, res: Response, next: NextFunction) {
+        try {
+            const refreshToken = req.cookies.refreshToken;
+
+            const { RefreshTokenUseCase } = await import("../../application/usecases/RefreshTokenUseCase.js");
+            const useCase = new RefreshTokenUseCase();
+
+            const result = await useCase.execute(refreshToken);
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                data: result
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
 
 
 }

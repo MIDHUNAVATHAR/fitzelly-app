@@ -7,7 +7,7 @@ export interface IGymTrainerDocument extends Document {
     phone: string;
     specialization: string;
     monthlySalary: number;
-    status: 'active' | 'blocked' | 'pending';
+
     isEmailVerified: boolean;
     isDelete: boolean;
     createdAt: Date;
@@ -21,7 +21,7 @@ const GymTrainerSchema = new Schema<IGymTrainerDocument>({
     phone: { type: String, required: true },
     specialization: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },
-    status: { type: String, enum: ['active', 'blocked', 'pending'], default: 'pending' },
+
     isEmailVerified: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false }
 }, { timestamps: true });

@@ -22,6 +22,7 @@ router.get(ROUTER_ENDPOINTS.GYM_AUTH.GOOGLE_AUTH_INIT, GymController.initiateGoo
 router.get(ROUTER_ENDPOINTS.GYM_AUTH.GOOGLE_AUTH_CALLBACK, GymController.handleGoogleCallback);
 
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.LOGOUT, GymController.logout);
+router.post(ROUTER_ENDPOINTS.GYM_AUTH.REFRESH, GymController.refreshToken);
 
 // Forgot Password Routes
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.FORGOT_PASSWORD_INIT, validateRequest(initiateForgotPasswordSchema), GymController.initiateForgotPassword);

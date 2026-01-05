@@ -7,7 +7,7 @@ export interface Trainer {
     phone: string;
     specialization: string;
     monthlySalary: number;
-    status: 'active' | 'blocked' | 'pending';
+
     isEmailVerified: boolean;
     createdAt: string;
 }
@@ -25,7 +25,7 @@ export const TrainerService = {
         return response.data.data;
     },
 
-    createTrainer: async (data: Omit<Trainer, 'id' | 'createdAt' | 'status'>): Promise<Trainer> => {
+    createTrainer: async (data: Omit<Trainer, 'id' | 'createdAt'>): Promise<Trainer> => {
         const response = await api.post('/gym-trainer/trainers', data);
         return response.data.data;
     },

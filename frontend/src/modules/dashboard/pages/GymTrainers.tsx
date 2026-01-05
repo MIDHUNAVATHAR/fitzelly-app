@@ -32,7 +32,7 @@ export default function GymTrainers() {
         phone: '',
         specialization: '',
         monthlySalary: 0,
-        status: 'pending'
+
     });
 
     useEffect(() => {
@@ -73,7 +73,7 @@ export default function GymTrainers() {
                 phone: trainer.phone,
                 specialization: trainer.specialization,
                 monthlySalary: trainer.monthlySalary,
-                status: trainer.status
+
             });
         } else {
             setEditingTrainer(null);
@@ -84,7 +84,7 @@ export default function GymTrainers() {
                 phone: '',
                 specialization: '',
                 monthlySalary: 0,
-                status: 'pending'
+
             });
         }
         setIsModalOpen(true);
@@ -204,7 +204,7 @@ export default function GymTrainers() {
                                         </td>
                                         <td className="px-6 py-4 text-slate-600">{trainer.phone}</td>
                                         <td className="px-6 py-4 text-slate-600">{trainer.specialization || '-'}</td>
-                                        <td className="px-6 py-4 text-slate-900 font-semibold">${trainer.monthlySalary.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-slate-900 font-semibold">₹{trainer.monthlySalary.toLocaleString()}</td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
@@ -299,12 +299,9 @@ export default function GymTrainers() {
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                     <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Salary</div>
-                                    <div className="text-slate-900 font-medium">${selectedTrainer.monthlySalary.toLocaleString()}</div>
+                                    <div className="text-slate-900 font-medium">₹{selectedTrainer.monthlySalary.toLocaleString()}</div>
                                 </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Status</div>
-                                    <div className="text-slate-900 font-medium capitalize">{selectedTrainer.status}</div>
-                                </div>
+
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                     <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Joined Date</div>
                                     <div className="text-slate-900 font-medium">
@@ -363,13 +360,13 @@ export default function GymTrainers() {
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Monthly Salary ($) *</label>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Monthly Salary (₹) *</label>
                                     <input
                                         type="number"
                                         required
                                         min="0"
-                                        value={formData.monthlySalary}
-                                        onChange={e => setFormData({ ...formData, monthlySalary: Number(e.target.value) })}
+                                        value={formData.monthlySalary || ''}
+                                        onChange={e => setFormData({ ...formData, monthlySalary: e.target.value === '' ? 0 : Number(e.target.value) })}
                                         placeholder="0"
                                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
                                     />

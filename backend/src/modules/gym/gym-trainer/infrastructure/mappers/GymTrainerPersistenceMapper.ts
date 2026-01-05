@@ -12,7 +12,7 @@ export class GymTrainerPersistenceMapper {
             doc.phone,
             doc.specialization,
             doc.monthlySalary,
-            doc.status,
+
             doc.isEmailVerified,
             doc.isDelete,
             doc.createdAt,
@@ -29,7 +29,7 @@ export class GymTrainerPersistenceMapper {
             phone: entity.phone,
             specialization: entity.specialization,
             monthlySalary: entity.monthlySalary,
-            status: entity.status,
+
             isEmailVerified: entity.isEmailVerified,
             isDelete: entity.isDelete,
         };

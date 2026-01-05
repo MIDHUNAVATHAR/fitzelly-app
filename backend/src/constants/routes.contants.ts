@@ -34,7 +34,8 @@ export const GYM_AUTH_ROUTES = {
     FORGOT_PASSWORD_INIT: "/forgot-password/initiate",
     RESET_PASSWORD: "/forgot-password/reset",
     GOOGLE_AUTH_INIT: "/auth/google",
-    GOOGLE_AUTH_CALLBACK: "/auth/google/callback"
+    GOOGLE_AUTH_CALLBACK: "/auth/google/callback",
+    REFRESH: "/refresh"
 } as const;
 
 
