@@ -46,6 +46,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Optimization removed...
 
+        // Check if we have a token to verify
+        const storedToken = localStorage.getItem('accessToken');
+        if (!storedToken) {
+            setUser(null);
+            setRole(null);
+            if (shouldLoading) setIsLoading(false);
+            return;
+        }
+
         try {
             // 1. Probe as Gym Owner
             // We pass 'gym' explicitly to verifyToken usage of api endpoint /gym-auth/auth/me
