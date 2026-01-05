@@ -17,6 +17,8 @@ const GymEquipment = lazy(() => import('../modules/dashboard/pages/GymEquipment'
 const ClientSetupPassword = lazy(() => import('../modules/auth/pages/ClientSetupPassword'));
 const ClientDashboard = lazy(() => import('../modules/dashboard/pages/ClientDashboard'));
 const TrainerDashboard = lazy(() => import('../modules/dashboard/pages/TrainerDashboard'));
+const SuperAdminDashboard = lazy(() => import('../modules/super-admin/pages/SuperAdminDashboard'));
+const SuperAdminLoginPage = lazy(() => import('../modules/super-admin/pages/SuperAdminLoginPage'));
 
 export default function App() {
 
@@ -128,6 +130,24 @@ export default function App() {
               <AuthGuard allowedRoles={['trainer']}>
                 <Suspense fallback={<DashboardLoader />}>
                   <TrainerDashboard />
+                </Suspense>
+              </AuthGuard>
+            }
+          />
+
+          {/* Super Admin Routes */}
+          <Route path="/fitzelly-hq/login" element={
+            <Suspense fallback={<div>Loading...</div>}>
+              <SuperAdminLoginPage />
+            </Suspense>
+          } />
+
+          <Route
+            path="/fitzelly-hq"
+            element={
+              <AuthGuard allowedRoles={['super-admin']}>
+                <Suspense fallback={<DashboardLoader />}>
+                  <SuperAdminDashboard />
                 </Suspense>
               </AuthGuard>
             }

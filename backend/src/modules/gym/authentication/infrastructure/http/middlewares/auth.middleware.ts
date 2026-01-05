@@ -5,6 +5,7 @@ dotenv.config();
 import { GymRepositoryImpl } from "../../repositories/GymRepositoryImpl.js";
 import { GymClientRepositoryImpl } from "../../../../gym-client/infrastructure/repositories/GymClientRepositoryImpl.js";
 import { GymTrainerRepositoryImpl } from "../../../../gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js";
+import { SuperAdminRepositoryImpl } from "../../../../../super-admin/infrastructure/repositories/SuperAdminRepositoryImpl.js";
 import { HttpStatus } from "../../../../../../constants/statusCodes.constants.js";
 
 export const authenticate = async (
@@ -39,6 +40,9 @@ export const authenticate = async (
             const trainerRepo = new GymTrainerRepositoryImpl();
             const trainer = await trainerRepo.findById(payload.id);
             user = trainer;
+        } else if (payload.role === 'super-admin') {
+            const saRepo = new SuperAdminRepositoryImpl();
+            user = await saRepo.findById(payload.id);
         } else {
             // Default to Gym Owner
             const repo = new GymRepositoryImpl();
@@ -56,4 +60,3 @@ export const authenticate = async (
         return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Invalid or expired token" });
     }
 }
-

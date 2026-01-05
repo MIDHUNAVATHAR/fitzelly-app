@@ -14,6 +14,7 @@ import { gymMembershipRouter } from "./modules/gym/gym-membership/presentation/r
 import { gymEquipmentRoutes } from "./modules/gym/gym-equipment/presentation/routes/gym-equipment.routes.js";
 import { clientAuthRoutes } from "./modules/client/authentication/presentation/routes/clientAuthRoutes.js";
 import { trainerAuthRoutes } from "./modules/trainer/authentication/presentation/routes/trainerAuthRoutes.js";
+import { superAdminAuthRoutes } from "./modules/super-admin/authentication/presentation/routes/superAdminAuthRoutes.js";
 
 class App {
     public app: Application;
@@ -58,8 +59,7 @@ class App {
 
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
-
-        // this.app.use('/api/v1/super-admin', superAdminRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_AUTH}`, superAdminAuthRoutes);
     }
 
     private setupErrorHandling(): void {
@@ -83,12 +83,3 @@ class App {
 }
 
 export default new App().app;
-
-
-/*
-Note: verbatimModuleSyntax in tsconfig.json is false; 
-if true, only import type {Application, Request, Response, NextFunction}
-typescript automatically infer types. 
-_next : Yes, I know this variable exists, I’m intentionally not using it . without _ , eslint show warning. 
-*/
-

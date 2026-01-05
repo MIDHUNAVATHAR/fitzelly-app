@@ -9,19 +9,19 @@ export interface LoginResponse {
 export interface LoginPayload {
     email: string;
     password: string;
-    role?: 'gym' | 'client' | 'trainer'; // Add role
+    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
 }
 
 export interface SignupPayload {
     email: string;
     password: string;
     otp: string;
-    role?: 'gym' | 'client' | 'trainer'; // Add role
+    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
 }
 
 export interface InitSignupPayload {
     email: string;
-    role?: 'gym' | 'client' | 'trainer'; // Add role
+    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
 }
 
 // Helper to get the correct auth endpoint based on role
@@ -30,7 +30,8 @@ const getAuthEndpoint = (role: string = 'gym'): string => {
     const endpoints: Record<string, string> = {
         gym: 'gym-auth',
         client: 'client-auth',
-        trainer: 'trainer-auth'
+        trainer: 'trainer-auth',
+        'super-admin': 'super-admin-auth'
     };
     return endpoints[role] || 'gym-auth';
 };
@@ -112,7 +113,7 @@ export const AuthService = {
         }
     },
 
-    verifyToken: async (role?: 'gym' | 'client' | 'trainer'): Promise<any> => {
+    verifyToken: async (role?: 'gym' | 'client' | 'trainer' | 'super-admin'): Promise<any> => {
         try {
             // Prioritize passed role, fallback to localStorage (for persistence), default to gym
             const targetRole = role || (localStorage.getItem('userRole') as any) || 'gym';

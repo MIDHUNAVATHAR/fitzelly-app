@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { api } from '../../../services/api';
 
-type UserRole = 'gym' | 'client' | 'trainer';
+type UserRole = 'gym' | 'client' | 'trainer' | 'super-admin';
 
 // Helper to get the correct auth endpoint based on role
 const getAuthEndpoint = (role: UserRole = 'gym'): string => {
-    const endpoints = {
+    const endpoints: Record<UserRole, string> = {
         gym: 'gym-auth',
         client: 'client-auth',
-        trainer: 'trainer-auth'
+        trainer: 'trainer-auth',
+        'super-admin': 'super-admin-auth'
     };
     return endpoints[role];
 };
