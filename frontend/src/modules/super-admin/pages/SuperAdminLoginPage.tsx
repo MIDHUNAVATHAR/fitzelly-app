@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../auth/context/AuthContext';
 import { AuthService } from '../../auth/services/AuthService';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader, Timer, ArrowLeft } from 'lucide-react';
+import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader, ArrowLeft } from 'lucide-react';
 import { useForgotPassword } from '../../auth/hooks/useForgotPassword';
 
 export default function SuperAdminLoginPage() {
@@ -20,8 +20,7 @@ export default function SuperAdminLoginPage() {
     const [otp, setOtp] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [fpTimeLeft, setFpTimeLeft] = useState(90);
-    const [fpCanResend, setFpCanResend] = useState(false);
+
 
     const {
         isLoading: isFpLoading,
@@ -64,8 +63,7 @@ export default function SuperAdminLoginPage() {
         const success = await initiateForgotPassword(email);
         if (success) {
             setFpStep('OTP');
-            setFpTimeLeft(90);
-            setFpCanResend(false);
+
         }
     };
 
