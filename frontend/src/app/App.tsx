@@ -119,7 +119,7 @@ export default function App() {
             }
           />
 
-          {/* Super Admin Routes */}
+          {/* Super Admin Routes ..*/}
           <Route path="/fitzelly-hq/login" element={
             <SuperAdminLoginPage />
           } />
