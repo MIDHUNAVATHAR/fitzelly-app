@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Search, Plus, Edit2, Trash2, X, Upload, CheckCircle } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X, Upload, CheckCircle, Loader2 } from 'lucide-react';
 import { EquipmentService, type GymEquipment, type CreateEquipmentDTO } from '../services/EquipmentService';
 import Cropper, { type Area } from 'react-easy-crop';
 import { getCroppedImg } from '../../../utils/canvasUtils';
@@ -393,8 +393,10 @@ export default function GymEquipmentPage() {
                                 </button>
                                 <button
                                     type="submit"
-                                    className="bg-[#00ffd5] text-slate-900 px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:shadow-[#00ffd5]/20 hover:-translate-y-0.5 transition-all"
+                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                    className="bg-[#00ffd5] text-slate-900 px-6 py-2.5 rounded-xl font-bold hover:shadow-lg hover:shadow-[#00ffd5]/20 hover:-translate-y-0.5 transition-all disabled:opacity-50 disabled:cursor-wait flex items-center gap-2"
                                 >
+                                    {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={18} className="animate-spin" />}
                                     {isEditModalOpen ? 'Save Changes' : 'Create Equipment'}
                                 </button>
                             </div>

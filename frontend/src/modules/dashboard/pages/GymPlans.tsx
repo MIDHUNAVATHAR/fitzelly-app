@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Tag, Calendar, Plus, Edit2, Trash2, X, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Tag, Calendar, Plus, Edit2, Trash2, X, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 import { PlanService } from '../services/PlanService';
 import type { Plan } from '../services/PlanService';
 
@@ -291,8 +291,10 @@ export default function GymPlans() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2"
+                                disabled={createMutation.isPending || updateMutation.isPending}
+                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] disabled:opacity-50 disabled:cursor-wait text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2"
                             >
+                                {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={18} className="animate-spin" />}
                                 {editingPlan ? 'Update Plan' : 'Add Plan'}
                             </button>
                         </form>

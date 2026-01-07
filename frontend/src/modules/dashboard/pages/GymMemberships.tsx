@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Eye, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Filter, ChevronDown, Check, Plus, Calendar } from 'lucide-react';
+import { Eye, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Filter, ChevronDown, Check, Plus, Calendar, Loader2 } from 'lucide-react';
 import { MembershipService } from '../services/MembershipService';
 import type { Membership } from '../services/MembershipService';
 import { ClientService } from '../services/ClientService';
@@ -707,8 +707,10 @@ export default function GymMemberships() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2"
+                                disabled={createMutation.isPending}
+                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] disabled:opacity-50 disabled:cursor-wait text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2"
                             >
+                                {createMutation.isPending && <Loader2 size={18} className="animate-spin" />}
                                 Create Membership
                             </button>
                         </form>
@@ -812,8 +814,10 @@ export default function GymMemberships() {
 
                             <button
                                 type="submit"
-                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2"
+                                disabled={updateMutation.isPending}
+                                className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] disabled:opacity-50 disabled:cursor-wait text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2"
                             >
+                                {updateMutation.isPending && <Loader2 size={18} className="animate-spin" />}
                                 Update Membership
                             </button>
                         </form>

@@ -456,8 +456,10 @@ export default function GymClients() {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2"
+                                    disabled={createMutation.isPending || updateMutation.isPending}
+                                    className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] disabled:opacity-50 disabled:cursor-wait text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2"
                                 >
+                                    {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={18} className="animate-spin" />}
                                     {modalMode === 'create' ? 'Add Client' : 'Update Client'}
                                 </button>
                             </form>
