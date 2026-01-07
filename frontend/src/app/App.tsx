@@ -28,6 +28,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/" element={
             <RedirectIfAuthenticated>
               <LandingPage />

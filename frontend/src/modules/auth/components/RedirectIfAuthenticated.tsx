@@ -14,10 +14,10 @@ export default function RedirectIfAuthenticated({ children }: { children: ReactN
     }
 
     if (user) {
-        if (role === 'gym') {
-            return <Navigate to="/gym/dashboard" replace />;
-        }
-        // Add other roles here
+        if (role === 'gym') return <Navigate to="/gym/dashboard" replace />;
+        if (role === 'client') return <Navigate to="/client/dashboard" replace />;
+        if (role === 'trainer') return <Navigate to="/trainer/dashboard" replace />;
+        if (role === 'super-admin') return <Navigate to="/fitzelly-hq" replace />;
     }
 
     return <>{children}</>;

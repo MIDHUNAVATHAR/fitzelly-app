@@ -51,7 +51,10 @@ export default function ClientSidebar() {
             `}>
                 <div className="h-full flex flex-col">
                     {/* Logo (Desktop) - Fixed at top */}
-                    <div className="hidden md:flex items-center gap-3 p-6 border-b border-slate-100 flex-shrink-0">
+                    <div
+                        className="hidden md:flex items-center gap-3 p-6 border-b border-slate-100 flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors"
+                        onClick={() => navigate('/landing')}
+                    >
                         {/* Use Gym Logo if available, or icon */}
                         <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm">
                             <Activity className="text-slate-900 w-6 h-6" />

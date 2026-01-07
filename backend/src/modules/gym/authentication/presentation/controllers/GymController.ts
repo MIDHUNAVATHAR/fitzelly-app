@@ -130,7 +130,7 @@ export class GymController {
 
     static async handleGoogleCallback(req: Request, res: Response, next: NextFunction) {
         try {
-            const { code, error } = req.query;
+            const { code, error, state } = req.query;
 
             if (error) {
                 return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=google_auth_failed`);
@@ -140,12 +140,32 @@ export class GymController {
                 return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=no_code`);
             }
 
-            const gymRepo = new GymRepositoryImpl();
-            const googleAuthService = new GoogleAuthService();
-            const useCase = new GoogleAuthGymUseCase(gymRepo, googleAuthService);
+            const decodedState = state ? JSON.parse(state as string) : {};
+            const role = decodedState.role || 'gym';
 
-            // Create account / Login
-            const resultDTO = await useCase.execute(code as string);
+            const googleAuthService = new GoogleAuthService();
+            let resultDTO: any;
+
+            if (role === 'client') {
+                const { GymClientRepositoryImpl } = await import("../../../gym-client/infrastructure/repositories/GymClientRepositoryImpl.js");
+                const { GoogleAuthClientUseCase } = await import("../../../../client/authentication/application/usecases/GoogleAuthClientUseCase.js");
+                const clientRepo = new GymClientRepositoryImpl();
+                const useCase = new GoogleAuthClientUseCase(clientRepo, googleAuthService);
+                resultDTO = await useCase.execute(code as string);
+
+            } else if (role === 'trainer') {
+                const { GymTrainerRepositoryImpl } = await import("../../../gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js");
+                const { GoogleAuthTrainerUseCase } = await import("../../../../trainer/authentication/application/usecases/GoogleAuthTrainerUseCase.js");
+                const trainerRepo = new GymTrainerRepositoryImpl();
+                const useCase = new GoogleAuthTrainerUseCase(trainerRepo, googleAuthService);
+                resultDTO = await useCase.execute(code as string);
+
+            } else {
+                // Default to Gym
+                const gymRepo = new GymRepositoryImpl();
+                const useCase = new GoogleAuthGymUseCase(gymRepo, googleAuthService);
+                resultDTO = await useCase.execute(code as string);
+            }
 
             // Set Refresh Token (HTTP Only)
             res.cookie('refreshToken', resultDTO.refreshToken, {
@@ -163,16 +183,18 @@ export class GymController {
             }
 
             // Only pass accessToken in URL for localStorage
-            // refreshToken is already in HttpOnly cookie
-            const redirectUrl = `${frontendUrl}/gym/dashboard?accessToken=${resultDTO.accessToken}&role=gym`;
+            const redirectUrl = `${frontendUrl}/${role}/dashboard?accessToken=${resultDTO.accessToken}&role=${role}`;
             console.log("Google Login Success, Redirecting to:", redirectUrl);
 
             res.redirect(redirectUrl);
 
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Google Callback Error:", error);
-            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=login_failed`);
+            const errorMessage = error.message || "login_failed";
+            // Check for specific error messages to show user friendly alerts?
+            // For now pass error msg in query
+            res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/?error=${encodeURIComponent(errorMessage)}`);
         }
     }
 

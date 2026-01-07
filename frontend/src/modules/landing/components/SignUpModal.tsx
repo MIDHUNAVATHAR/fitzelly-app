@@ -195,7 +195,7 @@ export default function SignUpModal({ isOpen, onClose, onSwitchToSignIn }: SignU
                                         fill="#EA4335"
                                     />
                                 </svg>
-                                Continue with Google
+                                Signup with Google
                             </button>
                         </div>
                     )}

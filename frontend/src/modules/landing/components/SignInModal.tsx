@@ -188,7 +188,7 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                                 fill="#EA4335"
                             />
                         </svg>
-                        Continue with Google
+                        Login with Google
                     </button>
                 </div>
 

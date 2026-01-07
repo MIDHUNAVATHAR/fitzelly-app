@@ -51,7 +51,10 @@ export default function TrainerSidebar() {
             `}>
                 <div className="h-full flex flex-col">
                     {/* Logo (Desktop) - Fixed at top */}
-                    <div className="hidden md:flex flex-col gap-1 p-6 border-b border-slate-100 flex-shrink-0">
+                    <div
+                        className="hidden md:flex flex-col gap-1 p-6 border-b border-slate-100 flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors"
+                        onClick={() => navigate('/landing')}
+                    >
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm">
                                 <Activity className="text-slate-900 w-6 h-6" />

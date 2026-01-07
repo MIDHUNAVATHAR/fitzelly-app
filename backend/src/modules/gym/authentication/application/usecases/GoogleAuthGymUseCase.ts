@@ -38,8 +38,8 @@ export class GoogleAuthGymUseCase {
         }
 
         // 4. Generate Tokens (Login)
-        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym_owner' });
-        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym_owner' });
+        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym' });
+        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym' });
 
         return GymDTOMapper.toResponseDTO(gym, accessToken, refreshToken);
     }
