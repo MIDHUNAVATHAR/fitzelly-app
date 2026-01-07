@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Pencil, Save, MapPin, Phone, Building, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../auth/context/AuthContext';
-import { AuthService } from '../../auth/services/AuthService';
+import { useAuth } from '../../landing/context/AuthContext';
+import { AuthService } from '../../landing/services/AuthService';
 
 interface InputGroupProps {
     label: string;

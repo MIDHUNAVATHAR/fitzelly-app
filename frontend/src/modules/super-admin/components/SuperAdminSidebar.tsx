@@ -13,7 +13,7 @@ import {
     Menu,
     X
 } from 'lucide-react';
-import { useAuth } from '../../auth/context/AuthContext';
+import { useAuth } from '../../landing/context/AuthContext';
 
 export default function SuperAdminSidebar() {
     const { logout } = useAuth();

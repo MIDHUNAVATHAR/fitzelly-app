@@ -1,5 +1,5 @@
 import SuperAdminDashboardLayout from "../layouts/SuperAdminDashboardLayout";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useAuth } from "../../landing/context/AuthContext";
 import { Building2, CheckCircle, XCircle, DollarSign, Users, AlertTriangle, TrendingUp } from 'lucide-react';
 
 export default function SuperAdminDashboard() {

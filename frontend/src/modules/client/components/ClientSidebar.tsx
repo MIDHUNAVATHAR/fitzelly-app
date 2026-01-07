@@ -1,22 +1,23 @@
-import { LayoutDashboard, Calendar, CreditCard, User, Activity, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Calendar, Dumbbell, FileText, Activity, LogOut, Menu, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/context/AuthContext';
+import { useAuth } from '../../landing/context/AuthContext';
 
-export default function TrainerSidebar() {
+export default function ClientSidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [gymName] = useState('FITZELLY');
-    const { logout, user } = useAuth();
+    const { logout, user } = useAuth(); // Assuming user has gymId
     const navigate = useNavigate();
 
     useEffect(() => {
     }, [user]);
 
     const menuItems = [
-        { icon: LayoutDashboard, label: 'Dashboard', path: '/trainer/dashboard' },
-        { icon: Calendar, label: 'Attendance', path: '/trainer/attendance' },
-        { icon: CreditCard, label: 'Payments', path: '/trainer/payments' },
-        { icon: User, label: 'Profile', path: '/trainer/profile' },
+        { icon: LayoutDashboard, label: 'Home', path: '/client/dashboard' },
+        { icon: FileText, label: 'Workout Plans', path: '/client/plans' },
+        { icon: Dumbbell, label: 'Exercise Library', path: '/client/exercises' },
+        { icon: Calendar, label: 'Attendance', path: '/client/attendance' },
+        { icon: Activity, label: 'Sessions', path: '/client/sessions' },
     ];
 
     const handleLogout = async () => {
@@ -36,7 +37,6 @@ export default function TrainerSidebar() {
             <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-50">
                 <div className="flex items-center gap-2">
                     <span className="font-bold text-lg text-slate-900">{gymName}</span>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">Trainer Dashboard</span>
                 </div>
                 <button onClick={toggleMobileMenu} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600">
                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -52,18 +52,16 @@ export default function TrainerSidebar() {
                 <div className="h-full flex flex-col">
                     {/* Logo (Desktop) - Fixed at top */}
                     <div
-                        className="hidden md:flex flex-col gap-1 p-6 border-b border-slate-100 flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors"
+                        className="hidden md:flex items-center gap-3 p-6 border-b border-slate-100 flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors"
                         onClick={() => navigate('/landing')}
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm">
-                                <Activity className="text-slate-900 w-6 h-6" />
-                            </div>
-                            <div>
-                                <h1 className="font-bold text-xl text-slate-900 leading-none">{gymName}</h1>
-                            </div>
+                        {/* Use Gym Logo if available, or icon */}
+                        <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm">
+                            <Activity className="text-slate-900 w-6 h-6" />
                         </div>
-                        <div className="text-xs text-slate-500 mt-1 pl-1">Trainer Dashboard</div>
+                        <div>
+                            <h1 className="font-bold text-xl text-slate-900 leading-none">{gymName}</h1>
+                        </div>
                     </div>
 
                     {/* Menu Items */}

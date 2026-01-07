@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import SignInModal from '../components/SignInModal';
 import SignUpModal from '../components/SignUpModal';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
-import { useAuth } from '../../auth/context/AuthContext';
+import { useAuth } from '../../landing/context/AuthContext';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);

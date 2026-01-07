@@ -2,7 +2,7 @@ import { X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
-import { useSignIn } from '../../auth/hooks/useSignIn';
+import { useSignIn } from '../../landing/hooks/useSignIn';
 import { API_BASE_URL } from '../../../config/api';
 
 interface SignInModalProps {

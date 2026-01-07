@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { useAuth } from '../../auth/context/AuthContext';
-import { AuthService } from '../../auth/services/AuthService';
+import { useAuth } from '../../landing/context/AuthContext';
+import { AuthService } from '../../landing/services/AuthService';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader, ArrowLeft } from 'lucide-react';
-import { useForgotPassword } from '../../auth/hooks/useForgotPassword';
+import { useForgotPassword } from '../../landing/hooks/useForgotPassword';
 
 export default function SuperAdminLoginPage() {
     const [email, setEmail] = useState('');

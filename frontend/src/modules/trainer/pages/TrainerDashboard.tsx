@@ -1,5 +1,5 @@
 import TrainerDashboardLayout from "../layouts/TrainerDashboardLayout";
-import { useAuth } from "../../auth/context/AuthContext";
+import { useAuth } from "../../landing/context/AuthContext";
 
 export default function TrainerDashboard() {
     const { user } = useAuth();

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../auth/context/AuthContext';
+import { useAuth } from '../../landing/context/AuthContext';
 
 export default function Sidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);

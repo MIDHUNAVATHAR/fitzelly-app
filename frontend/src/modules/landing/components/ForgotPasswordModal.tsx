@@ -2,7 +2,7 @@ import { X, ArrowLeft, Timer } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
-import { useForgotPassword } from '../../auth/hooks/useForgotPassword';
+import { useForgotPassword } from '../../landing/hooks/useForgotPassword';
 
 interface ForgotPasswordModalProps {
     isOpen: boolean;

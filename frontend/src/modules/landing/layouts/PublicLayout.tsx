@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import Header from '../modules/landing/sections/Header';
-import Footer from '../modules/landing/sections/Footer';
+import Header from '../sections/Header';
+import Footer from '../sections/Footer';
 
 interface PublicLayoutProps {
     children: ReactNode;

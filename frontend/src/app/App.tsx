@@ -1,23 +1,23 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from '../modules/landing/LandingPage';
-import { AuthProvider } from '../modules/auth/context/AuthContext';
-import AuthGuard from '../modules/auth/components/AuthGuard';
-import RedirectIfAuthenticated from '../modules/auth/components/RedirectIfAuthenticated';
+import { AuthProvider } from '../modules/landing/context/AuthContext';
+import AuthGuard from '../modules/landing/components/AuthGuard';
+import RedirectIfAuthenticated from '../modules/landing/components/RedirectIfAuthenticated';
 import './style.css';
 
-import GymDashboard from '../modules/dashboard/pages/GymDashboard';
-import GymDetails from '../modules/dashboard/pages/GymDetails';
-import GymPlans from '../modules/dashboard/pages/GymPlans';
-import GymTrainers from '../modules/dashboard/pages/GymTrainers';
-import GymClients from '../modules/dashboard/pages/GymClients';
-import GymMemberships from '../modules/dashboard/pages/GymMemberships';
-import GymEquipment from '../modules/dashboard/pages/GymEquipment';
-import ClientSetupPassword from '../modules/auth/pages/ClientSetupPassword';
-import VerifyOtpPage from '../modules/auth/pages/VerifyOtpPage';
-import ClientDashboard from '../modules/dashboard/pages/ClientDashboard';
-import TrainerDashboard from '../modules/dashboard/pages/TrainerDashboard';
+import GymDashboard from '../modules/gym/pages/GymDashboard';
+import GymDetails from '../modules/gym/pages/GymDetails';
+import GymPlans from '../modules/gym/pages/GymPlans';
+import GymTrainers from '../modules/gym/pages/GymTrainers';
+import GymClients from '../modules/gym/pages/GymClients';
+import GymMemberships from '../modules/gym/pages/GymMemberships';
+import GymEquipment from '../modules/gym/pages/GymEquipment';
+import ClientSetupPassword from '../modules/landing/pages/ClientSetupPassword';
+import VerifyOtpPage from '../modules/landing/pages/VerifyOtpPage';
+import ClientDashboard from '../modules/client/pages/ClientDashboard';
+import TrainerDashboard from '../modules/trainer/pages/TrainerDashboard';
 import SuperAdminDashboard from '../modules/super-admin/pages/SuperAdminDashboard';
-import SuperAdminLoginPage from '../modules/super-admin/pages/SuperAdminLoginPage';
+import SuperAdminLoginPage from '../modules/landing/pages/SuperAdminLoginPage';
 import GymsPage from '../modules/super-admin/pages/GymsPage';
 
 export default function App() {
