@@ -119,10 +119,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     useEffect(() => {
         checkAuth();
-        // Listen for custom event if triggered elsewhere
-        const handleAuthChange = () => checkAuth();
-        window.addEventListener('auth-change', handleAuthChange);
-        return () => window.removeEventListener('auth-change', handleAuthChange);
+
+        // Listen for 401 logout event from API interceptor
+        const handleAuthLogout = () => {
+            logout();
+        };
+
+        // Listen for storage changes (multi-tab sync)
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'accessToken' && e.newValue === null) {
+                // Token removed in another tab -> logout here too
+                setUser(null);
+                setRole(null);
+                window.location.href = '/';
+            }
+        };
+
+        window.addEventListener('auth-logout', handleAuthLogout);
+        window.addEventListener('storage', handleStorageChange);
+        // Also listen for custom internal event if needed
+        const handleInternalAuth = () => checkAuth();
+        window.addEventListener('auth-change', handleInternalAuth);
+
+        return () => {
+            window.removeEventListener('auth-logout', handleAuthLogout);
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('auth-change', handleInternalAuth);
+        };
     }, []);
 
     return (

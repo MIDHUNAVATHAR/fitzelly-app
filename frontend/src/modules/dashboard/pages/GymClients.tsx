@@ -1,18 +1,26 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2 } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
 
 export default function GymClients() {
-    const [clients, setClients] = useState<Client[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [total, setTotal] = useState(0);
+    const limit = 10;
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+
+    // Query
+    const { data, isLoading: loading } = useQuery({
+        queryKey: ['clients', page, debouncedSearch, statusFilter],
+        queryFn: () => ClientService.getClients(page, limit, debouncedSearch, statusFilter)
+    });
+
+    const clients = data?.clients || [];
+    const total = data?.total || 0;
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
 
@@ -48,26 +56,60 @@ export default function GymClients() {
     });
 
     useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        const timer = setTimeout(() => {
+            setPage(1); // Reset page on search
+            setDebouncedSearch(search)
+        }, 500);
         return () => clearTimeout(timer);
     }, [search]);
 
-    useEffect(() => {
-        fetchClients();
-    }, [page, debouncedSearch, statusFilter]);
-
-    const fetchClients = async () => {
-        try {
-            setLoading(true);
-            const data = await ClientService.getClients(page, limit, debouncedSearch, statusFilter);
-            setClients(data.clients);
-            setTotal(data.total);
-        } catch (error) {
-            console.error("Failed to fetch clients", error);
-        } finally {
-            setLoading(false);
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: ClientService.createClient,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            showToastMessage("Client added successfully");
+            handleCloseModal();
+        },
+        onError: () => {
+            showToastMessage("Failed to add client");
         }
-    };
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<Client> }) => ClientService.updateClient(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            showToastMessage("Client updated successfully");
+            handleCloseModal();
+        },
+        onError: () => {
+            showToastMessage("Failed to update client");
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: ClientService.deleteClient,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            showToastMessage("Client deleted successfully");
+            setIsDeleteModalOpen(false);
+            setClientToDelete(null);
+        }
+    });
+
+    const sendWelcomeMutation = useMutation({
+        mutationFn: ClientService.sendWelcomeEmail,
+        onSuccess: () => {
+            showToastMessage("Welcome email sent");
+        },
+        onError: () => {
+            showToastMessage("Failed to send welcome email");
+        },
+        onSettled: () => {
+            setSendingEmailId(null);
+        }
+    });
 
     const showToastMessage = (message: string) => {
         setToast({ message, show: true });
@@ -99,20 +141,13 @@ export default function GymClients() {
         setSelectedClient(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            if (modalMode === 'edit' && selectedClient) {
-                await ClientService.updateClient(selectedClient.id, formData);
-                showToastMessage("Client updated successfully");
-            } else if (modalMode === 'create') {
-                await ClientService.createClient(formData as any);
-                showToastMessage("Client added successfully");
-            }
-            fetchClients();
-            handleCloseModal();
-        } catch (error) {
-            console.error("Failed to save client", error);
+
+        if (modalMode === 'edit' && selectedClient) {
+            updateMutation.mutate({ id: selectedClient.id, data: formData });
+        } else if (modalMode === 'create') {
+            createMutation.mutate(formData as any);
         }
     };
 
@@ -121,33 +156,27 @@ export default function GymClients() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (clientToDelete) {
-            try {
-                await ClientService.deleteClient(clientToDelete);
-                fetchClients();
-                showToastMessage("Client deleted successfully");
-            } catch (error) {
-                console.error("Failed to delete client", error);
-            } finally {
-                setIsDeleteModalOpen(false);
-                setClientToDelete(null);
-            }
+            deleteMutation.mutate(clientToDelete);
         }
     };
 
-    const handleSendWelcome = async (id: string, email: string) => {
-        try {
-            setSendingEmailId(id);
-            await ClientService.sendWelcomeEmail(id);
-            showToastMessage(`Welcome email sent to ${email}`);
-        } catch (error) {
-            console.error("Failed to send welcome email", error);
-            showToastMessage("Failed to send welcome email");
-        } finally {
-            setSendingEmailId(null);
-        }
+    const handleSendWelcome = (id: string) => {
+        setSendingEmailId(id);
+        sendWelcomeMutation.mutate(id);
     };
+
+    // Explicit loading state
+    if (loading) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-[#00ffd5] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
@@ -278,7 +307,7 @@ export default function GymClients() {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={() => handleSendWelcome(client.id, client.email)}
+                                                    onClick={() => handleSendWelcome(client.id)}
                                                     disabled={sendingEmailId === client.id}
                                                     className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
                                                     title="Send Welcome Email"

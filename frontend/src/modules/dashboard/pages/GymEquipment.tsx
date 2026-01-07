@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Search, Plus, Edit2, Trash2, X, Upload, CheckCircle } from 'lucide-react';
 import { EquipmentService, type GymEquipment, type CreateEquipmentDTO } from '../services/EquipmentService';
@@ -6,15 +7,30 @@ import Cropper, { type Area } from 'react-easy-crop';
 import { getCroppedImg } from '../../../utils/canvasUtils';
 
 export default function GymEquipmentPage() {
-    // ... [Previous state logic remains identical, not repeating for brevity but tool needs context]
-    // Since I can't leave placeholders, I must replicate the state.
-    // However, I can try to target just the Return statement if possible.
-    // But the Imports are at the top. I need to do 2 chunks or one big default if I can't skip users code.
-    // I will try to replace the whole file content to be safe and clean, reusing logic.
-
-    const [equipments, setEquipments] = useState<GymEquipment[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
+    const [page, setPage] = useState(1);
+    const limit = 10;
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setPage(1);
+            setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // Query
+    const { data, isLoading: loading } = useQuery({
+        queryKey: ['equipment', page, debouncedSearch],
+        queryFn: () => EquipmentService.getAll(page, limit, debouncedSearch)
+    });
+
+    const equipments = data?.items || [];
+    const total = data?.total || 0;
+    const totalPages = Math.ceil(total / limit);
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -45,28 +61,38 @@ export default function GymEquipmentPage() {
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isCropping, setIsCropping] = useState(false);
 
-    const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [total, setTotal] = useState(0);
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: EquipmentService.create,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['equipment'] });
+            setIsCreateModalOpen(false);
+            resetForm();
+            setToast({ show: true, message: 'Equipment added successfully' });
+        },
+        onError: () => console.error("Failed to create equipment")
+    });
 
-    const totalPages = Math.ceil(total / limit);
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: CreateEquipmentDTO }) => EquipmentService.update(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['equipment'] });
+            setIsEditModalOpen(false);
+            resetForm();
+            setToast({ show: true, message: 'Equipment updated successfully' });
+        },
+        onError: () => console.error("Failed to update equipment")
+    });
 
-    useEffect(() => {
-        fetchEquipments();
-    }, [search, page]);
-
-    const fetchEquipments = async () => {
-        try {
-            setLoading(true);
-            const data = await EquipmentService.getAll(page, limit, search);
-            setEquipments(data.items);
-            setTotal(data.total);
-        } catch (error) {
-            console.error("Failed to fetch equipment", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const deleteMutation = useMutation({
+        mutationFn: EquipmentService.delete,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['equipment'] });
+            setIsDeleteModalOpen(false);
+            setToast({ show: true, message: 'Equipment deleted successfully' });
+        },
+        onError: () => console.error("Failed to delete equipment")
+    });
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -99,43 +125,20 @@ export default function GymEquipmentPage() {
         }
     };
 
-    const handleCreateSubmit = async (e: React.FormEvent) => {
+    const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            await EquipmentService.create(formData);
-            setIsCreateModalOpen(false);
-            fetchEquipments();
-            resetForm();
-            setToast({ show: true, message: 'Equipment added successfully' });
-        } catch (error) {
-            console.error(error);
-        }
+        createMutation.mutate(formData);
     };
 
-    const handleEditSubmit = async (e: React.FormEvent) => {
+    const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedEquipment) return;
-        try {
-            await EquipmentService.update(selectedEquipment.id, formData);
-            setIsEditModalOpen(false);
-            fetchEquipments();
-            resetForm();
-            setToast({ show: true, message: 'Equipment updated successfully' });
-        } catch (error) {
-            console.error(error);
-        }
+        updateMutation.mutate({ id: selectedEquipment.id, data: formData });
     };
 
-    const handleDelete = async () => {
+    const handleDelete = () => {
         if (!selectedEquipment) return;
-        try {
-            await EquipmentService.delete(selectedEquipment.id);
-            setIsDeleteModalOpen(false);
-            fetchEquipments();
-            setToast({ show: true, message: 'Equipment deleted successfully' });
-        } catch (error) {
-            console.error(error);
-        }
+        deleteMutation.mutate(selectedEquipment.id);
     };
 
     const openEditModal = (eq: GymEquipment) => {
@@ -155,6 +158,17 @@ export default function GymEquipmentPage() {
         setIsCropping(false);
         setSelectedEquipment(null);
     };
+
+    // Explicit loading state for page transition
+    if (loading) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-[#00ffd5] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
@@ -183,7 +197,7 @@ export default function GymEquipmentPage() {
                         type="text"
                         placeholder="Search equipment..."
                         value={search}
-                        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+                        onChange={(e) => setSearch(e.target.value)}
                         className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ffd5] transition-all"
                     />
                 </div>

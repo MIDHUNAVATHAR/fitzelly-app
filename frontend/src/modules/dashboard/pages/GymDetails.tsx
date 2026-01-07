@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Pencil, Save, MapPin, Phone, Building, CheckCircle } from 'lucide-react';
 import { useAuth } from '../../auth/context/AuthContext';
@@ -17,7 +18,6 @@ interface InputGroupProps {
 export default function GymDetails() {
     const { user, checkAuth } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
     const [formData, setFormData] = useState({
@@ -74,21 +74,22 @@ export default function GymDetails() {
         }
     };
 
-    const handleSave = async () => {
-        setIsLoading(true);
-        try {
-            const { email, ...payload } = formData;
-            await AuthService.updateProfile(payload);
-            await checkAuth(false); // Refresh user data to show updated values without full page loader
+    const updateProfileMutation = useMutation({
+        mutationFn: AuthService.updateProfile,
+        onSuccess: async () => {
+            await checkAuth(false);
             setIsEditing(false);
             setShowToast(true);
             setTimeout(() => setShowToast(false), 4000);
-        } catch (error) {
+        },
+        onError: (error) => {
             console.error("Failed to save profile", error);
-            // Optionally show error toast here
-        } finally {
-            setIsLoading(false);
         }
+    });
+
+    const handleSave = () => {
+        const { email, ...payload } = formData;
+        updateProfileMutation.mutate(payload);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -117,17 +118,17 @@ export default function GymDetails() {
                 </div>
                 <button
                     onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-                    disabled={isLoading}
+                    disabled={updateProfileMutation.isPending}
                     className={`
                         flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold transition-all shadow-md
                         ${isEditing
                             ? 'bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 shadow-[0_4px_14px_0_rgba(0,255,213,0.39)]'
                             : 'bg-[#00ffd5] hover:bg-[#00e6c0] text-slate-900 shadow-[0_4px_14px_0_rgba(0,255,213,0.39)]'
                         }
-                        ${isLoading ? 'opacity-70 cursor-not-allowed' : ''}
+                        ${updateProfileMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}
                     `}
                 >
-                    {isLoading ? (
+                    {updateProfileMutation.isPending ? (
                         <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
                     ) : isEditing ? (
                         <>

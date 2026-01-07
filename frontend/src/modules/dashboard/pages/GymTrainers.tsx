@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Mail, Loader2 } from 'lucide-react';
 import { TrainerService } from '../services/TrainerService';
 import type { Trainer } from '../services/TrainerService';
 
 export default function GymTrainers() {
-    const [trainers, setTrainers] = useState<Trainer[]>([]);
-    const [loading, setLoading] = useState(true);
+    const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [total, setTotal] = useState(0);
+    const limit = 10;
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+
+    // Query for Trainers
+    const { data, isLoading: loading } = useQuery({
+        queryKey: ['trainers', page, debouncedSearch],
+        queryFn: () => TrainerService.getTrainers(page, limit, debouncedSearch)
+    });
+
+    const trainers = data?.trainers || [];
+    const total = data?.total || 0;
+
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState<'create' | 'edit' | 'view'>('create');
@@ -39,26 +48,62 @@ export default function GymTrainers() {
     });
 
     useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        const timer = setTimeout(() => {
+            setPage(1); // Reset page on search
+            setDebouncedSearch(search)
+        }, 500);
         return () => clearTimeout(timer);
     }, [search]);
 
-    useEffect(() => {
-        fetchTrainers();
-    }, [page, debouncedSearch]);
-
-    const fetchTrainers = async () => {
-        try {
-            setLoading(true);
-            const data = await TrainerService.getTrainers(page, limit, debouncedSearch);
-            setTrainers(data.trainers);
-            setTotal(data.total);
-        } catch (error) {
-            console.error("Failed to fetch trainers", error);
-        } finally {
-            setLoading(false);
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: TrainerService.createTrainer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['trainers'] });
+            showToastMessage("Trainer added successfully");
+            handleCloseModal();
+        },
+        onError: (error: any) => {
+            const msg = error.response?.data?.message || error.message || "Failed to add trainer";
+            showToastMessage(msg);
         }
-    };
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, data }: { id: string; data: Partial<Trainer> }) => TrainerService.updateTrainer(id, data),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['trainers'] });
+            showToastMessage("Trainer updated successfully");
+            handleCloseModal();
+        },
+        onError: (error: any) => {
+            const msg = error.response?.data?.message || error.message || "Failed to update trainer";
+            showToastMessage(msg);
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: TrainerService.deleteTrainer,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['trainers'] });
+            showToastMessage("Trainer deleted successfully");
+            setIsDeleteModalOpen(false);
+            setTrainerToDelete(null);
+        }
+    });
+
+    const sendWelcomeMutation = useMutation({
+        mutationFn: TrainerService.sendWelcomeEmail,
+        onSuccess: () => {
+            showToastMessage("Welcome email sent");
+        },
+        onError: () => {
+            showToastMessage("Failed to send welcome email");
+        },
+        onSettled: () => {
+            setSendingEmailId(null);
+        }
+    });
 
     const showToastMessage = (message: string) => {
         setToast({ message, show: true });
@@ -98,23 +143,13 @@ export default function GymTrainers() {
         setEditingTrainer(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            if (editingTrainer) {
-                await TrainerService.updateTrainer(editingTrainer, formData);
-                showToastMessage("Trainer updated successfully");
-            } else {
-                await TrainerService.createTrainer(formData as any);
-                showToastMessage("Trainer added successfully");
-            }
-            fetchTrainers();
-            handleCloseModal();
-        } catch (error: any) {
-            console.error("Failed to save trainer", error);
-            // Extract error message if available from axios error or Error object
-            const msg = error.response?.data?.message || error.message || "Failed to save trainer";
-            showToastMessage(msg);
+
+        if (editingTrainer) {
+            updateMutation.mutate({ id: editingTrainer, data: formData });
+        } else {
+            createMutation.mutate(formData as any);
         }
     };
 
@@ -123,33 +158,27 @@ export default function GymTrainers() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (trainerToDelete) {
-            try {
-                await TrainerService.deleteTrainer(trainerToDelete);
-                fetchTrainers();
-                showToastMessage("Trainer deleted successfully");
-            } catch (error) {
-                console.error("Failed to delete trainer", error);
-            } finally {
-                setIsDeleteModalOpen(false);
-                setTrainerToDelete(null);
-            }
+            deleteMutation.mutate(trainerToDelete);
         }
     };
 
-    const handleSendWelcome = async (id: string, email: string) => {
-        try {
-            setSendingEmailId(id);
-            await TrainerService.sendWelcomeEmail(id);
-            showToastMessage(`Welcome email sent to ${email}`);
-        } catch (error) {
-            console.error("Failed to send welcome email", error);
-            showToastMessage("Failed to send welcome email");
-        } finally {
-            setSendingEmailId(null);
-        }
+    const handleSendWelcome = (id: string) => {
+        setSendingEmailId(id);
+        sendWelcomeMutation.mutate(id);
     };
+
+    // Explicit loading state
+    if (loading) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-[#00ffd5] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>
@@ -227,7 +256,7 @@ export default function GymTrainers() {
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
-                                                    onClick={() => handleSendWelcome(trainer.id, trainer.email)}
+                                                    onClick={() => handleSendWelcome(trainer.id)}
                                                     disabled={sendingEmailId === trainer.id}
                                                     className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
                                                     title="Send Welcome Email"

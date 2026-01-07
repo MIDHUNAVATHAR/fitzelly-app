@@ -1,13 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Tag, Calendar, Plus, Edit2, Trash2, X, CheckCircle, AlertTriangle } from 'lucide-react';
 import { PlanService } from '../services/PlanService';
 import type { Plan } from '../services/PlanService';
 
 export default function GymPlans() {
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<'category' | 'day'>('category');
-    const [plans, setPlans] = useState<Plan[]>([]);
-    const [loading, setLoading] = useState(true);
+
+    // Query for Plans
+    const { data: plans = [], isLoading: loading } = useQuery({
+        queryKey: ['plans'],
+        queryFn: PlanService.getPlans
+    });
+
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPlan, setEditingPlan] = useState<Plan | null>(null);
 
@@ -26,21 +33,34 @@ export default function GymPlans() {
         durationInDays: 0
     });
 
-    useEffect(() => {
-        fetchPlans();
-    }, []);
-
-    const fetchPlans = async () => {
-        try {
-            setLoading(true);
-            const data = await PlanService.getPlans();
-            setPlans(data);
-        } catch (error) {
-            console.error("Failed to fetch plans", error);
-        } finally {
-            setLoading(false);
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: PlanService.createPlan,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['plans'] });
+            showToastMessage("Plan added successfully");
+            handleCloseModal();
         }
-    };
+    });
+
+    const updateMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: Plan }) => PlanService.updatePlan(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['plans'] });
+            showToastMessage("Plan updated successfully");
+            handleCloseModal();
+        }
+    });
+
+    const deleteMutation = useMutation({
+        mutationFn: PlanService.deletePlan,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['plans'] });
+            showToastMessage("Plan deleted successfully");
+            setIsDeleteModalOpen(false);
+            setPlanToDelete(null);
+        }
+    });
 
     const showToastMessage = (message: string) => {
         setToast({ message, show: true });
@@ -73,27 +93,20 @@ export default function GymPlans() {
         setEditingPlan(null);
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const payload: Plan = {
-                ...formData as Plan,
-                type: activeTab,
-                monthlyFee: Number(formData.monthlyFee),
-                durationInDays: activeTab === 'day' ? Number(formData.durationInDays) : undefined
-            };
 
-            if (editingPlan && editingPlan.id) {
-                await PlanService.updatePlan(editingPlan.id, payload);
-                showToastMessage("Plan updated successfully");
-            } else {
-                await PlanService.createPlan(payload);
-                showToastMessage("Plan added successfully");
-            }
-            fetchPlans();
-            handleCloseModal();
-        } catch (error) {
-            console.error("Failed to save plan", error);
+        const payload: Plan = {
+            ...formData as Plan,
+            type: activeTab,
+            monthlyFee: Number(formData.monthlyFee),
+            durationInDays: activeTab === 'day' ? Number(formData.durationInDays) : undefined
+        };
+
+        if (editingPlan && editingPlan.id) {
+            updateMutation.mutate({ id: editingPlan.id, payload });
+        } else {
+            createMutation.mutate(payload);
         }
     };
 
@@ -102,18 +115,9 @@ export default function GymPlans() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (planToDelete) {
-            try {
-                await PlanService.deletePlan(planToDelete);
-                fetchPlans();
-                showToastMessage("Plan deleted successfully");
-            } catch (error) {
-                console.error("Failed to delete plan", error);
-            } finally {
-                setIsDeleteModalOpen(false);
-                setPlanToDelete(null);
-            }
+            deleteMutation.mutate(planToDelete);
         }
     };
 

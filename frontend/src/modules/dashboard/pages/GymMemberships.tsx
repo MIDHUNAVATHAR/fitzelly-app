@@ -1,33 +1,56 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
 import { Eye, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Filter, ChevronDown, Check, Plus, Calendar } from 'lucide-react';
 import { MembershipService } from '../services/MembershipService';
 import type { Membership } from '../services/MembershipService';
 import { ClientService } from '../services/ClientService';
-import type { Client } from '../services/ClientService';
+
 import { PlanService } from '../services/PlanService';
 import type { Plan } from '../services/PlanService';
 import { format, differenceInDays, addDays } from 'date-fns';
 
 export default function GymMemberships() {
-    const [memberships, setMemberships] = useState<Membership[]>([]);
-    const [loading, setLoading] = useState(true);
+
+    const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
-    const [limit] = useState(10);
-    const [total, setTotal] = useState(0);
+    const limit = 10;
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
     // Filter State
     const [planTypeFilter, setPlanTypeFilter] = useState('all');
+
+    // Main Query
+    const { data, isLoading: loading } = useQuery({
+        queryKey: ['memberships', page, debouncedSearch, planTypeFilter],
+        queryFn: () => MembershipService.getMemberships(page, limit, debouncedSearch, planTypeFilter)
+    });
+
+    const memberships = data?.items || [];
+    const total = data?.total || 0;
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
 
     // Create Modal State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-    const [clients, setClients] = useState<Client[]>([]);
-    const [plans, setPlans] = useState<Plan[]>([]);
-    const [filteredClients, setFilteredClients] = useState<Client[]>([]);
+
+    // Dropdown Queries
+    const { data: plans = [] } = useQuery({
+        queryKey: ['plans'],
+        queryFn: PlanService.getPlans,
+        staleTime: 5 * 60 * 1000 // Cache for 5 mins
+    });
+
+    const { data: clientsData } = useQuery({
+        queryKey: ['clients', 'dropdown'],
+        queryFn: () => ClientService.getClients(1, 1000),
+        enabled: isCreateModalOpen, // Only fetch when creating
+        staleTime: 5 * 60 * 1000
+    });
+    const clients = clientsData?.clients || [];
+
     const [clientSearch, setClientSearch] = useState('');
     const [createFormData, setCreateFormData] = useState<{
         clientId: string;
@@ -83,60 +106,57 @@ export default function GymMemberships() {
     }, []);
 
     useEffect(() => {
-        const timer = setTimeout(() => setDebouncedSearch(search), 500);
+        const timer = setTimeout(() => {
+            setPage(1);
+            setDebouncedSearch(search);
+        }, 500);
         return () => clearTimeout(timer);
     }, [search]);
 
-    useEffect(() => {
-        // Filter clients for create modal locally
+    const filteredClients = useMemo(() => {
         if (clientSearch.trim() === '') {
-            setFilteredClients(clients.slice(0, 50)); // Show top 50 initially
+            return clients.slice(0, 50);
         } else {
             const lowerInfo = clientSearch.toLowerCase();
-            setFilteredClients(clients.filter(c =>
+            return clients.filter(c =>
                 c.fullName.toLowerCase().includes(lowerInfo) ||
                 c.phone.includes(lowerInfo)
-            ).slice(0, 20));
+            ).slice(0, 20);
         }
     }, [clientSearch, clients]);
 
-    useEffect(() => {
-        fetchMemberships();
-    }, [page, debouncedSearch, planTypeFilter]);
+    // Mutations
+    const createMutation = useMutation({
+        mutationFn: MembershipService.createMembership,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memberships'] });
+            showToastMessage("Membership created successfully");
+            setIsCreateModalOpen(false);
+        },
+        onError: () => showToastMessage("Failed to create membership")
+    });
 
-    const fetchMemberships = async () => {
-        try {
-            setLoading(true);
-            const data = await MembershipService.getMemberships(page, limit, debouncedSearch, planTypeFilter);
-            setMemberships(data.items);
-            setTotal(data.total);
-        } catch (error) {
-            console.error("Failed to fetch memberships", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    const updateMutation = useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: any }) => MembershipService.updateMembership(id, payload),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memberships'] });
+            showToastMessage("Membership updated successfully");
+            setIsEditModalOpen(false);
+        },
+        onError: () => showToastMessage("Failed to update membership")
+    });
 
-    const fetchDropdownData = async () => {
-        try {
-            // Fetch all clients and plans for the dropdowns
-            // In a real app with thousands of clients, we'd use async search.
-            // For now, fetching first 1000 is likely okay as per requirements context (small/med gyms)
-            const [clientsData, plansData] = await Promise.all([
-                ClientService.getClients(1, 1000), // Get a large batch
-                PlanService.getPlans()
-            ]);
-            setClients(clientsData.clients);
-            setFilteredClients(clientsData.clients.slice(0, 50));
-            setPlans(plansData);
-        } catch (error) {
-            console.error("Failed to fetch dropdown data", error);
-            showToastMessage("Failed to load clients or plans");
+    const deleteMutation = useMutation({
+        mutationFn: MembershipService.deleteMembership,
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['memberships'] });
+            showToastMessage("Membership deleted successfully");
+            setIsDeleteModalOpen(false);
+            setMembershipToDelete(null);
         }
-    };
+    });
 
     const handleOpenCreateModal = () => {
-        fetchDropdownData();
         setIsCreateModalOpen(true);
         // Reset form
         setCreateFormData({
@@ -219,49 +239,30 @@ export default function GymMemberships() {
         }
     };
 
-    const handleCreateSubmit = async (e: React.FormEvent) => {
+    const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            // Validation
-            if (!createFormData.clientId || !createFormData.planId) {
-                showToastMessage("Please select a client and a plan");
-                return;
-            }
 
-            const payload = {
-                clientId: createFormData.clientId,
-                planId: createFormData.planId,
-                startDate: createFormData.startDate,
-                expiredDate: (selectedPlanDetails?.type === 'day' || !createFormData.expiredDate) ? null : createFormData.expiredDate,
-                totalPurchasedDays: selectedPlanDetails?.type === 'day' ? (selectedPlanDetails.durationInDays || 0) : null,
-                remainingDays: selectedPlanDetails?.type === 'day' ? (selectedPlanDetails.durationInDays || 0) : null
-            };
-
-            await MembershipService.createMembership(payload);
-            showToastMessage("Membership created successfully");
-            setIsCreateModalOpen(false);
-            fetchMemberships();
-        } catch (error) {
-            console.error("Create membership failed", error);
-            showToastMessage("Failed to create membership");
+        // Validation
+        if (!createFormData.clientId || !createFormData.planId) {
+            showToastMessage("Please select a client and a plan");
+            return;
         }
+
+        const payload = {
+            clientId: createFormData.clientId,
+            planId: createFormData.planId,
+            startDate: createFormData.startDate,
+            expiredDate: (selectedPlanDetails?.type === 'day' || !createFormData.expiredDate) ? null : createFormData.expiredDate,
+            totalPurchasedDays: selectedPlanDetails?.type === 'day' ? (selectedPlanDetails.durationInDays || 0) : null,
+            remainingDays: selectedPlanDetails?.type === 'day' ? (selectedPlanDetails.durationInDays || 0) : null
+        };
+
+        createMutation.mutate(payload);
     };
 
-    const handleOpenEditModal = async (membership: Membership) => {
-        // Need plans to populate dropdown
-        if (plans.length === 0) {
-            try {
-                const plansData = await PlanService.getPlans();
-                setPlans(plansData);
-                const currentPlan = plansData.find(p => p.id === membership.planId);
-                setEditSelectedPlan(currentPlan || null);
-            } catch (err) {
-                console.error("Failed to fetch plans for edit", err);
-            }
-        } else {
-            const currentPlan = plans.find(p => p.id === membership.planId);
-            setEditSelectedPlan(currentPlan || null);
-        }
+    const handleOpenEditModal = (membership: Membership) => {
+        const currentPlan = plans.find(p => p.id === membership.planId);
+        setEditSelectedPlan(currentPlan || null);
 
         setSelectedMembership(membership);
         setEditFormData({
@@ -275,25 +276,18 @@ export default function GymMemberships() {
         setIsEditModalOpen(true);
     };
 
-    const handleEditSubmit = async (e: React.FormEvent) => {
+    const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        try {
-            const payload = {
-                planId: editFormData.planId,
-                startDate: editFormData.startDate,
-                expiredDate: (editSelectedPlan?.type === 'day' || !editFormData.expiredDate) ? null : editFormData.expiredDate,
-                remainingDays: editSelectedPlan?.type === 'day' ? Number(editFormData.remainingDays) : null,
-                totalPurchasedDays: editSelectedPlan?.type === 'day' ? Number(editFormData.totalPurchasedDays) : null
-            };
 
-            await MembershipService.updateMembership(editFormData.id, payload);
-            showToastMessage("Membership updated successfully");
-            setIsEditModalOpen(false);
-            fetchMemberships();
-        } catch (error) {
-            console.error("Update membership failed", error);
-            showToastMessage("Failed to update membership");
-        }
+        const payload = {
+            planId: editFormData.planId,
+            startDate: editFormData.startDate,
+            expiredDate: (editSelectedPlan?.type === 'day' || !editFormData.expiredDate) ? null : editFormData.expiredDate,
+            remainingDays: editSelectedPlan?.type === 'day' ? Number(editFormData.remainingDays) : null,
+            totalPurchasedDays: editSelectedPlan?.type === 'day' ? Number(editFormData.totalPurchasedDays) : null
+        };
+
+        updateMutation.mutate({ id: editFormData.id, payload });
     };
 
     const showToastMessage = (message: string) => {
@@ -316,18 +310,9 @@ export default function GymMemberships() {
         setIsDeleteModalOpen(true);
     };
 
-    const confirmDelete = async () => {
+    const confirmDelete = () => {
         if (membershipToDelete) {
-            try {
-                await MembershipService.deleteMembership(membershipToDelete);
-                fetchMemberships();
-                showToastMessage("Membership deleted successfully");
-            } catch (error) {
-                console.error("Failed to delete membership", error);
-            } finally {
-                setIsDeleteModalOpen(false);
-                setMembershipToDelete(null);
-            }
+            deleteMutation.mutate(membershipToDelete);
         }
     };
 
@@ -345,6 +330,17 @@ export default function GymMemberships() {
             default: return 'All Plans';
         }
     };
+
+    // Explicit loading state
+    if (loading) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <div className="w-8 h-8 border-4 border-[#00ffd5] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 
     return (
         <DashboardLayout>

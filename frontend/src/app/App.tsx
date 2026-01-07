@@ -1,26 +1,24 @@
-import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import LandingPage from '../modules/landing/LandingPage';
-import DashboardLoader from '../modules/dashboard/components/DashboardLoader';
 import { AuthProvider } from '../modules/auth/context/AuthContext';
 import AuthGuard from '../modules/auth/components/AuthGuard';
 import RedirectIfAuthenticated from '../modules/auth/components/RedirectIfAuthenticated';
 import './style.css';
 
-const GymDashboard = lazy(() => import('../modules/dashboard/pages/GymDashboard'));
-const GymDetails = lazy(() => import('../modules/dashboard/pages/GymDetails'));
-const GymPlans = lazy(() => import('../modules/dashboard/pages/GymPlans'));
-const GymTrainers = lazy(() => import('../modules/dashboard/pages/GymTrainers'));
-const GymClients = lazy(() => import('../modules/dashboard/pages/GymClients'));
-const GymMemberships = lazy(() => import('../modules/dashboard/pages/GymMemberships'));
-const GymEquipment = lazy(() => import('../modules/dashboard/pages/GymEquipment'));
-const ClientSetupPassword = lazy(() => import('../modules/auth/pages/ClientSetupPassword'));
-const VerifyOtpPage = lazy(() => import('../modules/auth/pages/VerifyOtpPage'));
-const ClientDashboard = lazy(() => import('../modules/dashboard/pages/ClientDashboard'));
-const TrainerDashboard = lazy(() => import('../modules/dashboard/pages/TrainerDashboard'));
-const SuperAdminDashboard = lazy(() => import('../modules/super-admin/pages/SuperAdminDashboard'));
-const SuperAdminLoginPage = lazy(() => import('../modules/super-admin/pages/SuperAdminLoginPage'));
-const GymsPage = lazy(() => import('../modules/super-admin/pages/GymsPage'));
+import GymDashboard from '../modules/dashboard/pages/GymDashboard';
+import GymDetails from '../modules/dashboard/pages/GymDetails';
+import GymPlans from '../modules/dashboard/pages/GymPlans';
+import GymTrainers from '../modules/dashboard/pages/GymTrainers';
+import GymClients from '../modules/dashboard/pages/GymClients';
+import GymMemberships from '../modules/dashboard/pages/GymMemberships';
+import GymEquipment from '../modules/dashboard/pages/GymEquipment';
+import ClientSetupPassword from '../modules/auth/pages/ClientSetupPassword';
+import VerifyOtpPage from '../modules/auth/pages/VerifyOtpPage';
+import ClientDashboard from '../modules/dashboard/pages/ClientDashboard';
+import TrainerDashboard from '../modules/dashboard/pages/TrainerDashboard';
+import SuperAdminDashboard from '../modules/super-admin/pages/SuperAdminDashboard';
+import SuperAdminLoginPage from '../modules/super-admin/pages/SuperAdminLoginPage';
+import GymsPage from '../modules/super-admin/pages/GymsPage';
 
 export default function App() {
 
@@ -36,17 +34,15 @@ export default function App() {
             </RedirectIfAuthenticated>
           } />
 
-          <Route path="/client/setup-password" element={<Suspense fallback={<div>Loading...</div>}><ClientSetupPassword /></Suspense>} />
-          <Route path="/auth/verify-otp" element={<Suspense fallback={<div>Loading...</div>}><VerifyOtpPage /></Suspense>} />
+          <Route path="/client/setup-password" element={<ClientSetupPassword />} />
+          <Route path="/auth/verify-otp" element={<VerifyOtpPage />} />
 
           {/* Protected Routes */}
           <Route
             path="/gym/dashboard"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymDashboard />
-                </Suspense>
+                <GymDashboard />
               </AuthGuard>
             }
           />
@@ -55,9 +51,7 @@ export default function App() {
             path="/gym/details"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymDetails />
-                </Suspense>
+                <GymDetails />
               </AuthGuard>
             }
           />
@@ -66,9 +60,7 @@ export default function App() {
             path="/gym/plans"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymPlans />
-                </Suspense>
+                <GymPlans />
               </AuthGuard>
             }
           />
@@ -77,9 +69,7 @@ export default function App() {
             path="/gym/trainers"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymTrainers />
-                </Suspense>
+                <GymTrainers />
               </AuthGuard>
             }
           />
@@ -88,9 +78,7 @@ export default function App() {
             path="/gym/clients"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymClients />
-                </Suspense>
+                <GymClients />
               </AuthGuard>
             }
           />
@@ -99,9 +87,7 @@ export default function App() {
             path="/gym/memberships"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymMemberships />
-                </Suspense>
+                <GymMemberships />
               </AuthGuard>
             }
           />
@@ -110,9 +96,7 @@ export default function App() {
             path="/gym/equipment"
             element={
               <AuthGuard allowedRoles={['gym']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymEquipment />
-                </Suspense>
+                <GymEquipment />
               </AuthGuard>
             }
           />
@@ -122,9 +106,7 @@ export default function App() {
             path="/client/dashboard"
             element={
               <AuthGuard allowedRoles={['client']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <ClientDashboard />
-                </Suspense>
+                <ClientDashboard />
               </AuthGuard>
             }
           />
@@ -132,27 +114,21 @@ export default function App() {
             path="/trainer/dashboard"
             element={
               <AuthGuard allowedRoles={['trainer']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <TrainerDashboard />
-                </Suspense>
+                <TrainerDashboard />
               </AuthGuard>
             }
           />
 
           {/* Super Admin Routes */}
           <Route path="/fitzelly-hq/login" element={
-            <Suspense fallback={<div>Loading...</div>}>
-              <SuperAdminLoginPage />
-            </Suspense>
+            <SuperAdminLoginPage />
           } />
 
           <Route
             path="/fitzelly-hq"
             element={
               <AuthGuard allowedRoles={['super-admin']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <SuperAdminDashboard />
-                </Suspense>
+                <SuperAdminDashboard />
               </AuthGuard>
             }
           />
@@ -161,9 +137,7 @@ export default function App() {
             path="/fitzelly-hq/gyms"
             element={
               <AuthGuard allowedRoles={['super-admin']}>
-                <Suspense fallback={<DashboardLoader />}>
-                  <GymsPage />
-                </Suspense>
+                <GymsPage />
               </AuthGuard>
             }
           />

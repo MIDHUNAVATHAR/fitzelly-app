@@ -32,6 +32,11 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
+        // Handle 401 Unauthorized
+        if (error.response && error.response.status === 401) {
+            // Dispatch a custom event so AuthContext can pick it up and clear state
+            window.dispatchEvent(new Event('auth-logout'));
+        }
         return Promise.reject(error);
     }
 );
