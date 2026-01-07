@@ -28,8 +28,8 @@ export class LoginGymUseCase {
 
         // 3. Generate Token
         // Use TokenService
-        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym_owner' });
-        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym_owner' });
+        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym' });
+        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym' });
 
 
         // 4. Return Response

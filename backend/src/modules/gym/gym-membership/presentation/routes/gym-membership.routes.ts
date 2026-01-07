@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { GymMembershipController } from "../controllers/GymMembershipController.js";
-import { authenticate } from "../../../authentication/infrastructure/http/middlewares/auth.middleware.js";
+import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(protect(['gym']));
 
 
 router.post("/memberships", GymMembershipController.createMembership);

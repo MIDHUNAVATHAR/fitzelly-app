@@ -73,9 +73,22 @@ export class TrainerAuthController {
 
             res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,
-                data: result.user,
+                user: result.user,
                 accessToken: result.tokens.accessToken
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async logout(req: Request, res: Response, next: NextFunction) {
+        try {
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'strict'
+            });
+            res.status(HttpStatus.OK).json({ message: "Logged out successfully" });
         } catch (error) {
             next(error);
         }

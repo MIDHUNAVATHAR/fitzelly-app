@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { GymController } from "../controllers/GymController.js";
 import { ROUTER_ENDPOINTS } from "../../../../../constants/api.constants.js";
-import { authenticate } from "../../infrastructure/http/middlewares/auth.middleware.js";
+import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
 import { validateRequest } from "../../../../../shared/middlewares/validateRequest.js";
 import {
     initiateSignupSchema,
@@ -29,7 +29,7 @@ router.post(ROUTER_ENDPOINTS.GYM_AUTH.FORGOT_PASSWORD_INIT, validateRequest(init
 router.post(ROUTER_ENDPOINTS.GYM_AUTH.RESET_PASSWORD, validateRequest(resetPasswordSchema), GymController.resetPassword);
 
 // protected route
-router.get(ROUTER_ENDPOINTS.GYM_AUTH.VERIFY_TOKEN, authenticate, GymController.verifyToken);
+router.get(ROUTER_ENDPOINTS.GYM_AUTH.VERIFY_TOKEN, protect(['gym']), GymController.verifyToken);
 
 
 export const gymAuthRouter = router;

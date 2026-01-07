@@ -14,6 +14,7 @@ interface AuthContextType {
     isLoading: boolean;
     checkAuth: (shouldLoading?: boolean) => Promise<void>;
     logout: () => Promise<void>;
+    setAuth: (user: any, role: 'gym' | 'client' | 'trainer' | 'super-admin') => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,6 +23,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [role, setRole] = useState<'gym' | 'client' | 'trainer' | 'super-admin' | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const setAuth = (user: any, role: 'gym' | 'client' | 'trainer' | 'super-admin') => {
+        setUser(user);
+        setRole(role);
+        localStorage.setItem('userRole', role);
+        setIsLoading(false);
+    };
 
     const checkAuth = async (shouldLoading = true) => {
         if (shouldLoading) setIsLoading(true);
@@ -118,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, role, isLoading, checkAuth, logout }}>
+        <AuthContext.Provider value={{ user, role, isLoading, checkAuth, logout, setAuth }}>
             {children}
         </AuthContext.Provider>
     );

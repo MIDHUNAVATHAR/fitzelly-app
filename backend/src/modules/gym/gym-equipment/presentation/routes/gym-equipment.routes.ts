@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { GymEquipmentController } from "../controllers/GymEquipmentController.js";
-import { authenticate } from "../../../authentication/infrastructure/http/middlewares/auth.middleware.js";
+import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(authenticate);
+router.use(protect(['gym']));
 
 router.post("/", GymEquipmentController.createEquipment);
 router.get("/", GymEquipmentController.getEquipments);

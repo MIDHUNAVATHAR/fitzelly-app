@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
+import { useAuth } from '../context/AuthContext';
 
 type UserRole = 'gym' | 'client' | 'trainer';
 
 export function useSignIn(role: UserRole = 'gym') {
     const navigate = useNavigate();
+    const { setAuth } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -45,9 +47,9 @@ export function useSignIn(role: UserRole = 'gym') {
 
         setIsLoading(true);
         try {
-            await AuthService.login({ email, password, role });
+            const response = await AuthService.login({ email, password, role });
 
-            window.dispatchEvent(new Event('auth-change'));
+            setAuth(response.user, role);
 
             // Navigate to role-specific dashboard
             const dashboardRoutes = {

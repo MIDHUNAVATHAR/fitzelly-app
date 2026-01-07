@@ -30,7 +30,7 @@ class App {
     private setupMiddlewares(): void {
         this.app.use(
             cors({
-                origin: ['http://localhost:5173', 'http://localhost:3000', 'https://zonia-noninfected-dawne.ngrok-free.dev'],
+                origin: ['http://localhost:5173', 'http://localhost:3000', 'https://zonia-noninfected-dawne.ngrok-free.dev', 'https://fitzelly-app.vercel.app'],
                 credentials: true,
                 methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
                 allowedHeaders: ["Content-Type", "Authorization", "ngrok-skip-browser-warning", "Access-Control-Allow-Origin"],
@@ -50,6 +50,7 @@ class App {
         // health check
         this.app.get(`${API_ROOT.V1}${ENDPOINTS.SYSTEM.HEALTH}`, HealthController.check);
 
+        // gym
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymAuthRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_AUTH}`, gymProfileRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_PLAN}`, gymPlanRouter);
@@ -58,8 +59,13 @@ class App {
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_MEMBERSHIP}`, gymMembershipRouter);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.GYM_EQUIPMENT}`, gymEquipmentRoutes);
 
+        // client
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
+
+        // trainer
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
+
+        //superadmin
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_AUTH}`, superAdminAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_GYM_LISTING}`, gymListingRouter);
     }

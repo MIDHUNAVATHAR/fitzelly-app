@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ClientAuthController } from "../controllers/ClientAuthController.js";
 
-import { authenticate } from "../../../../gym/authentication/infrastructure/http/middlewares/auth.middleware.js";
+import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
 
 const clientAuthRoutes = Router();
 
@@ -10,9 +10,11 @@ clientAuthRoutes.post('/forgot-password/initiate', ClientAuthController.initiate
 
 // Route: POST /api/v1/client-auth/forgot-password/complete
 clientAuthRoutes.post('/forgot-password/complete', ClientAuthController.completeReset);
+// Route: POST /api/v1/client-auth/logout
+clientAuthRoutes.post("/logout", ClientAuthController.logout);
 clientAuthRoutes.post("/login", ClientAuthController.login);
 
 // Protected
-clientAuthRoutes.get("/auth/me", authenticate, ClientAuthController.verifyToken);
+clientAuthRoutes.get("/auth/me", protect(['client']), ClientAuthController.verifyToken);
 
 export { clientAuthRoutes };

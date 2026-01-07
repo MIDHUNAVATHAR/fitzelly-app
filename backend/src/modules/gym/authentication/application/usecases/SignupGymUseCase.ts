@@ -51,8 +51,8 @@ export class SignupGymUseCase {
         // No manual deletion needed
 
         // 6. Generate Token
-        const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym_owner' });
-        const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym_owner' });
+        const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym' });
+        const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym' });
 
 
         return GymDTOMapper.toResponseDTO(createdGym, accessToken, refreshToken);

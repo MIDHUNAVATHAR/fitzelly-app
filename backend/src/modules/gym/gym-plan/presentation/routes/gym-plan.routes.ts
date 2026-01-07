@@ -1,10 +1,10 @@
 import { Router } from "express";
 import { GymPlanController } from "../controllers/GymPlanController.js";
-import { authenticate } from "../../../authentication/infrastructure/http/middlewares/auth.middleware.js";
+import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
 
 const router = Router();
 
-router.use(authenticate); // All plan routes are protected
+router.use(protect(['gym'])); // All plan routes are protected
 
 router.post("/plans", GymPlanController.createPlan);
 router.get("/plans", GymPlanController.getPlans);

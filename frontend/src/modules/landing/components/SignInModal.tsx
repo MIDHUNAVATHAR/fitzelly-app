@@ -15,7 +15,7 @@ interface SignInModalProps {
 type UserRole = 'gym' | 'client' | 'trainer';
 
 export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgotPassword }: SignInModalProps) {
-    const [selectedRole, setSelectedRole] = useState<UserRole>('gym');
+    const [selectedRole, setSelectedRole] = useState<UserRole>('client');
     const {
         email, setEmail,
         password, setPassword,
