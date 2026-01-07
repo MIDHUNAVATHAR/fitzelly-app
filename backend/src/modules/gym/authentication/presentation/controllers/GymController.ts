@@ -10,6 +10,7 @@ import { BcryptPasswordHasher } from "../../infrastructure/services/BcryptPasswo
 import { GoogleAuthService } from "../../infrastructure/services/GoogleAuthService.js";
 import { GoogleAuthGymUseCase } from "../../application/usecases/GoogleAuthGymUseCase.js";
 import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
+import { UpdateGymProfileUseCase } from "../../application/usecases/UpdateGymProfileUseCase.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 
 export class GymController {
@@ -201,29 +202,64 @@ export class GymController {
 
 
     static async verifyToken(req: Request, res: Response, next: NextFunction) {
-        // middleware attaches user to req
-        const user = (req as any).user;
+        try {
+            // middleware attaches user to req
+            const userPayload = (req as any).user;
 
-        return res.status(HttpStatus.OK).json({
-            success: true,
-            user: {
-                id: user.id,
-                ...(user.ownerName ? { ownerName: user.ownerName } : {}),
-                ...(user.gymName ? { gymName: user.gymName } : {}),
-                ...(user.phone ? { phone: user.phone } : {}),
-                ...(user.description ? { description: user.description } : {}),
-                ...(user.address ? {
-                    address: {
-                        ...(user.address.street ? { street: user.address.street } : {}),
-                        ...(user.address.city ? { city: user.address.city } : {}),
-                        ...(user.address.state ? { state: user.address.state } : {}),
-                        ...(user.address.pincode ? { pincode: user.address.pincode } : {}),
-                        ...(user.address.mapLink ? { mapLink: user.address.mapLink } : {}),
+            // Should verify specifically for 'gym' role if needed, or handle generically
+            if (userPayload.role === 'gym') {
+                const repo = new GymRepositoryImpl();
+                const user = await repo.findById(userPayload.id);
+
+                if (!user) {
+                    return res.status(HttpStatus.NOT_FOUND).json({ success: false, message: "User not found" });
+                }
+
+                return res.status(HttpStatus.OK).json({
+                    success: true,
+                    user: {
+                        id: user.id,
+                        ownerName: user.ownerName,
+                        gymName: user.gymName,
+                        phone: user.phone,
+                        description: user.description,
+                        address: user.address,
+                        email: user.email,
+                        role: 'gym'
                     }
-                } : {}),
-                email: user.email
+                });
             }
-        })
+
+            // Fallback for other roles or if not gym (though checkAuth usually handles this)
+            return res.status(HttpStatus.OK).json({
+                success: true,
+                user: userPayload
+            });
+
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    static async updateProfile(req: Request, res: Response, next: NextFunction) {
+        try {
+            const userId = (req as any).user.id;
+            const repo = new GymRepositoryImpl();
+            const useCase = new UpdateGymProfileUseCase(repo);
+
+            const result = await useCase.execute({
+                userId,
+                ...req.body
+            });
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                message: "Profile updated successfully",
+                data: result
+            });
+        } catch (error) {
+            next(error);
+        }
     }
 
     static async logout(req: Request, res: Response, next: NextFunction) {

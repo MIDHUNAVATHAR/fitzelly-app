@@ -3,7 +3,9 @@ import { CreateClientUseCase } from "../../application/usecases/CreateClientUseC
 import { GetClientsUseCase } from "../../application/usecases/GetClientsUseCase.js";
 import { UpdateClientUseCase } from "../../application/usecases/UpdateClientUseCase.js";
 import { DeleteClientUseCase } from "../../application/usecases/DeleteClientUseCase.js";
+import { SendClientWelcomeEmailUseCase } from "../../application/usecases/SendClientWelcomeEmailUseCase.js";
 import { GymClientRepositoryImpl } from "../../infrastructure/repositories/GymClientRepositoryImpl.js";
+import { GymRepositoryImpl } from "../../../authentication/infrastructure/repositories/GymRepositoryImpl.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 import { CreateClientRequestDTO, UpdateClientRequestDTO } from "../../application/dtos/GymClientDTO.js";
 import { OtpRepositoryImpl } from "../../../../client/authentication/infrastructure/repositories/OtpRepositoryImpl.js";
@@ -88,6 +90,25 @@ export class GymClientController {
             res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,
                 message: "Client deleted successfully"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+    static async sendWelcomeEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const clientRepo = new GymClientRepositoryImpl();
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const emailService = new EmailServiceImpl();
+            const useCase = new SendClientWelcomeEmailUseCase(clientRepo, gymRepo, otpRepo, emailService);
+            const user = (req as any).user;
+
+            await useCase.execute(req.params.id as string, user.id);
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                message: "Welcome email sent successfully"
             });
         } catch (error) {
             next(error);

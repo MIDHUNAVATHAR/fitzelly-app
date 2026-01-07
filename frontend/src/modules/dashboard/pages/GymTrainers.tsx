@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Mail, Loader2 } from 'lucide-react';
 import { TrainerService } from '../services/TrainerService';
 import type { Trainer } from '../services/TrainerService';
 
@@ -24,6 +24,9 @@ export default function GymTrainers() {
     // Delete Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [trainerToDelete, setTrainerToDelete] = useState<string | null>(null);
+
+    // Sending Email State
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<Partial<Trainer>>({
@@ -135,6 +138,19 @@ export default function GymTrainers() {
         }
     };
 
+    const handleSendWelcome = async (id: string, email: string) => {
+        try {
+            setSendingEmailId(id);
+            await TrainerService.sendWelcomeEmail(id);
+            showToastMessage(`Welcome email sent to ${email}`);
+        } catch (error) {
+            console.error("Failed to send welcome email", error);
+            showToastMessage("Failed to send welcome email");
+        } finally {
+            setSendingEmailId(null);
+        }
+    };
+
     return (
         <DashboardLayout>
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -210,6 +226,18 @@ export default function GymTrainers() {
                                         <td className="px-6 py-4 text-slate-900 font-semibold">₹{trainer.monthlySalary.toLocaleString()}</td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleSendWelcome(trainer.id, trainer.email)}
+                                                    disabled={sendingEmailId === trainer.id}
+                                                    className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
+                                                    title="Send Welcome Email"
+                                                >
+                                                    {sendingEmailId === trainer.id ? (
+                                                        <Loader2 size={18} className="animate-spin text-[#00ffd5]" />
+                                                    ) : (
+                                                        <Mail size={18} />
+                                                    )}
+                                                </button>
                                                 <button
                                                     onClick={() => handleOpenModal('view', trainer)}
                                                     className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
@@ -323,6 +351,7 @@ export default function GymTrainers() {
                                         onChange={e => setFormData({ ...formData, fullName: e.target.value })}
                                         placeholder="Enter full name"
                                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                                        autoFocus
                                     />
                                 </div>
 
@@ -421,7 +450,7 @@ export default function GymTrainers() {
 
             {/* Toast Notification */}
             {toast.show && (
-                <div className="fixed top-8 right-8 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
+                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
                         <CheckCircle className="text-[#00ffd5]" size={20} />
                         <span className="font-medium text-sm">{toast.message}</span>

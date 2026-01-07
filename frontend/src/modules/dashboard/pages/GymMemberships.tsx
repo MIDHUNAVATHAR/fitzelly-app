@@ -617,6 +617,7 @@ export default function GymMemberships() {
                                         value={clientSearch}
                                         onChange={(e) => setClientSearch(e.target.value)}
                                         className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                                        autoFocus
                                     />
                                 </div>
 
@@ -743,9 +744,17 @@ export default function GymMemberships() {
                                 <label className="block text-sm font-semibold text-slate-700 mb-1.5">Change Plan</label>
                                 <select
                                     required
-                                    value={editFormData.planId}
+                                    key={`plan-select-${plans.length}-${editFormData.planId}`} // Force re-render when plans load or ID changes to ensure value is picked up
+                                    value={editFormData.planId || ''}
                                     onChange={(e) => handlePlanSelect(e.target.value, true)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                            e.preventDefault();
+                                            e.currentTarget.form?.requestSubmit();
+                                        }
+                                    }}
                                     className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all cursor-pointer appearance-none"
+                                    autoFocus
                                 >
                                     <option value="">-- Choose a Plan --</option>
                                     <optgroup label="Monthly Plans">
@@ -850,9 +859,10 @@ export default function GymMemberships() {
 
             {/* Toast Notification */}
             {toast.show && (
-                <div className="fixed top-8 right-8 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
-                    <div className={`fixed bottom-4 right-4 bg-slate-800 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-3 transition-all duration-300 z-50 ${toast.show ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'
-                        }`}>    <span className="font-medium text-sm">{toast.message}</span>
+                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                        <CheckCircle className="text-[#00ffd5]" size={20} />
+                        <span className="font-medium text-sm">{toast.message}</span>
                     </div>
                 </div>
             )}

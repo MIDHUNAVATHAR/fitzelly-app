@@ -242,6 +242,7 @@ export default function GymPlans() {
                                     onChange={e => setFormData({ ...formData, planName: e.target.value })}
                                     placeholder={activeTab === 'category' ? "e.g. Cardio Premium" : "e.g. 15-Day Flex"}
                                     className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                                    autoFocus
                                 />
                             </div>
 
@@ -329,7 +330,7 @@ export default function GymPlans() {
 
             {/* Toast Notification */}
             {toast.show && (
-                <div className="fixed top-8 right-8 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
+                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
                         <CheckCircle className="text-[#00ffd5]" size={20} />
                         <span className="font-medium text-sm">{toast.message}</span>

@@ -20,7 +20,7 @@ export class EmailServiceImpl implements IEmailService {
     //     throw new Error("Not implemented yet");
     // }
 
-    async sendClientInvitation(to: string, link: string, otp: string): Promise<void> {
-        await mailService.sendClientInvitation(to, link, otp);
+    async sendClientInvitation(to: string, link: string, otp: string, gymName: string, role: string): Promise<void> {
+        await mailService.sendClientInvitation(to, link, otp, gymName, role);
     }
 }

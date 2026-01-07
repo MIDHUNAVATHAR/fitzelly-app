@@ -37,5 +37,9 @@ export const TrainerService = {
 
     deleteTrainer: async (id: string): Promise<void> => {
         await api.delete(`/gym-trainer/trainers/${id}`);
+    },
+
+    sendWelcomeEmail: async (id: string): Promise<void> => {
+        await api.post(`/gym-trainer/trainers/${id}/welcome`);
     }
 }

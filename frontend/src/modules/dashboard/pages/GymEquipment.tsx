@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Search, Plus, Edit2, Trash2, X, Upload } from 'lucide-react';
+import { Search, Plus, Edit2, Trash2, X, Upload, CheckCircle } from 'lucide-react';
 import { EquipmentService, type GymEquipment, type CreateEquipmentDTO } from '../services/EquipmentService';
 import Cropper, { type Area } from 'react-easy-crop';
 import { getCroppedImg } from '../../../utils/canvasUtils';
@@ -19,6 +19,16 @@ export default function GymEquipmentPage() {
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [selectedEquipment, setSelectedEquipment] = useState<GymEquipment | null>(null);
+    const [toast, setToast] = useState({ show: false, message: '' });
+
+    useEffect(() => {
+        if (toast.show) {
+            const timer = setTimeout(() => {
+                setToast({ show: false, message: '' });
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toast.show]);
 
     // Form Stats
     const [formData, setFormData] = useState<CreateEquipmentDTO>({
@@ -96,6 +106,7 @@ export default function GymEquipmentPage() {
             setIsCreateModalOpen(false);
             fetchEquipments();
             resetForm();
+            setToast({ show: true, message: 'Equipment added successfully' });
         } catch (error) {
             console.error(error);
         }
@@ -109,6 +120,7 @@ export default function GymEquipmentPage() {
             setIsEditModalOpen(false);
             fetchEquipments();
             resetForm();
+            setToast({ show: true, message: 'Equipment updated successfully' });
         } catch (error) {
             console.error(error);
         }
@@ -120,6 +132,7 @@ export default function GymEquipmentPage() {
             await EquipmentService.delete(selectedEquipment.id);
             setIsDeleteModalOpen(false);
             fetchEquipments();
+            setToast({ show: true, message: 'Equipment deleted successfully' });
         } catch (error) {
             console.error(error);
         }
@@ -327,6 +340,7 @@ export default function GymEquipmentPage() {
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] transition-all"
                                     placeholder="e.g. Treadmill"
+                                    autoFocus
                                 />
                             </div>
 
@@ -388,17 +402,27 @@ export default function GymEquipmentPage() {
                         <div className="flex justify-center gap-4">
                             <button
                                 onClick={() => setIsDeleteModalOpen(false)}
-                                className="px-6 py-2.5 text-slate-600 font-medium hover:bg-slate-50 rounded-xl transition-colors"
+                                className="px-6 py-2.5 text-slate-600 font-medium hover:bg-slate-50 rounded-lg transition-colors"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="px-6 py-2.5 bg-red-600 text-white font-bold rounded-xl hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
+                                className="px-6 py-2.5 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-600/20"
                             >
                                 Delete
                             </button>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Toast Notification - Added missing toast */}
+            {toast.show && (
+                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
+                    <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
+                        <CheckCircle className="text-[#00ffd5]" size={20} />
+                        <span className="font-medium text-sm">{toast.message}</span>
                     </div>
                 </div>
             )}

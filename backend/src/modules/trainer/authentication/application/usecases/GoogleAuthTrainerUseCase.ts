@@ -20,6 +20,12 @@ export class GoogleAuthTrainerUseCase {
             throw new Error("Trainer account not found. Please contact your gym.");
         }
 
+        // 2.1 Mark as verified if not already
+        if (!trainer.isEmailVerified) {
+            trainer = trainer.markAsVerified();
+            await this.trainerRepository.update(trainer);
+        }
+
         // 3. Generate Tokens (Login)
         const accessToken = TokenService.generateAccessToken({ id: trainer.id, role: 'trainer' });
         const refreshToken = TokenService.generateRefreshToken({ id: trainer.id, role: 'trainer' });

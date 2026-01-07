@@ -25,5 +25,5 @@ export interface IEmailService {
      */
     // sendWelcomeEmail?(to: string, name: string): Promise<void>;
 
-    sendClientInvitation(to: string, link: string, otp: string): Promise<void>;
+    sendClientInvitation(to: string, link: string, otp: string, gymName: string, role: string): Promise<void>;
 }

@@ -15,6 +15,7 @@ const GymClients = lazy(() => import('../modules/dashboard/pages/GymClients'));
 const GymMemberships = lazy(() => import('../modules/dashboard/pages/GymMemberships'));
 const GymEquipment = lazy(() => import('../modules/dashboard/pages/GymEquipment'));
 const ClientSetupPassword = lazy(() => import('../modules/auth/pages/ClientSetupPassword'));
+const VerifyOtpPage = lazy(() => import('../modules/auth/pages/VerifyOtpPage'));
 const ClientDashboard = lazy(() => import('../modules/dashboard/pages/ClientDashboard'));
 const TrainerDashboard = lazy(() => import('../modules/dashboard/pages/TrainerDashboard'));
 const SuperAdminDashboard = lazy(() => import('../modules/super-admin/pages/SuperAdminDashboard'));
@@ -36,6 +37,7 @@ export default function App() {
           } />
 
           <Route path="/client/setup-password" element={<Suspense fallback={<div>Loading...</div>}><ClientSetupPassword /></Suspense>} />
+          <Route path="/auth/verify-otp" element={<Suspense fallback={<div>Loading...</div>}><VerifyOtpPage /></Suspense>} />
 
           {/* Protected Routes */}
           <Route

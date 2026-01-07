@@ -20,6 +20,12 @@ export class GoogleAuthClientUseCase {
             throw new Error("Client account not found. Please ask your gym to add you.");
         }
 
+        // 2.1 Mark as verified if not already
+        if (!client.isEmailVerified) {
+            client = client.markAsVerified();
+            await this.clientRepository.update(client);
+        }
+
         // 3. Generate Tokens (Login)
         const accessToken = TokenService.generateAccessToken({ id: client.id, role: 'client' });
         const refreshToken = TokenService.generateRefreshToken({ id: client.id, role: 'client' });

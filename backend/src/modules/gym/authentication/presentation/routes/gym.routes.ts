@@ -30,6 +30,7 @@ router.post(ROUTER_ENDPOINTS.GYM_AUTH.RESET_PASSWORD, validateRequest(resetPassw
 
 // protected route
 router.get(ROUTER_ENDPOINTS.GYM_AUTH.VERIFY_TOKEN, protect(['gym']), GymController.verifyToken);
+router.put("/profile", protect(['gym']), GymController.updateProfile);
 
 
 export const gymAuthRouter = router;

@@ -4,6 +4,16 @@ import { Pencil, Save, MapPin, Phone, Building, CheckCircle } from 'lucide-react
 import { useAuth } from '../../auth/context/AuthContext';
 import { AuthService } from '../../auth/services/AuthService';
 
+interface InputGroupProps {
+    label: string;
+    name: string;
+    value: string;
+    onChange: (e: any) => void;
+    isEditing: boolean;
+    placeholder?: string;
+    onKeyDown?: (e: React.KeyboardEvent) => void;
+}
+
 export default function GymDetails() {
     const { user, checkAuth } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
@@ -81,6 +91,12 @@ export default function GymDetails() {
         }
     };
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' && isEditing) {
+            handleSave();
+        }
+    };
+
     return (
         <DashboardLayout>
             {/* Toast Notification */}
@@ -145,6 +161,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. FitZone Gym"
+                            onKeyDown={handleKeyDown}
                         />
                         <InputGroup
                             label="Owner Name"
@@ -153,6 +170,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. Rajesh Kumar"
+                            onKeyDown={handleKeyDown}
                         />
                         <div className="space-y-1.5">
                             <label className="block text-sm font-semibold text-slate-700">Description</label>
@@ -191,6 +209,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. +91 98765 43210"
+                            onKeyDown={handleKeyDown}
                         />
                         <div className="space-y-1.5">
                             <label className="block text-sm font-semibold text-slate-700">Email Address</label>
@@ -220,6 +239,7 @@ export default function GymDetails() {
                                 onChange={handleChange}
                                 isEditing={isEditing}
                                 placeholder="e.g. 123, Main Street, Sector 21"
+                                onKeyDown={handleKeyDown}
                             />
                         </div>
                         <InputGroup
@@ -229,6 +249,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. Mumbai"
+                            onKeyDown={handleKeyDown}
                         />
                         <InputGroup
                             label="State"
@@ -237,6 +258,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. Maharashtra"
+                            onKeyDown={handleKeyDown}
                         />
                         <InputGroup
                             label="Pincode"
@@ -245,6 +267,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="e.g. 400001"
+                            onKeyDown={handleKeyDown}
                         />
                         <InputGroup
                             label="Google Maps Link"
@@ -253,6 +276,7 @@ export default function GymDetails() {
                             onChange={handleChange}
                             isEditing={isEditing}
                             placeholder="https://maps.google.com/..."
+                            onKeyDown={handleKeyDown}
                         />
                     </div>
                 </div>
@@ -263,10 +287,8 @@ export default function GymDetails() {
 
 // Helper component for input fields
 function InputGroup({
-    label, name, value, onChange, isEditing, placeholder
-}: {
-    label: string, name: string, value: string, onChange: (e: any) => void, isEditing: boolean, placeholder?: string
-}) {
+    label, name, value, onChange, isEditing, placeholder, onKeyDown
+}: InputGroupProps) {
     return (
         <div className="space-y-1.5">
             <label className="block text-sm font-semibold text-slate-700">{label}</label>
@@ -277,6 +299,7 @@ function InputGroup({
                     value={value}
                     onChange={onChange}
                     placeholder={placeholder}
+                    onKeyDown={onKeyDown}
                     className="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent text-slate-900 placeholder:text-slate-400 transition-all"
                 />
             ) : (

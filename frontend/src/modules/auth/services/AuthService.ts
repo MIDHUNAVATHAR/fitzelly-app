@@ -156,5 +156,22 @@ export const AuthService = {
             window.dispatchEvent(new Event('auth-change'));
             throw new Error(error.response?.data?.message || 'Logout failed');
         }
+    },
+
+    confirmPasswordReset: async (payload: { email: string; otp: string; password: string; role?: string }): Promise<any> => {
+        try {
+            const role = payload.role || 'gym';
+            const endpoint = getAuthEndpoint(role);
+
+            let path = '/forgot-password/reset'; // Default for gym
+            if (role === 'client' || role === 'trainer') {
+                path = '/forgot-password/complete';
+            }
+
+            const response = await api.post(`/${endpoint}${path}`, payload);
+            return response.data;
+        } catch (error: any) {
+            throw new Error(error.response?.data?.message || 'Password reset failed');
+        }
     }
 };

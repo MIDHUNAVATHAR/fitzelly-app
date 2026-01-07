@@ -35,5 +35,9 @@ export const ClientService = {
 
     deleteClient: async (id: string): Promise<void> => {
         await api.delete(`/gym-client/clients/${id}`);
+    },
+
+    sendWelcomeEmail: async (id: string): Promise<void> => {
+        await api.post(`/gym-client/clients/${id}/welcome`);
     }
 }

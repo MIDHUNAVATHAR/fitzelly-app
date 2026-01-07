@@ -10,5 +10,6 @@ router.post("/clients", GymClientController.createClient);
 router.get("/clients", GymClientController.getClients);
 router.put("/clients/:id", GymClientController.updateClient);
 router.delete("/clients/:id", GymClientController.deleteClient);
+router.post("/clients/:id/welcome", GymClientController.sendWelcomeEmail);
 
 export const gymClientRouter = router;

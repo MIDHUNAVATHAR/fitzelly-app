@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2 } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
 
@@ -36,6 +36,9 @@ export default function GymClients() {
     // Delete Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [clientToDelete, setClientToDelete] = useState<string | null>(null);
+
+    // Sending Email State
+    const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState<Partial<Client>>({
@@ -130,6 +133,19 @@ export default function GymClients() {
                 setIsDeleteModalOpen(false);
                 setClientToDelete(null);
             }
+        }
+    };
+
+    const handleSendWelcome = async (id: string, email: string) => {
+        try {
+            setSendingEmailId(id);
+            await ClientService.sendWelcomeEmail(id);
+            showToastMessage(`Welcome email sent to ${email}`);
+        } catch (error) {
+            console.error("Failed to send welcome email", error);
+            showToastMessage("Failed to send welcome email");
+        } finally {
+            setSendingEmailId(null);
         }
     };
 
@@ -236,13 +252,18 @@ export default function GymClients() {
                                     <tr key={client.id} className="hover:bg-slate-50 transition-colors">
                                         <td className="px-6 py-4 font-medium text-slate-900">{client.fullName}</td>
                                         <td className="px-6 py-4 text-slate-600">{client.phone}</td>
-                                        <td className="px-6 py-4 text-slate-600 flex items-center gap-2">
-                                            {client.email}
-                                            {!client.isEmailVerified && (
-                                                <div title="Email not verified" className="relative group">
-                                                    <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                                </div>
-                                            )}
+                                        <td className="px-6 py-4 text-slate-600">
+                                            <div className="flex items-center gap-2">
+                                                {client.email}
+                                                {client.isEmailVerified && (
+                                                    <div title="Email Verified" className="text-[#00ffd5]">
+                                                        <CheckCircle size={14} />
+                                                    </div>
+                                                )}
+                                                {!client.isEmailVerified && (
+                                                    <div title="Email Unverified" className="w-2 h-2 rounded-full bg-red-500"></div>
+                                                )}
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${client.status === 'active'
@@ -256,6 +277,18 @@ export default function GymClients() {
                                         </td>
                                         <td className="px-6 py-4 text-right">
                                             <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => handleSendWelcome(client.id, client.email)}
+                                                    disabled={sendingEmailId === client.id}
+                                                    className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
+                                                    title="Send Welcome Email"
+                                                >
+                                                    {sendingEmailId === client.id ? (
+                                                        <Loader2 size={18} className="animate-spin text-[#00ffd5]" />
+                                                    ) : (
+                                                        <Mail size={18} />
+                                                    )}
+                                                </button>
                                                 <button
                                                     onClick={() => handleOpenModal('view', client)}
                                                     className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
@@ -331,7 +364,9 @@ export default function GymClients() {
                                     <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Email</div>
                                     <div className="text-slate-900 font-medium flex items-center gap-2">
                                         {selectedClient.email}
-                                        {!selectedClient.isEmailVerified && (
+                                        {selectedClient.isEmailVerified ? (
+                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Verified</span>
+                                        ) : (
                                             <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Unverified</span>
                                         )}
                                     </div>
@@ -362,6 +397,7 @@ export default function GymClients() {
                                         onChange={e => setFormData({ ...formData, fullName: e.target.value })}
                                         placeholder="Enter full name"
                                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                                        autoFocus
                                     />
                                 </div>
 
@@ -435,7 +471,7 @@ export default function GymClients() {
 
             {/* Toast Notification */}
             {toast.show && (
-                <div className="fixed top-8 right-8 z-[100] animate-in slide-in-from-top-5 fade-in duration-300">
+                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
                         <CheckCircle className="text-[#00ffd5]" size={20} />
                         <span className="font-medium text-sm">{toast.message}</span>

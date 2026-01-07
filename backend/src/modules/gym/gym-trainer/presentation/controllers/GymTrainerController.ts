@@ -4,8 +4,12 @@ import { GetTrainersUseCase } from "../../application/usecases/GetTrainersUseCas
 import { UpdateTrainerUseCase } from "../../application/usecases/UpdateTrainerUseCase.js";
 import { DeleteTrainerUseCase } from "../../application/usecases/DeleteTrainerUseCase.js";
 import { GymTrainerRepositoryImpl } from "../../infrastructure/repositories/GymTrainerRepositoryImpl.js";
+import { GymRepositoryImpl } from "../../../authentication/infrastructure/repositories/GymRepositoryImpl.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 import { CreateTrainerRequestDTO, UpdateTrainerRequestDTO } from "../../application/dtos/GymTrainerDTO.js";
+import { SendTrainerWelcomeEmailUseCase } from "../../application/usecases/SendTrainerWelcomeEmailUseCase.js";
+import { OtpRepositoryImpl } from "../../../../client/authentication/infrastructure/repositories/OtpRepositoryImpl.js";
+import { EmailServiceImpl } from "../../../authentication/infrastructure/services/EmailServiceImpl.js";
 
 export class GymTrainerController {
     static async createTrainer(req: Request, res: Response, next: NextFunction) {
@@ -80,11 +84,30 @@ export class GymTrainerController {
             const useCase = new DeleteTrainerUseCase(repo);
             const user = (req as any).user;
 
-            await useCase.execute(req.params.id, user.id);
+            await useCase.execute(req.params.id as string, user.id);
 
             res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,
                 message: "Trainer deleted successfully"
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+    static async sendWelcomeEmail(req: Request, res: Response, next: NextFunction) {
+        try {
+            const trainerRepo = new GymTrainerRepositoryImpl();
+            const gymRepo = new GymRepositoryImpl();
+            const otpRepo = new OtpRepositoryImpl();
+            const emailService = new EmailServiceImpl();
+            const useCase = new SendTrainerWelcomeEmailUseCase(trainerRepo, gymRepo, otpRepo, emailService);
+            const user = (req as any).user;
+
+            await useCase.execute(req.params.id as string, user.id);
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                message: "Welcome email sent successfully"
             });
         } catch (error) {
             next(error);
