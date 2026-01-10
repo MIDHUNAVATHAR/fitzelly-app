@@ -7,7 +7,7 @@ export interface Trainer {
     phone: string;
     specialization: string;
     monthlySalary: number;
-
+    isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: string;
 }

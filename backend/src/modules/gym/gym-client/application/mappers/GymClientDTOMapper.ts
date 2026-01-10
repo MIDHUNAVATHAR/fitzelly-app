@@ -9,6 +9,7 @@ export class GymClientDTOMapper {
             email: client.email,
             phone: client.phone,
             status: client.status,
+            isBlocked: client.isBlocked,
             isEmailVerified: client.isEmailVerified,
             createdAt: client.createdAt
         };

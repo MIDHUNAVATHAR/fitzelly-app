@@ -10,6 +10,7 @@ export class GymTrainerDTOMapper {
             phone: trainer.phone,
             specialization: trainer.specialization,
             monthlySalary: trainer.monthlySalary,
+            isBlocked: trainer.isBlocked,
 
             isEmailVerified: trainer.isEmailVerified,
             createdAt: trainer.createdAt

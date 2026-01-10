@@ -5,6 +5,7 @@ export interface CreateTrainerRequestDTO {
     phone: string;
     specialization?: string;
     monthlySalary?: number;
+    isBlocked?: boolean;
 }
 
 export interface UpdateTrainerRequestDTO {
@@ -15,7 +16,7 @@ export interface UpdateTrainerRequestDTO {
     phone?: string;
     specialization?: string;
     monthlySalary?: number;
-
+    isBlocked?: boolean;
 }
 
 export interface TrainerResponseDTO {
@@ -25,7 +26,7 @@ export interface TrainerResponseDTO {
     phone: string;
     specialization: string;
     monthlySalary: number;
-
+    isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: Date;
 }

@@ -10,7 +10,7 @@ export interface IGymTrainerDocument extends Document {
 
     password?: string;
     isEmailVerified: boolean;
-    isEmailVerified: boolean;
+    isBlocked: boolean;
     isDelete: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -26,6 +26,7 @@ const GymTrainerSchema = new Schema<IGymTrainerDocument>({
     monthlySalary: { type: Number, default: 0 },
 
     isEmailVerified: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false }
 }, { timestamps: true });
 

@@ -7,6 +7,7 @@ export interface IGymClientDocument extends Document {
     phone: string;
     status: 'active' | 'inactive' | 'expired';
     isEmailVerified: boolean;
+    isBlocked: boolean;
     isDelete: boolean;
     password?: string;
     createdAt: Date;
@@ -21,6 +22,7 @@ const GymClientSchema = new Schema<IGymClientDocument>({
     phone: { type: String, required: true },
     status: { type: String, enum: ['active', 'inactive', 'expired'], default: 'inactive' },
     isEmailVerified: { type: Boolean, default: false },
+    isBlocked: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false }
 }, { timestamps: true });
 

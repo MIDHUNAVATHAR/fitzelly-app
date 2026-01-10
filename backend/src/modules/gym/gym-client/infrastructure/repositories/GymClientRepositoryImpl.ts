@@ -13,6 +13,7 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             phone: client.phone,
             status: client.status,
             isEmailVerified: client.isEmailVerified,
+            isBlocked: client.isBlocked,
             isDelete: client.isDelete
         };
 
@@ -61,6 +62,7 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             password: client.password,
             status: client.status,
             isEmailVerified: client.isEmailVerified,
+            isBlocked: client.isBlocked,
             isDelete: client.isDelete,
             updatedAt: new Date()
         };

@@ -24,6 +24,7 @@ export class UpdateTrainerUseCase {
             ...(request.phone ? { phone: request.phone } : {}),
             ...(request.specialization ? { specialization: request.specialization } : {}),
             ...(request.monthlySalary !== undefined ? { monthlySalary: request.monthlySalary } : {}),
+            ...(request.isBlocked !== undefined ? { isBlocked: request.isBlocked } : {})
 
         });
 

@@ -7,6 +7,7 @@ export interface Client {
     phone: string;
     status: 'active' | 'inactive' | 'expired';
     isEmailVerified: boolean;
+    isBlocked: boolean;
     createdAt: string;
 }
 

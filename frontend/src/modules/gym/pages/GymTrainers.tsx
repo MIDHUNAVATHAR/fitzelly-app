@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Mail, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Mail, Loader2, Ban } from 'lucide-react';
 import { TrainerService } from '../services/TrainerService';
 import type { Trainer } from '../services/TrainerService';
 
@@ -33,6 +33,10 @@ export default function GymTrainers() {
     // Delete Modal State
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [trainerToDelete, setTrainerToDelete] = useState<string | null>(null);
+
+    // Block Modal State
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+    const [trainerToBlock, setTrainerToBlock] = useState<Trainer | null>(null);
 
     // Sending Email State
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
@@ -79,6 +83,21 @@ export default function GymTrainers() {
         onError: (error: any) => {
             const msg = error.response?.data?.message || error.message || "Failed to update trainer";
             showToastMessage(msg);
+        }
+    });
+
+
+
+    const blockMutation = useMutation({
+        mutationFn: ({ id, isBlocked }: { id: string; isBlocked: boolean }) => TrainerService.updateTrainer(id, { isBlocked }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['trainers'] });
+            showToastMessage(trainerToBlock?.isBlocked ? "Trainer unblocked successfully" : "Trainer blocked successfully");
+            setIsBlockModalOpen(false);
+            setTrainerToBlock(null);
+        },
+        onError: () => {
+            showToastMessage("Failed to update block status");
         }
     });
 
@@ -169,6 +188,17 @@ export default function GymTrainers() {
         sendWelcomeMutation.mutate(id);
     };
 
+    const handleBlockClick = (trainer: Trainer) => {
+        setTrainerToBlock(trainer);
+        setIsBlockModalOpen(true);
+    };
+
+    const confirmBlock = () => {
+        if (trainerToBlock) {
+            blockMutation.mutate({ id: trainerToBlock.id, isBlocked: !trainerToBlock.isBlocked });
+        }
+    };
+
     // Explicit loading state
     if (loading) {
         return (
@@ -235,8 +265,11 @@ export default function GymTrainers() {
                                 </tr>
                             ) : (
                                 trainers.map(trainer => (
-                                    <tr key={trainer.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{trainer.fullName}</td>
+                                    <tr key={trainer.id} className={`hover:bg-slate-50 transition-colors ${trainer.isBlocked ? 'bg-red-50/50' : ''}`}>
+                                        <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
+                                            {trainer.fullName}
+                                            {trainer.isBlocked && <Ban size={14} className="text-red-500" />}
+                                        </td>
                                         <td className="px-6 py-4 text-slate-600">
                                             <div className="flex items-center gap-2">
                                                 {trainer.email}
@@ -266,6 +299,13 @@ export default function GymTrainers() {
                                                     ) : (
                                                         <Mail size={18} />
                                                     )}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBlockClick(trainer)}
+                                                    className={`p-2 rounded-lg transition-all ${trainer.isBlocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-slate-400 hover:text-red-600 hover:bg-slate-50'}`}
+                                                    title={trainer.isBlocked ? "Unblock Trainer" : "Block Trainer"}
+                                                >
+                                                    <Ban size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleOpenModal('view', trainer)}
@@ -472,6 +512,47 @@ export default function GymTrainers() {
                                     className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/30"
                                 >
                                     Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Block Confirmation Modal */}
+            {isBlockModalOpen && trainerToBlock && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsBlockModalOpen(false)} />
+                    <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="flex flex-col items-center text-center">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${trainerToBlock.isBlocked ? 'bg-green-100' : 'bg-red-100'}`}>
+                                <Ban className={trainerToBlock.isBlocked ? 'text-green-600' : 'text-red-500'} size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">
+                                {trainerToBlock.isBlocked ? 'Unblock Trainer?' : 'Block Trainer?'}
+                            </h3>
+                            <p className="text-slate-500 mb-6">
+                                {trainerToBlock.isBlocked
+                                    ? "This will restore the trainer's access to the gym features."
+                                    : "This will restrict the trainer's access to the gym features."}
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => setIsBlockModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmBlock}
+                                    disabled={blockMutation.isPending}
+                                    className={`flex-1 px-4 py-2.5 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2
+                                        ${trainerToBlock.isBlocked
+                                            ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30'
+                                            : 'bg-red-500 hover:bg-red-600 shadow-red-500/30'}`}
+                                >
+                                    {blockMutation.isPending && <Loader2 size={18} className="animate-spin" />}
+                                    {trainerToBlock.isBlocked ? 'Unblock' : 'Block'}
                                 </button>
                             </div>
                         </div>

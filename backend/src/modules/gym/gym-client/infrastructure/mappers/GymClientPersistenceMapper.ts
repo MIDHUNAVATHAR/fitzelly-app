@@ -12,6 +12,7 @@ export class GymClientPersistenceMapper {
             doc.phone,
             doc.status,
             doc.isEmailVerified,
+            doc.isBlocked,
             doc.isDelete,
             doc.createdAt,
             doc.updatedAt,
@@ -29,6 +30,7 @@ export class GymClientPersistenceMapper {
             password: entity.password as string,
             status: entity.status,
             isEmailVerified: entity.isEmailVerified,
+            isBlocked: entity.isBlocked,
             isDelete: entity.isDelete,
         };
     }

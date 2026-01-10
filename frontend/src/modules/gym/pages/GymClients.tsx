@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2 } from 'lucide-react';
+import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2, Ban } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
 
@@ -45,6 +45,10 @@ export default function GymClients() {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [clientToDelete, setClientToDelete] = useState<string | null>(null);
 
+    // Block Modal State
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false);
+    const [clientToBlock, setClientToBlock] = useState<Client | null>(null);
+
     // Sending Email State
     const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
@@ -85,6 +89,21 @@ export default function GymClients() {
         },
         onError: () => {
             showToastMessage("Failed to update client");
+        }
+    });
+
+
+
+    const blockMutation = useMutation({
+        mutationFn: ({ id, isBlocked }: { id: string; isBlocked: boolean }) => ClientService.updateClient(id, { isBlocked }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['clients'] });
+            showToastMessage(clientToBlock?.isBlocked ? "Client unblocked successfully" : "Client blocked successfully");
+            setIsBlockModalOpen(false);
+            setClientToBlock(null);
+        },
+        onError: () => {
+            showToastMessage("Failed to update block status");
         }
     });
 
@@ -165,6 +184,17 @@ export default function GymClients() {
     const handleSendWelcome = (id: string) => {
         setSendingEmailId(id);
         sendWelcomeMutation.mutate(id);
+    };
+
+    const handleBlockClick = (client: Client) => {
+        setClientToBlock(client);
+        setIsBlockModalOpen(true);
+    };
+
+    const confirmBlock = () => {
+        if (clientToBlock) {
+            blockMutation.mutate({ id: clientToBlock.id, isBlocked: !clientToBlock.isBlocked });
+        }
     };
 
     // Explicit loading state
@@ -278,8 +308,11 @@ export default function GymClients() {
                                 </tr>
                             ) : (
                                 clients.map(client => (
-                                    <tr key={client.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{client.fullName}</td>
+                                    <tr key={client.id} className={`hover:bg-slate-50 transition-colors ${client.isBlocked ? 'bg-red-50/50' : ''}`}>
+                                        <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
+                                            {client.fullName}
+                                            {client.isBlocked && <Ban size={14} className="text-red-500" />}
+                                        </td>
                                         <td className="px-6 py-4 text-slate-600">{client.phone}</td>
                                         <td className="px-6 py-4 text-slate-600">
                                             <div className="flex items-center gap-2">
@@ -317,6 +350,13 @@ export default function GymClients() {
                                                     ) : (
                                                         <Mail size={18} />
                                                     )}
+                                                </button>
+                                                <button
+                                                    onClick={() => handleBlockClick(client)}
+                                                    className={`p-2 rounded-lg transition-all ${client.isBlocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-slate-400 hover:text-red-600 hover:bg-slate-50'}`}
+                                                    title={client.isBlocked ? "Unblock Client" : "Block Client"}
+                                                >
+                                                    <Ban size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleOpenModal('view', client)}
@@ -493,6 +533,47 @@ export default function GymClients() {
                                     className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/30"
                                 >
                                     Delete
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Block Confirmation Modal */}
+            {isBlockModalOpen && clientToBlock && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsBlockModalOpen(false)} />
+                    <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="flex flex-col items-center text-center">
+                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${clientToBlock.isBlocked ? 'bg-green-100' : 'bg-red-100'}`}>
+                                <Ban className={clientToBlock.isBlocked ? 'text-green-600' : 'text-red-500'} size={24} />
+                            </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-2">
+                                {clientToBlock.isBlocked ? 'Unblock Client?' : 'Block Client?'}
+                            </h3>
+                            <p className="text-slate-500 mb-6">
+                                {clientToBlock.isBlocked
+                                    ? "This will restore the client's access to the gym features."
+                                    : "This will restrict the client's access to the gym features."}
+                            </p>
+                            <div className="flex gap-3 w-full">
+                                <button
+                                    onClick={() => setIsBlockModalOpen(false)}
+                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmBlock}
+                                    disabled={blockMutation.isPending}
+                                    className={`flex-1 px-4 py-2.5 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2
+                                        ${clientToBlock.isBlocked
+                                            ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30'
+                                            : 'bg-red-500 hover:bg-red-600 shadow-red-500/30'}`}
+                                >
+                                    {blockMutation.isPending && <Loader2 size={18} className="animate-spin" />}
+                                    {clientToBlock.isBlocked ? 'Unblock' : 'Block'}
                                 </button>
                             </div>
                         </div>

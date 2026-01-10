@@ -6,8 +6,10 @@ import { GymClientRepositoryImpl } from '../../modules/gym/gym-client/infrastruc
 import { GymTrainerRepositoryImpl } from '../../modules/gym/gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js';
 import { SuperAdminRepositoryImpl } from '../../modules/super-admin/infrastructure/repositories/SuperAdminRepositoryImpl.js';
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'jkenrfjejornfeoj9999rnfoejrok';
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'joejrioejroijeoi9999rjf3ij4io';
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET! ;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET! ;
+
+
 
 const generateAccessToken = (user: any) => {
     const payload = {
@@ -79,7 +81,7 @@ export const protect = (roles: string[] = []) => {
                 }
 
                 // Check status if available (e.g. for Client/Trainer)
-                if ((user as any).status === 'blocked' || (user as any).status === 'inactive' || (user as any).isDelete) {
+                if ((user as any).isBlocked || (user as any).isDelete) {
                     return res.status(HttpStatus.FORBIDDEN).json({ message: "Account suspended" });
                 }
 

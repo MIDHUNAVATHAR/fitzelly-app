@@ -16,6 +16,7 @@ export class GymTrainerPersistenceMapper {
             doc.password,
 
             doc.isEmailVerified || false,
+            doc.isBlocked || false,
             doc.isDelete,
             doc.createdAt,
             doc.updatedAt
@@ -34,6 +35,7 @@ export class GymTrainerPersistenceMapper {
             monthlySalary: entity.monthlySalary,
 
             isEmailVerified: entity.isEmailVerified,
+            isBlocked: entity.isBlocked,
             isDelete: entity.isDelete,
         };
     }

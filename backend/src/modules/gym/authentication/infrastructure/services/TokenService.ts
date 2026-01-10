@@ -4,8 +4,8 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export class TokenService {
-    private static readonly ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'jkenrfjejornfeojrnfoejrok';
-    private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'joejrioejroijeoirjf3ij4io';
+    private static readonly ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
+    private static readonly REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
     private static readonly ACCESS_TOKEN_EXPIRY = '15m';
     private static readonly REFRESH_TOKEN_EXPIRY = '7d';
 

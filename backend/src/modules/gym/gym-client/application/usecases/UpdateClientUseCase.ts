@@ -21,7 +21,8 @@ export class UpdateClientUseCase {
         const updatedClientEntity = client.updateDetails({
             ...(request.fullName ? { fullName: request.fullName } : {}),
             ...(request.email ? { email: request.email } : {}),
-            ...(request.phone ? { phone: request.phone } : {})
+            ...(request.phone ? { phone: request.phone } : {}),
+            ...(request.isBlocked !== undefined ? { isBlocked: request.isBlocked } : {})
         });
 
         const result = await this.gymClientRepository.update(updatedClientEntity);

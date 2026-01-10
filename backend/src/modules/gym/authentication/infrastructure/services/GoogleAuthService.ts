@@ -16,6 +16,7 @@ export class GoogleAuthService {
     generateAuthUrl(state?: string): string {
         return this.client.generateAuthUrl({
             access_type: 'offline',
+            prompt: 'select_account',
             scope: [
                 'https://www.googleapis.com/auth/userinfo.profile',
                 'https://www.googleapis.com/auth/userinfo.email',
@@ -99,3 +100,7 @@ export class GoogleAuthService {
         }
     }
 }
+
+
+
+

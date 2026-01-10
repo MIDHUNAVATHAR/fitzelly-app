@@ -11,6 +11,7 @@ export interface UpdateClientRequestDTO {
     fullName?: string;
     email?: string;
     phone?: string;
+    isBlocked?: boolean;
 }
 
 export interface ClientResponseDTO {
@@ -19,6 +20,7 @@ export interface ClientResponseDTO {
     email: string;
     phone: string;
     status: 'active' | 'inactive' | 'expired';
+    isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: Date;
 }

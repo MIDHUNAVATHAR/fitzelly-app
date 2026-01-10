@@ -11,6 +11,7 @@ export class GymTrainer {
         public readonly password: string | undefined,
 
         public readonly isEmailVerified: boolean,
+        public readonly isBlocked: boolean,
         public readonly isDelete: boolean,
         public readonly createdAt: Date,
         public readonly updatedAt: Date,
@@ -22,7 +23,7 @@ export class GymTrainer {
         phone?: string;
         specialization?: string;
         monthlySalary?: number;
-
+        isBlocked?: boolean;
     }): GymTrainer {
         return new GymTrainer(
             this.id,
@@ -36,6 +37,7 @@ export class GymTrainer {
             this.password,
 
             this.isEmailVerified,
+            data.isBlocked ?? this.isBlocked,
             this.isDelete,
             this.createdAt,
             new Date(),
@@ -48,7 +50,7 @@ export class GymTrainer {
             this.id, this.gymId, this.fullName, this.email, this.phone,
             this.specialization, this.monthlySalary,
             hashed,
-            this.isEmailVerified, this.isDelete, this.createdAt, new Date()
+            this.isEmailVerified, this.isBlocked, this.isDelete, this.createdAt, new Date()
         );
     }
 
@@ -58,6 +60,7 @@ export class GymTrainer {
             this.specialization, this.monthlySalary,
             this.password,
             true, // isVerified
+            this.isBlocked,
             this.isDelete, this.createdAt, new Date()
         );
     }
@@ -75,7 +78,26 @@ export class GymTrainer {
             this.password,
 
             this.isEmailVerified,
+            this.isBlocked,
             true, // isDelete
+            this.createdAt,
+            new Date(),
+        );
+    }
+
+    block(): GymTrainer {
+        return new GymTrainer(
+            this.id,
+            this.gymId,
+            this.fullName,
+            this.email,
+            this.phone,
+            this.specialization,
+            this.monthlySalary,
+            this.password,
+            this.isEmailVerified,
+            true, // isBlocked
+            this.isDelete,
             this.createdAt,
             new Date(),
         );
