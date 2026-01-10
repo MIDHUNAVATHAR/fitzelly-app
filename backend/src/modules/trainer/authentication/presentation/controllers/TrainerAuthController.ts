@@ -64,6 +64,26 @@ export class TrainerAuthController {
 
             const result = await useCase.execute(req.body);
 
+            // Fetch Gym Details to include branding
+            let gymName = 'FITZELLY';
+            let gymLogoUrl = '';
+
+            if (result.user.gymId) {
+                const { GymRepositoryImpl } = await import("../../../../gym/authentication/infrastructure/repositories/GymRepositoryImpl.js");
+                const gymRepo = new GymRepositoryImpl();
+                const gym = await gymRepo.findById(result.user.gymId);
+                if (gym) {
+                    gymName = gym.gymName || gymName;
+                    gymLogoUrl = gym.logoUrl || '';
+                }
+            }
+
+            const userData = {
+                ...result.user,
+                gymName,
+                gymLogoUrl
+            };
+
             // Set HttpOnly Cookies
             res.cookie('refreshToken', result.tokens.refreshToken, {
                 httpOnly: true,
@@ -74,7 +94,7 @@ export class TrainerAuthController {
 
             res.status(HttpStatus.OK).json({
                 status: ResponseStatus.SUCCESS,
-                user: result.user,
+                user: userData,
                 accessToken: result.tokens.accessToken
             });
         } catch (error) {
