@@ -13,6 +13,8 @@ export class GymClient {
         public readonly updatedAt: Date,
         public readonly password?: string,
         public readonly assignedTrainer?: string | null,
+        public readonly emergencyContactNumber?: string,
+        public readonly dateOfBirth?: Date,
     ) { }
 
     setPassword(password: string): GymClient {
@@ -29,7 +31,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             password,
-            this.assignedTrainer
+            this.assignedTrainer,
+            this.emergencyContactNumber,
+            this.dateOfBirth
         );
     }
 
@@ -39,6 +43,8 @@ export class GymClient {
         phone?: string;
         isBlocked?: boolean;
         assignedTrainer?: string | null;
+        emergencyContactNumber?: string;
+        dateOfBirth?: Date;
     }): GymClient {
         return new GymClient(
             this.id,
@@ -53,7 +59,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             this.password,
-            data.assignedTrainer !== undefined ? data.assignedTrainer : this.assignedTrainer
+            data.assignedTrainer !== undefined ? data.assignedTrainer : this.assignedTrainer,
+            data.emergencyContactNumber ?? this.emergencyContactNumber,
+            data.dateOfBirth ?? this.dateOfBirth
         );
     }
 
@@ -71,7 +79,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             this.password,
-            this.assignedTrainer
+            this.assignedTrainer,
+            this.emergencyContactNumber,
+            this.dateOfBirth
         );
     }
     updateStatus(newStatus: 'active' | 'inactive' | 'expired'): GymClient {
@@ -88,7 +98,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             this.password,
-            this.assignedTrainer
+            this.assignedTrainer,
+            this.emergencyContactNumber,
+            this.dateOfBirth
         );
     }
 
@@ -106,7 +118,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             this.password,
-            this.assignedTrainer
+            this.assignedTrainer,
+            this.emergencyContactNumber,
+            this.dateOfBirth
         );
     }
 
@@ -125,7 +139,9 @@ export class GymClient {
             this.createdAt,
             new Date(),
             this.password,
-            this.assignedTrainer
+            this.assignedTrainer,
+            this.emergencyContactNumber,
+            this.dateOfBirth
         );
     }
 }

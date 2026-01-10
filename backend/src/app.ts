@@ -16,6 +16,8 @@ import { clientAuthRoutes } from "./modules/client/authentication/presentation/r
 import { trainerAuthRoutes } from "./modules/trainer/authentication/presentation/routes/trainerAuthRoutes.js";
 import { superAdminAuthRoutes } from "./modules/super-admin/authentication/presentation/routes/superAdminAuthRoutes.js";
 import { gymListingRouter } from "./modules/super-admin/gym-listing/presentation/routes/gymListingRoutes.js";
+import { trainerProfileRouter } from "./modules/trainer/profile/presentation/routes/trainer-profile.routes.js";
+import { clientProfileRouter } from "./modules/client/profile/presentation/routes/client-profile.routes.js";
 
 class App {
     public app: Application;
@@ -61,9 +63,11 @@ class App {
 
         // client
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_PROFILE}`, clientProfileRouter);
 
         // trainer
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_PROFILE}`, trainerProfileRouter);
 
         //superadmin
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_AUTH}`, superAdminAuthRoutes);

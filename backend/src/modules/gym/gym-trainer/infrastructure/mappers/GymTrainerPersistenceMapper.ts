@@ -12,6 +12,8 @@ export class GymTrainerPersistenceMapper {
             doc.phone,
             doc.specialization,
             doc.monthlySalary,
+            doc.biography || '',
+            doc.dateOfBirth,
 
             doc.password,
 
@@ -33,6 +35,8 @@ export class GymTrainerPersistenceMapper {
             ...(entity.password ? { password: entity.password } : {}),
             specialization: entity.specialization,
             monthlySalary: entity.monthlySalary,
+            biography: entity.biography,
+            ...(entity.dateOfBirth ? { dateOfBirth: entity.dateOfBirth } : {}),
 
             isEmailVerified: entity.isEmailVerified,
             isBlocked: entity.isBlocked,

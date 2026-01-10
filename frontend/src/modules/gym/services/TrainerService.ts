@@ -7,6 +7,8 @@ export interface Trainer {
     phone: string;
     specialization: string;
     monthlySalary: number;
+    biography?: string;
+    dateOfBirth?: string; // string when coming from API JSON
     isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: string;

@@ -3,6 +3,7 @@ import LandingPage from '../modules/landing/LandingPage';
 import { AuthProvider } from '../modules/landing/context/AuthContext';
 import AuthGuard from '../modules/landing/components/AuthGuard';
 import RedirectIfAuthenticated from '../modules/landing/components/RedirectIfAuthenticated';
+import { Toaster } from 'react-hot-toast';
 import './style.css';
 
 import GymDashboard from '../modules/gym/pages/GymDashboard';
@@ -16,6 +17,8 @@ import ClientSetupPassword from '../modules/landing/pages/ClientSetupPassword';
 import VerifyOtpPage from '../modules/landing/pages/VerifyOtpPage';
 import ClientDashboard from '../modules/client/pages/ClientDashboard';
 import TrainerDashboard from '../modules/trainer/pages/TrainerDashboard';
+import TrainerProfile from '../modules/trainer/pages/TrainerProfile';
+import ClientProfile from '../modules/client/pages/ClientProfile';
 import SuperAdminDashboard from '../modules/super-admin/pages/SuperAdminDashboard';
 import SuperAdminLoginPage from '../modules/landing/pages/SuperAdminLoginPage';
 import GymsPage from '../modules/super-admin/pages/GymsPage';
@@ -26,6 +29,7 @@ export default function App() {
 
   return (
     <AuthProvider>
+      <Toaster position="top-right" reverseOrder={false} />
       <BrowserRouter>
         <Routes>
           {/* Public Routes */}
@@ -105,10 +109,26 @@ export default function App() {
 
           {/* Client & Trainer Dashboard Placeholders */}
           <Route
+            path="/client/profile"
+            element={
+              <AuthGuard allowedRoles={[ROLES.CLIENT]}>
+                <ClientProfile />
+              </AuthGuard>
+            }
+          />
+          <Route
             path="/client/dashboard"
             element={
               <AuthGuard allowedRoles={[ROLES.CLIENT]}>
                 <ClientDashboard />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/trainer/profile"
+            element={
+              <AuthGuard allowedRoles={[ROLES.TRAINER]}>
+                <TrainerProfile />
               </AuthGuard>
             }
           />

@@ -13,6 +13,8 @@ export interface IGymClientDocument extends Document {
     createdAt: Date;
     updatedAt: Date;
     assignedTrainer?: mongoose.Types.ObjectId;
+    emergencyContactNumber?: string;
+    dateOfBirth?: Date;
 }
 
 const GymClientSchema = new Schema<IGymClientDocument>({
@@ -25,7 +27,9 @@ const GymClientSchema = new Schema<IGymClientDocument>({
     isEmailVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
     isDelete: { type: Boolean, default: false },
-    assignedTrainer: { type: Schema.Types.ObjectId, ref: 'GymTrainer', default: null }
+    assignedTrainer: { type: Schema.Types.ObjectId, ref: 'GymTrainer', default: null },
+    emergencyContactNumber: { type: String, default: '' },
+    dateOfBirth: { type: Date, default: null }
 }, { timestamps: true });
 
 export const GymClientModel = mongoose.models.GymClient || mongoose.model<IGymClientDocument>('GymClient', GymClientSchema);

@@ -12,7 +12,9 @@ export class GymClientDTOMapper {
             isBlocked: client.isBlocked,
             isEmailVerified: client.isEmailVerified,
             createdAt: client.createdAt,
-            assignedTrainer: client.assignedTrainer
+            assignedTrainer: client.assignedTrainer,
+            emergencyContactNumber: client.emergencyContactNumber,
+            dateOfBirth: client.dateOfBirth
         };
     }
 }

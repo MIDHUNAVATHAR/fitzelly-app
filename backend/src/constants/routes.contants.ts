@@ -20,7 +20,9 @@ export const MODULE_ROUTES = {
     CLIENT_AUTH: "/client-auth",
     TRAINER_AUTH: "/trainer-auth",
     SUPER_ADMIN_AUTH: "/super-admin-auth",
-    SUPER_ADMIN_GYM_LISTING: "/super-admin/gyms"
+    SUPER_ADMIN_GYM_LISTING: "/super-admin/gyms",
+    TRAINER_PROFILE: "/trainer-profile",
+    CLIENT_PROFILE: "/client-profile"
 } as const;
 
 

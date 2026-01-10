@@ -4,6 +4,8 @@ export interface CreateClientRequestDTO {
     email: string;
     phone: string;
     assignedTrainer?: string;
+    emergencyContactNumber?: string;
+    dateOfBirth?: Date;
 }
 
 export interface UpdateClientRequestDTO {
@@ -14,6 +16,8 @@ export interface UpdateClientRequestDTO {
     phone?: string;
     isBlocked?: boolean;
     assignedTrainer?: string;
+    emergencyContactNumber?: string;
+    dateOfBirth?: Date;
 }
 
 export interface ClientResponseDTO {
@@ -26,6 +30,8 @@ export interface ClientResponseDTO {
     isEmailVerified: boolean;
     createdAt: Date;
     assignedTrainer?: string | null;
+    emergencyContactNumber?: string;
+    dateOfBirth?: Date;
 }
 
 export interface ClientListResponseDTO {

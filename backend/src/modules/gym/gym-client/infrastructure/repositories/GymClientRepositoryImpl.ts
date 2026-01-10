@@ -15,7 +15,9 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             isEmailVerified: client.isEmailVerified,
             isBlocked: client.isBlocked,
             isDelete: client.isDelete,
-            assignedTrainer: client.assignedTrainer ? new mongoose.Types.ObjectId(client.assignedTrainer) : null
+            assignedTrainer: client.assignedTrainer ? new mongoose.Types.ObjectId(client.assignedTrainer) : null,
+            emergencyContactNumber: client.emergencyContactNumber,
+            dateOfBirth: client.dateOfBirth
         };
 
         const doc = await GymClientModel.create(persistenceData);
@@ -66,6 +68,8 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             isBlocked: client.isBlocked,
             isDelete: client.isDelete,
             assignedTrainer: client.assignedTrainer ? new mongoose.Types.ObjectId(client.assignedTrainer) : null,
+            emergencyContactNumber: client.emergencyContactNumber,
+            dateOfBirth: client.dateOfBirth,
             updatedAt: new Date()
         };
 

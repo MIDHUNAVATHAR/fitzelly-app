@@ -10,6 +10,8 @@ export interface Client {
     isBlocked: boolean;
     createdAt: string;
     assignedTrainer?: string | null;
+    emergencyContactNumber?: string;
+    dateOfBirth?: string; // date string from API
 }
 
 export interface ClientListResponse {

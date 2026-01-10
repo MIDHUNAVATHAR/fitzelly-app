@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { CreateTrainerUseCase } from "../../application/usecases/CreateTrainerUseCase.js";
 import { GetTrainersUseCase } from "../../application/usecases/GetTrainersUseCase.js";
 import { UpdateTrainerUseCase } from "../../application/usecases/UpdateTrainerUseCase.js";
+import { GetTrainerByIdUseCase } from "../../application/usecases/GetTrainerByIdUseCase.js";
 import { DeleteTrainerUseCase } from "../../application/usecases/DeleteTrainerUseCase.js";
 import { GymTrainerRepositoryImpl } from "../../infrastructure/repositories/GymTrainerRepositoryImpl.js";
 import { GymRepositoryImpl } from "../../../authentication/infrastructure/repositories/GymRepositoryImpl.js";
@@ -55,6 +56,25 @@ export class GymTrainerController {
         }
     }
 
+    static async getTrainerById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const repo = new GymTrainerRepositoryImpl();
+            const useCase = new GetTrainerByIdUseCase(repo);
+            // Assuming req.params.id is passed or we verify access.
+            // But if trainer logs in, they want 'me'.
+            // If Gym logs in, they view trainer by ID.
+            // For now, let's just get by ID from params.
+            const result = await useCase.execute(req.params.id as string);
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                data: result
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async updateTrainer(req: Request, res: Response, next: NextFunction) {
         try {
             const repo = new GymTrainerRepositoryImpl();
@@ -62,7 +82,7 @@ export class GymTrainerController {
             const user = (req as any).user;
 
             const dto: UpdateTrainerRequestDTO = {
-                trainerId: req.params.id,
+                trainerId: req.params.id as string,
                 gymId: user.id,
                 ...req.body
             };

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { CreateClientUseCase } from "../../application/usecases/CreateClientUseCase.js";
 import { GetClientsUseCase } from "../../application/usecases/GetClientsUseCase.js";
 import { UpdateClientUseCase } from "../../application/usecases/UpdateClientUseCase.js";
+import { GetClientByIdUseCase } from "../../application/usecases/GetClientByIdUseCase.js";
 import { DeleteClientUseCase } from "../../application/usecases/DeleteClientUseCase.js";
 import { SendClientWelcomeEmailUseCase } from "../../application/usecases/SendClientWelcomeEmailUseCase.js";
 import { GymClientRepositoryImpl } from "../../infrastructure/repositories/GymClientRepositoryImpl.js";
@@ -56,6 +57,21 @@ export class GymClientController {
         }
     }
 
+    static async getClientById(req: Request, res: Response, next: NextFunction) {
+        try {
+            const repo = new GymClientRepositoryImpl();
+            const useCase = new GetClientByIdUseCase(repo);
+            const result = await useCase.execute(req.params.id as string);
+
+            res.status(HttpStatus.OK).json({
+                status: ResponseStatus.SUCCESS,
+                data: result
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     static async updateClient(req: Request, res: Response, next: NextFunction) {
         try {
             const repo = new GymClientRepositoryImpl();
@@ -63,7 +79,7 @@ export class GymClientController {
             const user = (req as any).user;
 
             const dto: UpdateClientRequestDTO = {
-                clientId: req.params.id,
+                clientId: req.params.id as string,
                 gymId: user.id,
                 ...req.body
             };
