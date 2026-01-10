@@ -13,10 +13,12 @@ export interface GymDocument extends Document {
         mapLink: string;
     };
     email: string;
+    logoUrl?: string;
     // ...
     passwordHash: string;
     createdAt: Date;
     updatedAt: Date;
+    isBlocked: boolean;
 }
 
 const GymSchema = new Schema<GymDocument>({
@@ -24,6 +26,8 @@ const GymSchema = new Schema<GymDocument>({
     gymName: { type: String, required: false },
     phone: { type: String, required: false },
     description: { type: String, required: false },
+    logoUrl: { type: String, required: false },
+    isBlocked: { type: Boolean, default: false },
     address: {
         street: { type: String, required: false },
         city: { type: String, required: false },

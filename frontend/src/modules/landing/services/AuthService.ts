@@ -133,7 +133,11 @@ export const AuthService = {
         try {
             const role = localStorage.getItem('userRole') || ROLES.GYM;
             const endpoint = getAuthEndpoint(role);
-            const response = await api.put(`/${endpoint}/profile`, payload);
+            const response = await api.put(`/${endpoint}/profile`, payload, {
+                headers: {
+                    'Content-Type': undefined
+                }
+            });
             return response.data;
         } catch (error: any) {
             console.error("Profile update failed:", error);

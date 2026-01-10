@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import SuperAdminDashboardLayout from '../layouts/SuperAdminDashboardLayout';
 import { GymListingService, type GymSummary } from '../services/GymListingService';
-import { Search, ChevronLeft, ChevronRight, Building2, MapPin, Calendar, Eye } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Building2, MapPin, Calendar, Eye, Ban, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function GymsPage() {
@@ -129,13 +129,39 @@ export default function GymsPage() {
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4 text-right">
-                                                <button
-                                                    onClick={() => navigate(`/fitzelly-hq/gyms/${gym.id}`)}
-                                                    className="inline-flex items-center justify-center p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
-                                                    title="View Details"
-                                                >
-                                                    <Eye size={20} />
-                                                </button>
+                                                <div className="flex items-center justify-end gap-2">
+                                                    <button
+                                                        onClick={() => navigate(`/fitzelly-hq/gyms/${gym.id}`)}
+                                                        className="p-2 text-slate-400 hover:text-teal-600 hover:bg-teal-50 rounded-lg transition-colors"
+                                                        title="View Details"
+                                                    >
+                                                        <Eye size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm(`Are you sure you want to ${gym.isBlocked ? 'unblock' : 'block'} this gym?`)) {
+                                                                await GymListingService.blockGym(gym.id, !gym.isBlocked);
+                                                                fetchGyms();
+                                                            }
+                                                        }}
+                                                        className={`p-2 rounded-lg transition-colors ${gym.isBlocked ? 'text-red-500 hover:bg-red-50' : 'text-slate-400 hover:text-orange-500 hover:bg-orange-50'}`}
+                                                        title={gym.isBlocked ? "Unblock Gym" : "Block Gym"}
+                                                    >
+                                                        <Ban size={18} />
+                                                    </button>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (window.confirm("Are you sure you want to DELETE this gym? This cannot be undone.")) {
+                                                                await GymListingService.deleteGym(gym.id);
+                                                                fetchGyms();
+                                                            }
+                                                        }}
+                                                        className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Delete Gym"
+                                                    >
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))

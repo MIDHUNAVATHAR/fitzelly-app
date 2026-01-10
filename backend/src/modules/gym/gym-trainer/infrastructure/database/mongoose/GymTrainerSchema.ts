@@ -7,9 +7,9 @@ export interface IGymTrainerDocument extends Document {
     phone: string;
     specialization: string;
     monthlySalary: number;
-    monthlySalary: number;
     biography: string;
     dateOfBirth?: Date;
+    profilePicture?: string;
 
     password?: string;
     isEmailVerified: boolean;
@@ -27,9 +27,9 @@ const GymTrainerSchema = new Schema<IGymTrainerDocument>({
     password: { type: String },
     specialization: { type: String, default: '' },
     monthlySalary: { type: Number, default: 0 },
-    monthlySalary: { type: Number, default: 0 },
     biography: { type: String, default: '' },
     dateOfBirth: { type: Date },
+    profilePicture: { type: String, default: '' },
 
     isEmailVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },

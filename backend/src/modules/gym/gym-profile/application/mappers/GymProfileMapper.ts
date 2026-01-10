@@ -10,6 +10,7 @@ export class GymProfileMapper {
             ...(gym.gymName ? { gymName: gym.gymName } : {}),
             ...(gym.phone ? { phone: gym.phone } : {}),
             ...(gym.description ? { description: gym.description } : {}),
+            ...(gym.logoUrl ? { logoUrl: gym.logoUrl } : {}),
             ...(gym.address ? {
                 address: {
                     ...(gym.address.street ? { street: gym.address.street } : {}),

@@ -17,6 +17,7 @@ export class GymTrainer {
         public readonly isDelete: boolean,
         public readonly createdAt: Date,
         public readonly updatedAt: Date,
+        public readonly profilePicture?: string,
     ) { }
 
     updateDetails(data: {
@@ -28,6 +29,7 @@ export class GymTrainer {
         biography?: string;
         dateOfBirth?: Date;
         isBlocked?: boolean;
+        profilePicture?: string;
     }): GymTrainer {
         return new GymTrainer(
             this.id,
@@ -47,6 +49,7 @@ export class GymTrainer {
             this.isDelete,
             this.createdAt,
             new Date(),
+            data.profilePicture ?? this.profilePicture
         );
     }
 
@@ -56,7 +59,8 @@ export class GymTrainer {
             this.id, this.gymId, this.fullName, this.email, this.phone,
             this.specialization, this.monthlySalary, this.biography, this.dateOfBirth,
             hashed,
-            this.isEmailVerified, this.isBlocked, this.isDelete, this.createdAt, new Date()
+            this.isEmailVerified, this.isBlocked, this.isDelete, this.createdAt, new Date(),
+            this.profilePicture
         );
     }
 
@@ -67,7 +71,8 @@ export class GymTrainer {
             this.password,
             true, // isVerified
             this.isBlocked,
-            this.isDelete, this.createdAt, new Date()
+            this.isDelete, this.createdAt, new Date(),
+            this.profilePicture
         );
     }
 
@@ -90,6 +95,7 @@ export class GymTrainer {
             true, // isDelete
             this.createdAt,
             new Date(),
+            this.profilePicture
         );
     }
 
@@ -110,6 +116,7 @@ export class GymTrainer {
             this.isDelete,
             this.createdAt,
             new Date(),
+            this.profilePicture
         );
     }
 }

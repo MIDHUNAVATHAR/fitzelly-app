@@ -15,7 +15,9 @@ export class Gym {
             state?: string;
             pincode?: string;
             mapLink?: string;
-        }
+        },
+        public readonly logoUrl?: string,
+        public readonly isBlocked: boolean = false
     ) { }
 
     updatePassword(newPasswordHash: string): Gym {
@@ -29,7 +31,9 @@ export class Gym {
             this.gymName,
             this.phone,
             this.description,
-            this.address
+            this.address,
+            this.logoUrl,
+            this.isBlocked
         );
     }
 

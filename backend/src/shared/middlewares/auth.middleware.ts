@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { HttpStatus } from '../../constants/statusCodes.constants.js';
 import { GymRepositoryImpl } from '../../modules/gym/authentication/infrastructure/repositories/GymRepositoryImpl.js';
+
+export interface AuthRequest extends Request {
+    user?: {
+        id: string;
+        role: string;
+        email: string;
+    };
+}
 import { GymClientRepositoryImpl } from '../../modules/gym/gym-client/infrastructure/repositories/GymClientRepositoryImpl.js';
 import { GymTrainerRepositoryImpl } from '../../modules/gym/gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js';
 import { SuperAdminRepositoryImpl } from '../../modules/super-admin/infrastructure/repositories/SuperAdminRepositoryImpl.js';

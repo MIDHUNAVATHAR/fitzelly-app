@@ -1,16 +1,19 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Mail, Loader2, Ban } from 'lucide-react';
+import { Plus, X, CheckCircle, AlertTriangle, Ban, Loader2 } from 'lucide-react';
 import { TrainerService } from '../services/TrainerService';
 import type { Trainer } from '../services/TrainerService';
+import { SearchBar } from '../../../components/SearchBar';
+import GymTrainersTable from '../../../components/GymTrainersTable';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export default function GymTrainers() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const limit = 10;
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    const debouncedSearch = useDebounce(search, 500);
 
     // Query for Trainers
     const { data, isLoading: loading } = useQuery({
@@ -18,8 +21,9 @@ export default function GymTrainers() {
         queryFn: () => TrainerService.getTrainers(page, limit, debouncedSearch)
     });
 
-    const trainers = data?.trainers || [];
-    const total = data?.total || 0;
+    const trainers = useMemo(() => data?.trainers || [], [data?.trainers]);
+    const total = useMemo(() => data?.total || 0, [data?.total]);
+    const totalPages = useMemo(() => Math.ceil(total / limit), [total, limit]);
 
 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,16 +52,7 @@ export default function GymTrainers() {
         phone: '',
         specialization: '',
         monthlySalary: 0,
-
     });
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(1); // Reset page on search
-            setDebouncedSearch(search)
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     // Mutations
     const createMutation = useMutation({
@@ -85,8 +80,6 @@ export default function GymTrainers() {
             showToastMessage(msg);
         }
     });
-
-
 
     const blockMutation = useMutation({
         mutationFn: ({ id, isBlocked }: { id: string; isBlocked: boolean }) => TrainerService.updateTrainer(id, { isBlocked }),
@@ -129,7 +122,7 @@ export default function GymTrainers() {
         setTimeout(() => setToast({ message: '', show: false }), 3000);
     };
 
-    const handleOpenModal = (mode: 'create' | 'edit' | 'view', trainer?: Trainer) => {
+    const handleOpenModal = useCallback((mode: 'create' | 'edit' | 'view', trainer?: Trainer) => {
         setModalMode(mode);
         if (trainer) {
             setEditingTrainer(trainer.id); // For compatibility with submit logic
@@ -140,7 +133,6 @@ export default function GymTrainers() {
                 phone: trainer.phone,
                 specialization: trainer.specialization,
                 monthlySalary: trainer.monthlySalary,
-
             });
         } else {
             setEditingTrainer(null);
@@ -151,16 +143,15 @@ export default function GymTrainers() {
                 phone: '',
                 specialization: '',
                 monthlySalary: 0,
-
             });
         }
         setIsModalOpen(true);
-    };
+    }, []);
 
-    const handleCloseModal = () => {
+    const handleCloseModal = useCallback(() => {
         setIsModalOpen(false);
         setEditingTrainer(null);
-    };
+    }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -172,10 +163,10 @@ export default function GymTrainers() {
         }
     };
 
-    const handleDeleteClick = (id: string) => {
+    const handleDeleteClick = useCallback((id: string) => {
         setTrainerToDelete(id);
         setIsDeleteModalOpen(true);
-    };
+    }, []);
 
     const confirmDelete = () => {
         if (trainerToDelete) {
@@ -183,15 +174,15 @@ export default function GymTrainers() {
         }
     };
 
-    const handleSendWelcome = (id: string) => {
+    const handleSendWelcome = useCallback((id: string) => {
         setSendingEmailId(id);
         sendWelcomeMutation.mutate(id);
-    };
+    }, [sendWelcomeMutation]);
 
-    const handleBlockClick = (trainer: Trainer) => {
+    const handleBlockClick = useCallback((trainer: Trainer) => {
         setTrainerToBlock(trainer);
         setIsBlockModalOpen(true);
-    };
+    }, []);
 
     const confirmBlock = () => {
         if (trainerToBlock) {
@@ -199,8 +190,20 @@ export default function GymTrainers() {
         }
     };
 
+    const handleView = useCallback((trainer: Trainer) => handleOpenModal('view', trainer), [handleOpenModal]);
+    const handleEdit = useCallback((trainer: Trainer) => handleOpenModal('edit', trainer), [handleOpenModal]);
+
+    const handleSearchChange = useCallback((val: string) => {
+        setSearch(val);
+        setPage(1);
+    }, []);
+
+    const handlePageChange = useCallback((newPage: number) => {
+        setPage(newPage);
+    }, []);
+
     // Explicit loading state
-    if (loading) {
+    if (loading && trainers.length === 0 && !debouncedSearch) {
         return (
             <DashboardLayout>
                 <div className="flex h-[80vh] items-center justify-center">
@@ -227,136 +230,31 @@ export default function GymTrainers() {
             </div>
 
             {/* Search */}
-            <div className="mb-6">
-                <div className="relative max-w-md w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search by trainer name..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
-                    />
-                </div>
+            <div className="mb-6 max-w-md w-full">
+                <SearchBar
+                    value={search}
+                    onChange={handleSearchChange}
+                    placeholder="Search by trainer name..."
+                />
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Full Name</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Email</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Phone</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Specialization</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Salary</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading...</td>
-                                </tr>
-                            ) : trainers.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No trainers found.</td>
-                                </tr>
-                            ) : (
-                                trainers.map(trainer => (
-                                    <tr key={trainer.id} className={`hover:bg-slate-50 transition-colors ${trainer.isBlocked ? 'bg-red-50/50' : ''}`}>
-                                        <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
-                                            {trainer.fullName}
-                                            {trainer.isBlocked && <Ban size={14} className="text-red-500" />}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            <div className="flex items-center gap-2">
-                                                {trainer.email}
-                                                {trainer.isEmailVerified && (
-                                                    <div title="Email Verified" className="text-[#00ffd5]">
-                                                        <CheckCircle size={14} />
-                                                    </div>
-                                                )}
-                                                {!trainer.isEmailVerified && (
-                                                    <div title="Email Unverified" className="w-2 h-2 rounded-full bg-red-500"></div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">{trainer.phone}</td>
-                                        <td className="px-6 py-4 text-slate-600">{trainer.specialization || '-'}</td>
-                                        <td className="px-6 py-4 text-slate-900 font-semibold">₹{trainer.monthlySalary.toLocaleString()}</td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleSendWelcome(trainer.id)}
-                                                    disabled={sendingEmailId === trainer.id}
-                                                    className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
-                                                    title="Send Welcome Email"
-                                                >
-                                                    {sendingEmailId === trainer.id ? (
-                                                        <Loader2 size={18} className="animate-spin text-[#00ffd5]" />
-                                                    ) : (
-                                                        <Mail size={18} />
-                                                    )}
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBlockClick(trainer)}
-                                                    className={`p-2 rounded-lg transition-all ${trainer.isBlocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-slate-400 hover:text-red-600 hover:bg-slate-50'}`}
-                                                    title={trainer.isBlocked ? "Unblock Trainer" : "Block Trainer"}
-                                                >
-                                                    <Ban size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenModal('view', trainer)}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenModal('edit', trainer)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(trainer.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">
-                        Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} trainers
-                    </span>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            onClick={() => setPage(p => p + 1)}
-                            disabled={page * limit >= total}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <GymTrainersTable
+                trainers={trainers}
+                isLoading={loading}
+                searchQuery={debouncedSearch}
+                currentPage={page}
+                totalPages={totalPages}
+                total={total}
+                limit={limit}
+                sendingEmailId={sendingEmailId}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDeleteClick}
+                onBlock={handleBlockClick}
+                onSendEmail={handleSendWelcome}
+                onPageChange={handlePageChange}
+            />
 
             {/* Modal */}
             {isModalOpen && (

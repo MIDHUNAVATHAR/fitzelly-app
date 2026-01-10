@@ -7,7 +7,7 @@ export const TrainerProfileService = {
         return response.data.data;
     },
 
-    updateProfile: async (data: Partial<Trainer>): Promise<Trainer> => {
+    updateProfile: async (data: Partial<Trainer> | FormData): Promise<Trainer> => {
         const response = await api.put('/trainer-profile/profile', data);
         return response.data.data;
     }

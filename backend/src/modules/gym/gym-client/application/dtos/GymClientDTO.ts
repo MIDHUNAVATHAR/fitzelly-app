@@ -32,6 +32,9 @@ export interface ClientResponseDTO {
     assignedTrainer?: string | null;
     emergencyContactNumber?: string;
     dateOfBirth?: Date;
+    profilePicture?: string;
+    gymName?: string;
+    gymLogoUrl?: string;
 }
 
 export interface ClientListResponseDTO {

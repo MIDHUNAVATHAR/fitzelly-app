@@ -12,6 +12,7 @@ export interface Trainer {
     isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: string;
+    profilePicture?: string;
 }
 
 export interface TrainerListResponse {

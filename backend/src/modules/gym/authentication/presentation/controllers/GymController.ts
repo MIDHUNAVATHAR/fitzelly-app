@@ -226,7 +226,8 @@ export class GymController {
                         description: user.description,
                         address: user.address,
                         email: user.email,
-                        role: ROLES.GYM
+                        role: ROLES.GYM,
+                        logoUrl: user.logoUrl
                     }
                 });
             }
@@ -237,27 +238,6 @@ export class GymController {
                 user: userPayload
             });
 
-        } catch (error) {
-            next(error);
-        }
-    }
-
-    static async updateProfile(req: Request, res: Response, next: NextFunction) {
-        try {
-            const userId = (req as any).user.id;
-            const repo = new GymRepositoryImpl();
-            const useCase = new UpdateGymProfileUseCase(repo);
-
-            const result = await useCase.execute({
-                userId,
-                ...req.body
-            });
-
-            res.status(HttpStatus.OK).json({
-                status: ResponseStatus.SUCCESS,
-                message: "Profile updated successfully",
-                data: result
-            });
         } catch (error) {
             next(error);
         }

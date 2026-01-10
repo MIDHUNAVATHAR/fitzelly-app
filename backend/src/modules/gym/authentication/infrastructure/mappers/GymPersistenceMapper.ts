@@ -19,7 +19,9 @@ export class GymPersistenceMapper {
                 state: doc.address.state,
                 pincode: doc.address.pincode,
                 mapLink: doc.address.mapLink
-            } : undefined
+            } : undefined,
+            doc.logoUrl,
+            doc.isBlocked
         );
     }
 
@@ -29,6 +31,8 @@ export class GymPersistenceMapper {
             gymName: gym.gymName,
             phone: gym.phone,
             description: gym.description,
+            logoUrl: gym.logoUrl,
+            isBlocked: gym.isBlocked,
             address: gym.address ? {
                 street: gym.address.street,
                 city: gym.address.city,

@@ -18,6 +18,9 @@ import { superAdminAuthRoutes } from "./modules/super-admin/authentication/prese
 import { gymListingRouter } from "./modules/super-admin/gym-listing/presentation/routes/gymListingRoutes.js";
 import { trainerProfileRouter } from "./modules/trainer/profile/presentation/routes/trainer-profile.routes.js";
 import { clientProfileRouter } from "./modules/client/profile/presentation/routes/client-profile.routes.js";
+import workoutPlanRouter from "./modules/trainer/workout-plan/presentation/routes/workout-plan.routes.js";
+import assignedClientsRouter from "./modules/trainer/clients/presentation/routes/assigned-clients.routes.js";
+import clientWorkoutPlanRouter from "./modules/client/workout-plan/presentation/routes/client-workout-plan.routes.js";
 
 class App {
     public app: Application;
@@ -64,10 +67,13 @@ class App {
         // client
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_AUTH}`, clientAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_PROFILE}`, clientProfileRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.CLIENT_PLAN}`, clientWorkoutPlanRouter);
 
         // trainer
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_AUTH}`, trainerAuthRoutes);
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_PROFILE}`, trainerProfileRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_PLAN}`, workoutPlanRouter);
+        this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.TRAINER_CLIENTS}`, assignedClientsRouter);
 
         //superadmin
         this.app.use(`${API_ROOT.V1}${ENDPOINTS.MODULES.SUPER_ADMIN_AUTH}`, superAdminAuthRoutes);

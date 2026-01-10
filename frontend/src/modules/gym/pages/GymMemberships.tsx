@@ -1,14 +1,17 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Eye, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Filter, ChevronDown, Check, Plus, Calendar, Loader2 } from 'lucide-react';
+import { X, Filter, Check, Plus, Calendar, Loader2, ChevronDown, CheckCircle, AlertTriangle, Search } from 'lucide-react';
 import { MembershipService } from '../services/MembershipService';
 import type { Membership } from '../services/MembershipService';
 import { ClientService } from '../services/ClientService';
-
 import { PlanService } from '../services/PlanService';
 import type { Plan } from '../services/PlanService';
 import { format, differenceInDays, addDays } from 'date-fns';
+import { SearchBar } from '../../../components/SearchBar';
+import GymMembershipsTable from '../../../components/GymMembershipsTable';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export default function GymMemberships() {
 
@@ -16,7 +19,8 @@ export default function GymMemberships() {
     const [page, setPage] = useState(1);
     const limit = 10;
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
+    // Use the hook...
+    const debouncedSearch = useDebounce(search, 500);
 
     // Filter State
     const [planTypeFilter, setPlanTypeFilter] = useState('all');
@@ -27,8 +31,9 @@ export default function GymMemberships() {
         queryFn: () => MembershipService.getMemberships(page, limit, debouncedSearch, planTypeFilter)
     });
 
-    const memberships = data?.items || [];
-    const total = data?.total || 0;
+    const memberships = useMemo(() => data?.items || [], [data?.items]);
+    const total = useMemo(() => data?.total || 0, [data?.total]);
+    const totalPages = useMemo(() => Math.ceil(total / limit), [total, limit]);
 
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
@@ -104,14 +109,6 @@ export default function GymMemberships() {
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(1);
-            setDebouncedSearch(search);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     const filteredClients = useMemo(() => {
         if (clientSearch.trim() === '') {
@@ -260,7 +257,7 @@ export default function GymMemberships() {
         createMutation.mutate(payload);
     };
 
-    const handleOpenEditModal = (membership: Membership) => {
+    const handleOpenEditModal = useCallback((membership: Membership) => {
         const currentPlan = plans.find(p => p.id === membership.planId);
         setEditSelectedPlan(currentPlan || null);
 
@@ -274,7 +271,7 @@ export default function GymMemberships() {
             totalPurchasedDays: membership.totalPurchasedDays
         });
         setIsEditModalOpen(true);
-    };
+    }, [plans]);
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -295,20 +292,20 @@ export default function GymMemberships() {
         setTimeout(() => setToast({ message: '', show: false }), 3000);
     };
 
-    const handleOpenModal = (membership: Membership) => {
+    const handleOpenModal = useCallback((membership: Membership) => {
         setSelectedMembership(membership);
         setIsModalOpen(true);
-    };
+    }, []);
 
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedMembership(null);
     };
 
-    const handleDeleteClick = (id: string) => {
+    const handleDeleteClick = useCallback((id: string) => {
         setMembershipToDelete(id);
         setIsDeleteModalOpen(true);
-    };
+    }, []);
 
     const confirmDelete = () => {
         if (membershipToDelete) {
@@ -331,8 +328,17 @@ export default function GymMemberships() {
         }
     };
 
+    const handleSearchChange = useCallback((val: string) => {
+        setSearch(val);
+        setPage(1);
+    }, []);
+
+    const handlePageChange = useCallback((newPage: number) => {
+        setPage(newPage);
+    }, []);
+
     // Explicit loading state
-    if (loading) {
+    if (loading && memberships.length === 0 && !debouncedSearch && planTypeFilter === 'all') {
         return (
             <DashboardLayout>
                 <div className="flex h-[80vh] items-center justify-center">
@@ -390,7 +396,7 @@ export default function GymMemberships() {
                                     }}
                                     className={`w-full text-left px-4 py-2.5 text-sm font-medium flex items-center justify-between transition-colors
                                         ${planTypeFilter === option.value
-                                            ? 'bg-orange-50 text-orange-600' // Using orange as seen in image for active state
+                                            ? 'bg-orange-50 text-orange-600'
                                             : 'text-slate-600 hover:bg-slate-50'
                                         }
                                     `}
@@ -403,124 +409,29 @@ export default function GymMemberships() {
                     )}
                 </div>
 
-                <div className="relative max-w-md w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search by client name..."
+                <div className="max-w-md w-full">
+                    <SearchBar
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                        onChange={handleSearchChange}
+                        placeholder="Search by client name..."
                     />
                 </div>
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="p-6 border-b border-slate-100 flex items-center gap-2">
-                    <div className="p-2 bg-[#00ffd5]/10 rounded-lg">
-                        <CheckCircle size={20} className="text-[#00aa8d]" />
-                    </div>
-                    <h2 className="text-lg font-bold text-slate-900">Active Memberships ({total})</h2>
-                </div>
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Client Name</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Current Plan</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Plan Type</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Start Date</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Expiry Date</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Days Left</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">Loading...</td>
-                                </tr>
-                            ) : memberships.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="px-6 py-8 text-center text-slate-500">No active memberships found.</td>
-                                </tr>
-                            ) : (
-                                memberships.map(membership => (
-                                    <tr key={membership.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4 font-medium text-slate-900">{membership.clientName}</td>
-                                        <td className="px-6 py-4 text-slate-600">{membership.planName}</td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${membership.planType === 'category'
-                                                ? 'bg-slate-200 text-slate-700' // Changed to neutral style
-                                                : 'bg-slate-200 text-slate-700'
-                                                }`}>
-                                                {membership.planType === 'category' ? 'Monthly' : 'Day-Based'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600 font-mono text-sm">
-                                            {format(new Date(membership.startDate), 'yyyy-MM-dd')}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600 font-mono text-sm">
-                                            {membership.expiredDate ? format(new Date(membership.expiredDate), 'yyyy-MM-dd') : '-'}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className="text-slate-900 font-medium">
-                                                {membership.planType === 'day' ? `${membership.remainingDays} days` : '-'}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleOpenModal(membership)}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenEditModal(membership)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(membership.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">
-                        Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} memberships
-                    </span>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            onClick={() => setPage(p => p + 1)}
-                            disabled={page * limit >= total}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <GymMembershipsTable
+                memberships={memberships}
+                isLoading={loading}
+                searchQuery={debouncedSearch}
+                currentPage={page}
+                totalPages={totalPages}
+                total={total}
+                limit={limit}
+                onView={handleOpenModal}
+                onEdit={handleOpenEditModal}
+                onDelete={handleDeleteClick}
+                onPageChange={handlePageChange}
+            />
 
             {/* View Modal */}
             {isModalOpen && selectedMembership && (

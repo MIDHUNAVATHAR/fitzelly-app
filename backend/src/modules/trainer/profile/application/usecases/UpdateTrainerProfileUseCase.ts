@@ -11,6 +11,7 @@ export interface UpdateTrainerProfileRequestDTO {
     specialization?: string;
     biography?: string;
     dateOfBirth?: Date;
+    profilePicture?: string;
 }
 
 export class UpdateTrainerProfileUseCase {
@@ -28,7 +29,8 @@ export class UpdateTrainerProfileUseCase {
             ...(request.phone ? { phone: request.phone } : {}),
             ...(request.specialization ? { specialization: request.specialization } : {}),
             ...(request.biography ? { biography: request.biography } : {}),
-            ...(request.dateOfBirth ? { dateOfBirth: new Date(request.dateOfBirth) } : {})
+            ...(request.dateOfBirth ? { dateOfBirth: new Date(request.dateOfBirth) } : {}),
+            ...(request.profilePicture ? { profilePicture: request.profilePicture } : {})
         });
 
         const result = await this.gymTrainerRepository.update(updatedTrainerEntity);

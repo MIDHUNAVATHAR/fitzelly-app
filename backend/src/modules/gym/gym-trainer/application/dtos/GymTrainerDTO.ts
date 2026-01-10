@@ -35,6 +35,9 @@ export interface TrainerResponseDTO {
     isBlocked: boolean;
     isEmailVerified: boolean;
     createdAt: Date;
+    profilePicture?: string;
+    gymName?: string;
+    gymLogoUrl?: string;
 }
 
 export interface TrainerListResponseDTO {

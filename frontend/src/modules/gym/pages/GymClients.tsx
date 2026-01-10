@@ -1,18 +1,25 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2, Ban } from 'lucide-react';
+import { Plus, X, Filter, Check, ChevronDown } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
 import { TrainerService } from '../services/TrainerService';
+import { SearchBar } from '../../../components/SearchBar';
+import GymClientsTable from '../../../components/GymClientsTable';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export default function GymClients() {
+    console.log('GymClients page rendered'); // Debug log
+
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const limit = 10;
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+
+    // Debounce search to reduce API calls
+    const debouncedSearch = useDebounce(search, 500);
 
     // Query Clients
     const { data, isLoading: loading } = useQuery({
@@ -27,8 +34,22 @@ export default function GymClients() {
     });
     const trainers = trainersData?.trainers || [];
 
-    const clients = data?.clients || [];
-    const total = data?.total || 0;
+    // Memoize derived values
+    const clients = useMemo(() => data?.clients || [], [data?.clients]);
+    const total = useMemo(() => data?.total || 0, [data?.total]);
+    const totalPages = useMemo(() => Math.ceil(total / limit), [total, limit]);
+
+    // Create trainer lookup map
+    const trainersRecord = useMemo(() => {
+        const record: Record<string, string> = {};
+        if (trainers) {
+            trainers.forEach(t => {
+                record[t.id] = t.fullName;
+            });
+        }
+        return record;
+    }, [trainers]);
+
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef<HTMLDivElement>(null);
 
@@ -65,16 +86,10 @@ export default function GymClients() {
         fullName: '',
         email: '',
         phone: '',
-        assignedTrainer: ''
+        assignedTrainer: '',
+        emergencyContactNumber: '',
+        dateOfBirth: ''
     });
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(1); // Reset page on search
-            setDebouncedSearch(search)
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     // Mutations
     const createMutation = useMutation({
@@ -150,7 +165,9 @@ export default function GymClients() {
                 fullName: client.fullName,
                 email: client.email,
                 phone: client.phone,
-                assignedTrainer: client.assignedTrainer || ''
+                assignedTrainer: client.assignedTrainer || '',
+                emergencyContactNumber: client.emergencyContactNumber || '',
+                dateOfBirth: client.dateOfBirth || ''
             });
         } else {
             setSelectedClient(null);
@@ -158,7 +175,9 @@ export default function GymClients() {
                 fullName: '',
                 email: '',
                 phone: '',
-                assignedTrainer: ''
+                assignedTrainer: '',
+                emergencyContactNumber: '',
+                dateOfBirth: ''
             });
         }
         setIsModalOpen(true);
@@ -167,43 +186,69 @@ export default function GymClients() {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedClient(null);
+        setFormData({
+            fullName: '',
+            email: '',
+            phone: '',
+            assignedTrainer: '',
+            emergencyContactNumber: '',
+            dateOfBirth: ''
+        });
     };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-
-        // Prepare data - if assignedTrainer is empty string, make it null/undefined or handle in backend
-        const submitData = {
-            ...formData,
-            assignedTrainer: formData.assignedTrainer === '' ? null : formData.assignedTrainer
-        };
-
-        if (modalMode === 'edit' && selectedClient) {
-            updateMutation.mutate({ id: selectedClient.id, data: submitData });
-        } else if (modalMode === 'create') {
-            createMutation.mutate(submitData as any);
+        if (modalMode === 'create') {
+            createMutation.mutate(formData as Omit<Client, 'id' | 'createdAt' | 'status' | 'isEmailVerified'>);
+        } else if (modalMode === 'edit' && selectedClient) {
+            updateMutation.mutate({ id: selectedClient.id, data: formData });
         }
     };
 
-    const handleDeleteClick = (id: string) => {
+    // Memoized callbacks for table component
+    const handleSearchChange = useCallback((value: string) => {
+        console.log('Search changed:', value);
+        setSearch(value);
+        setPage(1);
+    }, []);
+
+    const handlePageChange = useCallback((newPage: number) => {
+        console.log('Page changed:', newPage);
+        setPage(newPage);
+    }, []);
+
+    const handleView = useCallback((client: Client) => {
+        console.log('View client:', client.fullName);
+        handleOpenModal('view', client);
+    }, []);
+
+    const handleEdit = useCallback((client: Client) => {
+        console.log('Edit client:', client.fullName);
+        handleOpenModal('edit', client);
+    }, []);
+
+    const handleDelete = useCallback((id: string) => {
+        console.log('Delete client:', id);
         setClientToDelete(id);
         setIsDeleteModalOpen(true);
-    };
+    }, []);
+
+    const handleBlock = useCallback((client: Client) => {
+        console.log('Block/Unblock client:', client.fullName);
+        setClientToBlock(client);
+        setIsBlockModalOpen(true);
+    }, []);
+
+    const handleSendEmail = useCallback((id: string) => {
+        console.log('Send email to:', id);
+        setSendingEmailId(id);
+        sendWelcomeMutation.mutate(id);
+    }, [sendWelcomeMutation]);
 
     const confirmDelete = () => {
         if (clientToDelete) {
             deleteMutation.mutate(clientToDelete);
         }
-    };
-
-    const handleSendWelcome = (id: string) => {
-        setSendingEmailId(id);
-        sendWelcomeMutation.mutate(id);
-    };
-
-    const handleBlockClick = (client: Client) => {
-        setClientToBlock(client);
-        setIsBlockModalOpen(true);
     };
 
     const confirmBlock = () => {
@@ -213,7 +258,7 @@ export default function GymClients() {
     };
 
     // Explicit loading state
-    if (loading) {
+    if (loading && clients.length === 0 && !debouncedSearch && !statusFilter) {
         return (
             <DashboardLayout>
                 <div className="flex h-[80vh] items-center justify-center">
@@ -241,16 +286,15 @@ export default function GymClients() {
 
             {/* Search and Filter */}
             <div className="flex gap-4 mb-6">
-                <div className="relative max-w-md w-full">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search by name..."
+                {/* Search Bar - Memoized Component */}
+                <div className="max-w-md w-full">
+                    <SearchBar
                         value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                        onChange={handleSearchChange}
+                        placeholder="Search by name..."
                     />
                 </div>
+
                 {/* Custom Dropdown Filter */}
                 <div className="relative" ref={filterRef}>
                     <button
@@ -299,283 +343,55 @@ export default function GymClients() {
                 </div>
             </div>
 
-            {/* Table */}
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="bg-slate-50 border-b border-slate-100">
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Name</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Phone</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Email</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Trainer</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Status</th>
-                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading...</td>
-                                </tr>
-                            ) : clients.length === 0 ? (
-                                <tr>
-                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No clients found.</td>
-                                </tr>
-                            ) : (
-                                clients.map(client => (
-                                    <tr key={client.id} className={`hover:bg-slate-50 transition-colors ${client.isBlocked ? 'bg-red-50/50' : ''}`}>
-                                        <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
-                                            {client.fullName}
-                                            {client.isBlocked && <Ban size={14} className="text-red-500" />}
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">{client.phone}</td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            <div className="flex items-center gap-2">
-                                                {client.email}
-                                                {client.isEmailVerified && (
-                                                    <div title="Email Verified" className="text-[#00ffd5]">
-                                                        <CheckCircle size={14} />
-                                                    </div>
-                                                )}
-                                                {!client.isEmailVerified && (
-                                                    <div title="Email Unverified" className="w-2 h-2 rounded-full bg-red-500"></div>
-                                                )}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-slate-600">
-                                            {client.assignedTrainer ? trainers.find(t => t.id === client.assignedTrainer)?.fullName || 'Unknown' : <span className="text-slate-400 italic">Unassigned</span>}
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${client.status === 'active'
-                                                ? 'bg-[#00ffd5]/20 text-teal-800'
-                                                : client.status === 'expired'
-                                                    ? 'bg-red-100 text-red-700'
-                                                    : 'bg-slate-100 text-slate-600'
-                                                }`}>
-                                                {client.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button
-                                                    onClick={() => handleSendWelcome(client.id)}
-                                                    disabled={sendingEmailId === client.id}
-                                                    className="p-2 text-slate-400 hover:text-[#00ffd5] hover:bg-slate-50 rounded-lg transition-all disabled:opacity-50 disabled:cursor-wait"
-                                                    title="Send Welcome Email"
-                                                >
-                                                    {sendingEmailId === client.id ? (
-                                                        <Loader2 size={18} className="animate-spin text-[#00ffd5]" />
-                                                    ) : (
-                                                        <Mail size={18} />
-                                                    )}
-                                                </button>
-                                                <button
-                                                    onClick={() => handleBlockClick(client)}
-                                                    className={`p-2 rounded-lg transition-all ${client.isBlocked ? 'text-red-500 bg-red-50 hover:bg-red-100' : 'text-slate-400 hover:text-red-600 hover:bg-slate-50'}`}
-                                                    title={client.isBlocked ? "Unblock Client" : "Block Client"}
-                                                >
-                                                    <Ban size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenModal('view', client)}
-                                                    className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Eye size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenModal('edit', client)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDeleteClick(client.id)}
-                                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-slate-50 rounded-lg transition-all"
-                                                >
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
+            {/* Clients Table - Memoized Component - Only re-renders when data changes! */}
+            <GymClientsTable
+                clients={clients}
+                isLoading={loading}
+                searchQuery={debouncedSearch}
+                currentPage={page}
+                totalPages={totalPages}
+                total={total}
+                limit={limit}
+                sendingEmailId={sendingEmailId}
+                trainersRecord={trainersRecord}
+                onView={handleView}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onBlock={handleBlock}
+                onSendEmail={handleSendEmail}
+                onPageChange={handlePageChange}
+            />
 
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">
-                        Showing {((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} clients
-                    </span>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            onClick={() => setPage(p => p + 1)}
-                            disabled={page * limit >= total}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+            {/* Rest of the modals code continues... */}
+            {/* I'll add the modals in a follow-up file to keep it manageable */}
 
-            {/* Modal */}
-            {isModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={handleCloseModal} />
-                    <div className="relative w-full max-w-md bg-white rounded-2xl shadow-xl p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold text-slate-900">
-                                {modalMode === 'create' ? 'Add New Client' : modalMode === 'edit' ? 'Edit Client' : 'Client Details'}
-                            </h2>
-                            <button onClick={handleCloseModal} className="text-slate-400 hover:text-slate-600">
-                                <X size={24} />
-                            </button>
-                        </div>
-
-                        {modalMode === 'view' && selectedClient ? (
-                            <div className="space-y-4">
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Full Name</div>
-                                    <div className="text-slate-900 font-medium">{selectedClient.fullName}</div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Email</div>
-                                    <div className="text-slate-900 font-medium flex items-center gap-2">
-                                        {selectedClient.email}
-                                        {selectedClient.isEmailVerified ? (
-                                            <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">Verified</span>
-                                        ) : (
-                                            <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-bold">Unverified</span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Phone</div>
-                                    <div className="text-slate-900 font-medium">{selectedClient.phone}</div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Assigned Trainer</div>
-                                    <div className="text-slate-900 font-medium">
-                                        {selectedClient.assignedTrainer ? trainers.find(t => t.id === selectedClient.assignedTrainer)?.fullName || 'Unknown' : 'Unassigned'}
-                                    </div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Status</div>
-                                    <div className="text-slate-900 font-medium capitalize">{selectedClient.status}</div>
-                                </div>
-                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Joined Date</div>
-                                    <div className="text-slate-900 font-medium">
-                                        {new Date(selectedClient.createdAt).toLocaleDateString()}
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleSubmit} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Full Name *</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        value={formData.fullName}
-                                        onChange={e => setFormData({ ...formData, fullName: e.target.value })}
-                                        placeholder="Enter full name"
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
-                                        autoFocus
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Email *</label>
-                                    <input
-                                        type="email"
-                                        required
-                                        value={formData.email}
-                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                        placeholder="Email address"
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Phone *</label>
-                                    <input
-                                        type="tel"
-                                        required
-                                        value={formData.phone}
-                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                        placeholder="Phone number"
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Assign Trainer</label>
-                                    <select
-                                        value={formData.assignedTrainer || ''}
-                                        onChange={e => setFormData({ ...formData, assignedTrainer: e.target.value })}
-                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
-                                    >
-                                        <option value="">Select Trainer (Unassigned)</option>
-                                        {trainers.map(trainer => (
-                                            <option key={trainer.id} value={trainer.id}>
-                                                {trainer.fullName}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <button
-                                    type="submit"
-                                    disabled={createMutation.isPending || updateMutation.isPending}
-                                    className="w-full bg-[#00ffd5] hover:bg-[#00e6c0] disabled:opacity-50 disabled:cursor-wait text-slate-900 font-bold py-3 rounded-xl transition-all shadow-md mt-2 flex items-center justify-center gap-2"
-                                >
-                                    {(createMutation.isPending || updateMutation.isPending) && <Loader2 size={18} className="animate-spin" />}
-                                    {modalMode === 'create' ? 'Add Client' : 'Update Client'}
-                                </button>
-                            </form>
-                        )}
-                    </div>
+            {/* Toast */}
+            {toast.show && (
+                <div className="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-xl z-50 animate-in slide-in-from-bottom-5 duration-300">
+                    {toast.message}
                 </div>
             )}
 
             {/* Delete Confirmation Modal */}
             {isDeleteModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsDeleteModalOpen(false)} />
-                    <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex flex-col items-center text-center">
-                            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                                <AlertTriangle className="text-red-500" size={24} />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Client?</h3>
-                            <p className="text-slate-500 mb-6">
-                                Are you sure you want to delete this client? This action cannot be undone.
-                            </p>
-                            <div className="flex gap-3 w-full">
-                                <button
-                                    onClick={() => setIsDeleteModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={confirmDelete}
-                                    className="flex-1 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white font-semibold rounded-xl transition-colors shadow-lg shadow-red-500/30"
-                                >
-                                    Delete
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Client</h3>
+                        <p className="text-slate-600 mb-6">Are you sure you want to delete this client? This action cannot be undone.</p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                className="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                disabled={deleteMutation.isPending}
+                                className="px-4 py-2 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors disabled:opacity-50"
+                            >
+                                {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -583,51 +399,200 @@ export default function GymClients() {
 
             {/* Block Confirmation Modal */}
             {isBlockModalOpen && clientToBlock && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onClick={() => setIsBlockModalOpen(false)} />
-                    <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 animate-in fade-in zoom-in duration-200">
-                        <div className="flex flex-col items-center text-center">
-                            <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-4 ${clientToBlock.isBlocked ? 'bg-green-100' : 'bg-red-100'}`}>
-                                <Ban className={clientToBlock.isBlocked ? 'text-green-600' : 'text-red-500'} size={24} />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-2">
-                                {clientToBlock.isBlocked ? 'Unblock Client?' : 'Block Client?'}
-                            </h3>
-                            <p className="text-slate-500 mb-6">
-                                {clientToBlock.isBlocked
-                                    ? "This will restore the client's access to the gym features."
-                                    : "This will restrict the client's access to the gym features."}
-                            </p>
-                            <div className="flex gap-3 w-full">
-                                <button
-                                    onClick={() => setIsBlockModalOpen(false)}
-                                    className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={confirmBlock}
-                                    disabled={blockMutation.isPending}
-                                    className={`flex-1 px-4 py-2.5 text-white font-semibold rounded-xl transition-colors shadow-lg flex items-center justify-center gap-2
-                                        ${clientToBlock.isBlocked
-                                            ? 'bg-green-500 hover:bg-green-600 shadow-green-500/30'
-                                            : 'bg-red-500 hover:bg-red-600 shadow-red-500/30'}`}
-                                >
-                                    {blockMutation.isPending && <Loader2 size={18} className="animate-spin" />}
-                                    {clientToBlock.isBlocked ? 'Unblock' : 'Block'}
-                                </button>
-                            </div>
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+                        <h3 className="text-xl font-bold text-slate-900 mb-2">
+                            {clientToBlock.isBlocked ? 'Unblock' : 'Block'} Client
+                        </h3>
+                        <p className="text-slate-600 mb-6">
+                            Are you sure you want to {clientToBlock.isBlocked ? 'unblock' : 'block'} {clientToBlock.fullName}?
+                        </p>
+                        <div className="flex gap-3 justify-end">
+                            <button
+                                onClick={() => setIsBlockModalOpen(false)}
+                                className="px-4 py-2 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmBlock}
+                                disabled={blockMutation.isPending}
+                                className={`px-4 py-2 rounded-xl font-medium transition-colors disabled:opacity-50 ${clientToBlock.isBlocked
+                                    ? 'bg-green-500 text-white hover:bg-green-600'
+                                    : 'bg-orange-500 text-white hover:bg-orange-600'
+                                    }`}
+                            >
+                                {blockMutation.isPending ? 'Processing...' : (clientToBlock.isBlocked ? 'Unblock' : 'Block')}
+                            </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Toast Notification */}
-            {toast.show && (
-                <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
-                    <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">
-                        <CheckCircle className="text-[#00ffd5]" size={20} />
-                        <span className="font-medium text-sm">{toast.message}</span>
+            {/* Client Modal (Create/Edit/View) */}
+            {isModalOpen && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-2xl max-w-2xl w-full my-8">
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <h2 className="text-2xl font-bold text-slate-900">
+                                {modalMode === 'create' ? 'Add New Client' :
+                                    modalMode === 'edit' ? 'Edit Client' : 'Client Details'}
+                            </h2>
+                            <button
+                                onClick={handleCloseModal}
+                                className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Full Name *</label>
+                                    <input
+                                        type="text"
+                                        value={formData.fullName || ''}
+                                        onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                                        disabled={modalMode === 'view'}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Email *</label>
+                                    <input
+                                        type="email"
+                                        value={formData.email || ''}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                        disabled={modalMode === 'view' || modalMode === 'edit'}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    />
+                                    {modalMode === 'edit' && (
+                                        <p className="text-xs text-slate-500 mt-1">Email cannot be changed</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Phone *</label>
+                                    <input
+                                        type="tel"
+                                        value={formData.phone || ''}
+                                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                        disabled={modalMode === 'view'}
+                                        required
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Assign Trainer</label>
+                                    <select
+                                        value={formData.assignedTrainer || ''}
+                                        onChange={(e) => setFormData({ ...formData, assignedTrainer: e.target.value })}
+                                        disabled={modalMode === 'view'}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    >
+                                        <option value="">No Trainer</option>
+                                        {trainers.map(trainer => (
+                                            <option key={trainer.id} value={trainer.id}>
+                                                {trainer.fullName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {/* Additional Fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Emergency Contact</label>
+                                    <input
+                                        type="tel"
+                                        value={formData.emergencyContactNumber || ''}
+                                        onChange={(e) => setFormData({ ...formData, emergencyContactNumber: e.target.value })}
+                                        disabled={modalMode === 'view'}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
+                                    <input
+                                        type="date"
+                                        value={formData.dateOfBirth ? new Date(formData.dateOfBirth).toISOString().split('T')[0] : ''}
+                                        onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
+                                        disabled={modalMode === 'view'}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent disabled:bg-slate-50"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* View Only Fields */}
+                            {modalMode === 'view' && selectedClient && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Status</label>
+                                        <div className="flex items-center gap-2">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                ${selectedClient.status === 'active' ? 'bg-green-100 text-green-800' :
+                                                    selectedClient.status === 'expired' ? 'bg-orange-100 text-orange-800' :
+                                                        'bg-slate-100 text-slate-800'}`}>
+                                                {selectedClient.status.toUpperCase()}
+                                            </span>
+                                            {selectedClient.isBlocked && (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Blocked
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Email Verification</label>
+                                        <div>
+                                            {selectedClient.isEmailVerified ? (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <Check size={12} /> Verified
+                                                </span>
+                                            ) : (
+                                                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                                    Unverified
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Joined Date</label>
+                                        <p className="text-slate-900">{new Date(selectedClient.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {modalMode !== 'view' && (
+                                <div className="flex gap-3 justify-end pt-4">
+                                    <button
+                                        type="button"
+                                        onClick={handleCloseModal}
+                                        className="px-6 py-2.5 border border-slate-200 rounded-xl text-slate-700 font-medium hover:bg-slate-50 transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={createMutation.isPending || updateMutation.isPending}
+                                        className="px-6 py-2.5 bg-[#00ffd5] text-slate-900 rounded-xl font-bold hover:bg-[#00e6c0] transition-colors disabled:opacity-50"
+                                    >
+                                        {createMutation.isPending || updateMutation.isPending
+                                            ? 'Saving...'
+                                            : modalMode === 'create' ? 'Add Client' : 'Save Changes'}
+                                    </button>
+                                </div>
+                            )}
+                        </form>
                     </div>
                 </div>
             )}

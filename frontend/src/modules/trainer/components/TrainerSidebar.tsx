@@ -5,11 +5,16 @@ import { useAuth } from '../../landing/context/AuthContext';
 
 export default function TrainerSidebar() {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-    const [gymName] = useState('FITZELLY');
     const { logout, user } = useAuth();
+    const [gymName, setGymName] = useState('FITZELLY');
+    const [gymLogo, setGymLogo] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (user) {
+            setGymName((user as any).gymName || 'FITZELLE');
+            setGymLogo((user as any).gymLogoUrl || '');
+        }
     }, [user]);
 
     const menuItems = [
@@ -31,7 +36,6 @@ export default function TrainerSidebar() {
     };
 
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
-
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     return (
@@ -39,8 +43,15 @@ export default function TrainerSidebar() {
             {/* Mobile Header */}
             <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-slate-200 fixed top-0 left-0 right-0 z-50">
                 <div className="flex items-center gap-2">
-                    <span className="font-bold text-lg text-slate-900">{gymName}</span>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">Trainer Dashboard</span>
+                    {gymLogo ? (
+                        <img src={gymLogo} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+                    ) : (
+                        <div className="w-8 h-8 bg-[#00ffd5] rounded-lg flex items-center justify-center">
+                            <Activity className="text-slate-900 w-5 h-5" />
+                        </div>
+                    )}
+                    <span className="font-bold text-lg text-slate-900 truncate max-w-[150px]">{gymName}</span>
+                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded">Trainer Area</span>
                 </div>
                 <button onClick={toggleMobileMenu} className="p-2 hover:bg-slate-100 rounded-lg text-slate-600">
                     {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -65,17 +76,20 @@ export default function TrainerSidebar() {
                         {isCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
                     </button>
 
-                    {/* Logo (Desktop) - Fixed at top */}
+                    {/* Gym Branding (Desktop) - Fixed at top */}
                     <div
                         className={`hidden md:flex flex-col gap-1 p-6 border-b border-slate-100 flex-shrink-0 cursor-pointer hover:bg-slate-50 transition-colors ${isCollapsed ? 'items-center px-2 py-4' : ''}`}
-                        onClick={() => navigate('/landing')}
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
-                                <Activity className="text-slate-900 w-6 h-6" />
-                            </div>
+                            {gymLogo ? (
+                                <img src={gymLogo} alt="Gym Logo" className="w-10 h-10 rounded-xl object-cover shadow-sm bg-slate-50 flex-shrink-0" />
+                            ) : (
+                                <div className="w-10 h-10 bg-[#00ffd5] rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                                    <Activity className="text-slate-900 w-6 h-6" />
+                                </div>
+                            )}
                             <div className={`overflow-hidden transition-all duration-300 ${isCollapsed ? 'w-0 opacity-0 hidden' : 'w-auto opacity-100 block'}`}>
-                                <h1 className="font-bold text-xl text-slate-900 leading-none whitespace-nowrap">{gymName}</h1>
+                                <h1 className="font-bold text-xl text-slate-900 leading-tight break-words line-clamp-2" title={gymName}>{gymName}</h1>
                             </div>
                         </div>
                         <div className={`text-xs text-slate-500 mt-1 pl-1 transition-all duration-300 ${isCollapsed ? 'hidden' : 'block'}`}>Trainer Dashboard</div>
@@ -107,6 +121,19 @@ export default function TrainerSidebar() {
                             </NavLink>
                         ))}
                     </nav>
+
+                    {/* Powered By Fitzelle (Bottom) */}
+                    <div className={`p-4 border-t border-slate-100 flex-shrink-0 ${isCollapsed ? 'hidden' : 'block'}`}>
+                        <div className="bg-slate-50 rounded-xl p-3 flex items-center gap-3 justify-center">
+                            <div className="w-8 h-8 bg-[#00ffd5] rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
+                                <Activity className="text-slate-900 w-5 h-5" />
+                            </div>
+                            <div className="flex flex-col">
+                                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Powered by</span>
+                                <span className="text-sm font-bold text-slate-800 leading-none">FITZELLE</span>
+                            </div>
+                        </div>
+                    </div>
 
                     {/* Logout */}
                     <div className="p-4 border-t border-slate-100 flex-shrink-0">

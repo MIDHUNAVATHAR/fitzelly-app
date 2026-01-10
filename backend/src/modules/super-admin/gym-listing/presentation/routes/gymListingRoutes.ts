@@ -11,5 +11,8 @@ const gymListingRouter = Router();
 // I updated auth.middleware previously to support 'super-admin'.
 
 gymListingRouter.get('/', protect([ROLES.SUPER_ADMIN]), GymListingController.getGyms);
+gymListingRouter.get('/:id', protect([ROLES.SUPER_ADMIN]), GymListingController.getGymDetails);
+gymListingRouter.patch('/:id/block', protect([ROLES.SUPER_ADMIN]), GymListingController.blockGym);
+gymListingRouter.delete('/:id', protect([ROLES.SUPER_ADMIN]), GymListingController.deleteGym);
 
 export { gymListingRouter };

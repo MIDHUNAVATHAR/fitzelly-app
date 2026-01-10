@@ -17,7 +17,8 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             isDelete: client.isDelete,
             assignedTrainer: client.assignedTrainer ? new mongoose.Types.ObjectId(client.assignedTrainer) : null,
             emergencyContactNumber: client.emergencyContactNumber,
-            dateOfBirth: client.dateOfBirth
+            dateOfBirth: client.dateOfBirth,
+            profilePicture: client.profilePicture
         };
 
         const doc = await GymClientModel.create(persistenceData);
@@ -57,6 +58,28 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
         };
     }
 
+    async findByTrainerId(trainerId: string, page: number, limit: number, search?: string): Promise<{ clients: GymClient[], total: number }> {
+        const query: any = {
+            assignedTrainer: new mongoose.Types.ObjectId(trainerId),
+            isDelete: false
+        };
+
+        if (search) {
+            query.fullName = { $regex: search, $options: 'i' };
+        }
+
+        const skip = (page - 1) * limit;
+        const [docs, total] = await Promise.all([
+            GymClientModel.find(query).skip(skip).limit(limit).sort({ createdAt: -1 }),
+            GymClientModel.countDocuments(query)
+        ]);
+
+        return {
+            clients: docs.map(doc => GymClientPersistenceMapper.toDomain(doc)),
+            total
+        };
+    }
+
     async update(client: GymClient): Promise<GymClient> {
         const updatePayload: any = {
             fullName: client.fullName,
@@ -70,6 +93,7 @@ export class GymClientRepositoryImpl implements IGymClientRepository {
             assignedTrainer: client.assignedTrainer ? new mongoose.Types.ObjectId(client.assignedTrainer) : null,
             emergencyContactNumber: client.emergencyContactNumber,
             dateOfBirth: client.dateOfBirth,
+            profilePicture: client.profilePicture,
             updatedAt: new Date()
         };
 

@@ -15,6 +15,7 @@ export class GymClient {
         public readonly assignedTrainer?: string | null,
         public readonly emergencyContactNumber?: string,
         public readonly dateOfBirth?: Date,
+        public readonly profilePicture?: string,
     ) { }
 
     setPassword(password: string): GymClient {
@@ -33,7 +34,8 @@ export class GymClient {
             password,
             this.assignedTrainer,
             this.emergencyContactNumber,
-            this.dateOfBirth
+            this.dateOfBirth,
+            this.profilePicture
         );
     }
 
@@ -45,6 +47,7 @@ export class GymClient {
         assignedTrainer?: string | null;
         emergencyContactNumber?: string;
         dateOfBirth?: Date;
+        profilePicture?: string;
     }): GymClient {
         return new GymClient(
             this.id,
@@ -61,7 +64,8 @@ export class GymClient {
             this.password,
             data.assignedTrainer !== undefined ? data.assignedTrainer : this.assignedTrainer,
             data.emergencyContactNumber ?? this.emergencyContactNumber,
-            data.dateOfBirth ?? this.dateOfBirth
+            data.dateOfBirth ?? this.dateOfBirth,
+            data.profilePicture ?? this.profilePicture
         );
     }
 
@@ -81,7 +85,8 @@ export class GymClient {
             this.password,
             this.assignedTrainer,
             this.emergencyContactNumber,
-            this.dateOfBirth
+            this.dateOfBirth,
+            this.profilePicture
         );
     }
     updateStatus(newStatus: 'active' | 'inactive' | 'expired'): GymClient {
@@ -100,7 +105,8 @@ export class GymClient {
             this.password,
             this.assignedTrainer,
             this.emergencyContactNumber,
-            this.dateOfBirth
+            this.dateOfBirth,
+            this.profilePicture
         );
     }
 
@@ -120,7 +126,8 @@ export class GymClient {
             this.password,
             this.assignedTrainer,
             this.emergencyContactNumber,
-            this.dateOfBirth
+            this.dateOfBirth,
+            this.profilePicture
         );
     }
 
@@ -141,7 +148,8 @@ export class GymClient {
             this.password,
             this.assignedTrainer,
             this.emergencyContactNumber,
-            this.dateOfBirth
+            this.dateOfBirth,
+            this.profilePicture
         );
     }
 }

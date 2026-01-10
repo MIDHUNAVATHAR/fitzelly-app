@@ -15,7 +15,8 @@ export class GymTrainerDTOMapper {
             isBlocked: trainer.isBlocked,
 
             isEmailVerified: trainer.isEmailVerified,
-            createdAt: trainer.createdAt
+            createdAt: trainer.createdAt,
+            profilePicture: trainer.profilePicture
         };
     }
 }

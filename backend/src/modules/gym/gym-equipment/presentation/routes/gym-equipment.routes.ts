@@ -6,9 +6,11 @@ const router = Router();
 
 router.use(protect(['gym']));
 
-router.post("/", GymEquipmentController.createEquipment);
+import { upload } from "../../../../../shared/middlewares/upload.middleware.js";
+
+router.post("/", upload.single('photo'), GymEquipmentController.createEquipment);
 router.get("/", GymEquipmentController.getEquipments);
-router.put("/:id", GymEquipmentController.updateEquipment);
+router.put("/:id", upload.single('photo'), GymEquipmentController.updateEquipment);
 router.delete("/:id", GymEquipmentController.deleteEquipment);
 
 export const gymEquipmentRoutes = router;

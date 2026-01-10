@@ -12,6 +12,7 @@ export interface LoginGymResponseDTO {
         gymName?: string;
         phone?: string;
         description?: string;
+        logoUrl?: string;
         address?: {
             street?: string;
             city?: string;

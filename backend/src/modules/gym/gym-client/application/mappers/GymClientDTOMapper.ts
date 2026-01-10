@@ -14,7 +14,8 @@ export class GymClientDTOMapper {
             createdAt: client.createdAt,
             assignedTrainer: client.assignedTrainer,
             emergencyContactNumber: client.emergencyContactNumber,
-            dateOfBirth: client.dateOfBirth
+            dateOfBirth: client.dateOfBirth,
+            profilePicture: client.profilePicture
         };
     }
 }

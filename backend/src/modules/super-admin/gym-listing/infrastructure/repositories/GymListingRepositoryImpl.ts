@@ -34,7 +34,8 @@ export class GymListingRepositoryImpl implements IGymListingRepository {
             doc.phone || 'N/A',
             doc.address?.city || 'N/A',
             doc.address?.state || 'N/A',
-            doc.createdAt
+            doc.createdAt,
+            doc.isBlocked
         ));
 
         return {
@@ -44,5 +45,29 @@ export class GymListingRepositoryImpl implements IGymListingRepository {
             limit,
             totalPages: Math.ceil(total / limit)
         };
+    }
+
+    async findById(id: string): Promise<GymSummary | null> {
+        const doc: any = await GymModel.findById(id);
+        if (!doc) return null;
+        return new GymSummary(
+            doc._id.toString(),
+            doc.gymName || 'N/A',
+            doc.ownerName || 'N/A',
+            doc.email,
+            doc.phone || 'N/A',
+            doc.address?.city || 'N/A',
+            doc.address?.state || 'N/A',
+            doc.createdAt,
+            doc.isBlocked
+        );
+    }
+
+    async block(id: string, isBlocked: boolean): Promise<void> {
+        await GymModel.findByIdAndUpdate(id, { isBlocked });
+    }
+
+    async delete(id: string): Promise<void> {
+        await GymModel.findByIdAndDelete(id);
     }
 }

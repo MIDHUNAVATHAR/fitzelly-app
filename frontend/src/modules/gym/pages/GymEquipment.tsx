@@ -1,25 +1,20 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Search, Plus, Edit2, Trash2, X, Upload, CheckCircle, Loader2 } from 'lucide-react';
+import { Plus, X, Upload, CheckCircle, Trash2, Loader2 } from 'lucide-react';
 import { EquipmentService, type GymEquipment, type CreateEquipmentDTO } from '../services/EquipmentService';
 import Cropper, { type Area } from 'react-easy-crop';
 import { getCroppedImg } from '../../../utils/canvasUtils';
+import { SearchBar } from '../../../components/SearchBar';
+import GymEquipmentTable from '../../../components/GymEquipmentTable';
+import { useDebounce } from '../../../hooks/useDebounce';
 
 export default function GymEquipmentPage() {
     const queryClient = useQueryClient();
     const [page, setPage] = useState(1);
     const limit = 10;
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setPage(1);
-            setDebouncedSearch(search);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [search]);
+    const debouncedSearch = useDebounce(search, 500);
 
     // Query
     const { data, isLoading: loading } = useQuery({
@@ -27,9 +22,9 @@ export default function GymEquipmentPage() {
         queryFn: () => EquipmentService.getAll(page, limit, debouncedSearch)
     });
 
-    const equipments = data?.items || [];
-    const total = data?.total || 0;
-    const totalPages = Math.ceil(total / limit);
+    const equipments = useMemo(() => data?.items || [], [data?.items]);
+    const total = useMemo(() => data?.total || 0, [data?.total]);
+    const totalPages = useMemo(() => Math.ceil(total / limit), [total, limit]);
 
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -37,6 +32,7 @@ export default function GymEquipmentPage() {
     const [selectedEquipment, setSelectedEquipment] = useState<GymEquipment | null>(null);
     const [toast, setToast] = useState({ show: false, message: '' });
 
+    // Toast Timer
     useEffect(() => {
         if (toast.show) {
             const timer = setTimeout(() => {
@@ -60,6 +56,13 @@ export default function GymEquipmentPage() {
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
     const [isCropping, setIsCropping] = useState(false);
+
+    const resetForm = useCallback(() => {
+        setFormData({ name: '', windowTime: 60, condition: 'good', photoUrl: '' });
+        setImageSrc(null);
+        setIsCropping(false);
+        setSelectedEquipment(null);
+    }, []);
 
     // Mutations
     const createMutation = useMutation({
@@ -136,12 +139,12 @@ export default function GymEquipmentPage() {
         updateMutation.mutate({ id: selectedEquipment.id, data: formData });
     };
 
-    const handleDelete = () => {
+    const handleDelete = useCallback(() => {
         if (!selectedEquipment) return;
         deleteMutation.mutate(selectedEquipment.id);
-    };
+    }, [selectedEquipment, deleteMutation]);
 
-    const openEditModal = (eq: GymEquipment) => {
+    const openEditModal = useCallback((eq: GymEquipment) => {
         setSelectedEquipment(eq);
         setFormData({
             name: eq.name,
@@ -150,17 +153,29 @@ export default function GymEquipmentPage() {
             photoUrl: eq.photoUrl || ''
         });
         setIsEditModalOpen(true);
-    };
+    }, []);
 
-    const resetForm = () => {
-        setFormData({ name: '', windowTime: 60, condition: 'good', photoUrl: '' });
-        setImageSrc(null);
-        setIsCropping(false);
-        setSelectedEquipment(null);
-    };
+    const handleDeleteClick = useCallback((id: string) => {
+        // Find equipment by ID since table only passes ID, but we need object for logic (well logic uses selectedEquipment state)
+        const eq = equipments.find(e => e.id === id);
+        if (eq) {
+            setSelectedEquipment(eq);
+            setIsDeleteModalOpen(true);
+        }
+    }, [equipments]);
+
+    const handlePageChange = useCallback((newPage: number) => {
+        setPage(newPage);
+    }, []);
+
+    const handleSearchChange = useCallback((val: string) => {
+        setSearch(val);
+        setPage(1);
+    }, []);
+
 
     // Explicit loading state for page transition
-    if (loading) {
+    if (loading && equipments.length === 0 && !debouncedSearch) {
         return (
             <DashboardLayout>
                 <div className="flex h-[80vh] items-center justify-center">
@@ -173,7 +188,7 @@ export default function GymEquipmentPage() {
     return (
         <DashboardLayout>
             {/* Header */}
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
                 <div>
                     <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-600">
                         Equipment Slots
@@ -190,105 +205,27 @@ export default function GymEquipmentPage() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 mb-6 sticky top-20 z-10">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                    <input
-                        type="text"
-                        placeholder="Search equipment..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#00ffd5] transition-all"
-                    />
-                </div>
+            <div className="mb-6 max-w-md w-full">
+                <SearchBar
+                    value={search}
+                    onChange={handleSearchChange}
+                    placeholder="Search equipment..."
+                />
             </div>
 
             {/* Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="w-full">
-                        <thead className="bg-slate-50 border-b border-slate-100">
-                            <tr>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Equipment Name</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Slot Duration</th>
-                                <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Condition</th>
-                                <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {loading ? (
-                                <tr>
-                                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">Loading equipment...</td>
-                                </tr>
-                            ) : equipments.length === 0 ? (
-                                <tr>
-                                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">No equipment found. Add some!</td>
-                                </tr>
-                            ) : (
-                                equipments.map((item) => (
-                                    <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200">
-                                                    {item.photoUrl ? (
-                                                        <img src={item.photoUrl} alt={item.name} className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <Upload size={20} className="text-slate-400" />
-                                                    )}
-                                                </div>
-                                                <div className="font-semibold text-slate-900">{item.name}</div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-medium text-slate-900">{item.windowTime}</span>
-                                                <span className="text-slate-500">mins</span>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4">
-                                            <div className={`text-xs px-2 py-0.5 rounded-full inline-block ${item.condition === 'good' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                                                {item.condition === 'good' ? 'Good Condition' : 'Needs Repair'}
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => openEditModal(item)} className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-slate-50 rounded-lg transition-all">
-                                                    <Edit2 size={18} />
-                                                </button>
-                                                <button onClick={() => { setSelectedEquipment(item); setIsDeleteModalOpen(true); }} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all">
-                                                    <Trash2 size={18} />
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-                {/* Pagination */}
-                <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
-                    <span className="text-sm text-slate-500">
-                        Showing {total === 0 ? 0 : ((page - 1) * limit) + 1} to {Math.min(page * limit, total)} of {total} equipment
-                    </span>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setPage(p => Math.max(1, p - 1))}
-                            disabled={page === 1}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Previous
-                        </button>
-                        <button
-                            onClick={() => setPage(p => Math.min(totalPages, p + 1))}
-                            disabled={page >= totalPages || total === 0}
-                            className="px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            Next
-                        </button>
-                    </div>
-                </div>
-            </div>
+            <GymEquipmentTable
+                equipment={equipments}
+                isLoading={loading}
+                searchQuery={debouncedSearch}
+                currentPage={page}
+                totalPages={totalPages}
+                total={total}
+                limit={limit}
+                onEdit={openEditModal}
+                onDelete={handleDeleteClick}
+                onPageChange={handlePageChange}
+            />
 
             {/* Create/Edit Modal */}
             {(isCreateModalOpen || isEditModalOpen) && (
@@ -305,7 +242,6 @@ export default function GymEquipmentPage() {
                         </div>
 
                         <form onSubmit={isEditModalOpen ? handleEditSubmit : handleCreateSubmit} className="p-6 space-y-6">
-                            {/* Image Upload & Crop */}
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-2">Equipment Photo</label>
                                 {!isCropping ? (
@@ -344,6 +280,7 @@ export default function GymEquipmentPage() {
                                     </div>
                                 )}
                             </div>
+
 
                             <div>
                                 <label className="block text-sm font-medium text-slate-700 mb-1">Equipment Name</label>
@@ -432,8 +369,7 @@ export default function GymEquipmentPage() {
                     </div>
                 </div>
             )}
-
-            {/* Toast Notification - Added missing toast */}
+            {/* Toast Notification */}
             {toast.show && (
                 <div className="fixed bottom-8 right-8 z-[100] animate-in slide-in-from-bottom-5 fade-in duration-300">
                     <div className="bg-slate-900 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3">

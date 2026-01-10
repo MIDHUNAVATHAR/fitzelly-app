@@ -4,6 +4,7 @@ import { GetGymEquipmentsUseCase } from "../../application/usecases/GetGymEquipm
 import { UpdateGymEquipmentUseCase } from "../../application/usecases/UpdateGymEquipmentUseCase.js";
 import { DeleteGymEquipmentUseCase } from "../../application/usecases/DeleteGymEquipmentUseCase.js";
 import { GymEquipmentRepositoryImpl } from "../../infrastructure/repositories/GymEquipmentRepositoryImpl.js";
+import { S3Service } from "../../../../../shared/services/S3Service.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 
 export class GymEquipmentController {
@@ -12,12 +13,19 @@ export class GymEquipmentController {
             const repo = new GymEquipmentRepositoryImpl();
             const useCase = new CreateGymEquipmentUseCase(repo);
             const user = (req as any).user;
-            const { name, photoUrl, windowTime, condition } = req.body;
+            const { name, windowTime, condition, photoUrl } = req.body;
+
+            // Handle file upload
+            let finalPhotoUrl = photoUrl;
+            if (req.file) {
+                const s3Service = new S3Service();
+                finalPhotoUrl = await s3Service.uploadFile(req.file, `gyms/${user.id}/equipment`);
+            }
 
             const result = await useCase.execute({
                 gymId: user.id,
                 name,
-                photoUrl,
+                photoUrl: finalPhotoUrl,
                 windowTime: Number(windowTime),
                 condition
             });
@@ -58,13 +66,26 @@ export class GymEquipmentController {
             const useCase = new UpdateGymEquipmentUseCase(repo);
             const user = (req as any).user;
             const { id } = req.params;
-            const { name, photoUrl, windowTime, condition } = req.body;
+            const { name, windowTime, condition, photoUrl } = req.body;
+
+            // Handle file upload
+            let finalPhotoUrl = photoUrl;
+            if (req.file) {
+                const s3Service = new S3Service();
+                finalPhotoUrl = await s3Service.uploadFile(req.file, `gyms/${user.id}/equipment`);
+            }
 
             const dto: any = {
                 name,
-                photoUrl,
                 condition
             };
+
+            // Only update photoUrl if it's provided (new file uploaded) or if an explicit URL is sent (though usually we just send file)
+            // If file was uploaded, finalPhotoUrl has the new S3 link.
+            if (finalPhotoUrl !== undefined) {
+                dto.photoUrl = finalPhotoUrl;
+            }
+
             if (windowTime !== undefined) {
                 dto.windowTime = Number(windowTime);
             }

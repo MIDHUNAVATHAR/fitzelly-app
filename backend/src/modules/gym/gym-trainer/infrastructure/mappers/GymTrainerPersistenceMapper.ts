@@ -21,7 +21,8 @@ export class GymTrainerPersistenceMapper {
             doc.isBlocked || false,
             doc.isDelete,
             doc.createdAt,
-            doc.updatedAt
+            doc.updatedAt,
+            doc.profilePicture
         );
     }
 
@@ -41,6 +42,7 @@ export class GymTrainerPersistenceMapper {
             isEmailVerified: entity.isEmailVerified,
             isBlocked: entity.isBlocked,
             isDelete: entity.isDelete,
+            profilePicture: entity.profilePicture
         };
     }
 }

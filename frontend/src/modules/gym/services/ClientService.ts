@@ -12,6 +12,7 @@ export interface Client {
     assignedTrainer?: string | null;
     emergencyContactNumber?: string;
     dateOfBirth?: string; // date string from API
+    profilePicture?: string;
 }
 
 export interface ClientListResponse {

@@ -19,7 +19,8 @@ export class GymClientPersistenceMapper {
             doc.password,
             doc.assignedTrainer ? doc.assignedTrainer.toString() : undefined,
             doc.emergencyContactNumber,
-            doc.dateOfBirth
+            doc.dateOfBirth,
+            doc.profilePicture
         );
     }
 
@@ -37,7 +38,8 @@ export class GymClientPersistenceMapper {
             isDelete: entity.isDelete,
             assignedTrainer: entity.assignedTrainer ? new mongoose.Types.ObjectId(entity.assignedTrainer) : undefined,
             emergencyContactNumber: entity.emergencyContactNumber,
-            dateOfBirth: entity.dateOfBirth
+            dateOfBirth: entity.dateOfBirth,
+            profilePicture: entity.profilePicture
         };
     }
 }

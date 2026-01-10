@@ -10,6 +10,7 @@ export interface UpdateClientProfileRequestDTO {
     phone?: string;
     emergencyContactNumber?: string;
     dateOfBirth?: Date;
+    profilePicture?: string;
 }
 
 export class UpdateClientProfileUseCase {
@@ -26,7 +27,8 @@ export class UpdateClientProfileUseCase {
             ...(request.fullName ? { fullName: request.fullName } : {}),
             ...(request.phone ? { phone: request.phone } : {}),
             ...(request.emergencyContactNumber ? { emergencyContactNumber: request.emergencyContactNumber } : {}),
-            ...(request.dateOfBirth ? { dateOfBirth: new Date(request.dateOfBirth) } : {})
+            ...(request.dateOfBirth ? { dateOfBirth: new Date(request.dateOfBirth) } : {}),
+            ...(request.profilePicture ? { profilePicture: request.profilePicture } : {})
         });
 
         const result = await this.gymClientRepository.update(updatedClientEntity);

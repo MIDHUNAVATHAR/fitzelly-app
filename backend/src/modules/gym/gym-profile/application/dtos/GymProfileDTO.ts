@@ -12,4 +12,5 @@ export interface GymProfileDTO {
         pincode?: string;
         mapLink?: string;
     };
+    logoUrl?: string;
 }

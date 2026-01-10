@@ -10,6 +10,7 @@ export class GymProfilePersistenceMapper {
             doc.gymName,
             doc.phone,
             doc.description,
+            doc.logoUrl,
             doc.address ? {
                 street: doc.address.street,
                 city: doc.address.city,

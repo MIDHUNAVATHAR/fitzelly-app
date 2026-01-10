@@ -15,11 +15,13 @@ export class CreateTrainerUseCase {
             request.phone,
             request.specialization || '',
             request.monthlySalary || 0,
-
+            '', // biography
+            undefined, // dateOfBirth
             undefined, // password (initially undefined)
 
             false, // isEmailVerified
-            false,
+            false, // isBlocked
+            false, // isDelete
             new Date(),
             new Date(),
         );

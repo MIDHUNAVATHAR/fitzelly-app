@@ -7,7 +7,8 @@ export class GymSummary {
         public readonly phone: string,
         public readonly city: string,
         public readonly state: string,
-        public readonly joinedAt: Date
+        public readonly joinedAt: Date,
+        public readonly isBlocked: boolean = false
     ) { }
 }
 

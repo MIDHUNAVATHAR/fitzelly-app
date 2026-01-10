@@ -24,6 +24,7 @@ export class GymProfileRepositoryImpl implements IGymProfileRepository {
             gymName: profile.gymName,
             phone: profile.phone,
             description: profile.description,
+            logoUrl: profile.logoUrl,
         };
 
         if (profile.address) {
@@ -36,6 +37,16 @@ export class GymProfileRepositoryImpl implements IGymProfileRepository {
             };
         }
 
+        // Filter out undefined values to prevent unsetting fields accidentally or confusing Mongoose
+        Object.keys(updatePayload).forEach(key => updatePayload[key] === undefined && delete updatePayload[key]);
+
+        console.log("GymProfileRepositoryImpl: Updating gym profile with payload:", updatePayload);
+
+        console.log("GymProfileRepositoryImpl: Calling findByIdAndUpdate with:", {
+            id: profile.id,
+            updatePayload
+        });
+
         const updatedDoc = await GymModel.findByIdAndUpdate(
             profile.id,
             { $set: updatePayload },
@@ -45,6 +56,8 @@ export class GymProfileRepositoryImpl implements IGymProfileRepository {
         if (!updatedDoc) {
             throw new AppError("Gym not found during update", HttpStatus.NOT_FOUND);
         }
+
+        console.log("GymProfileRepositoryImpl: DB Update successful. Updated Doc logoUrl:", updatedDoc.logoUrl);
 
         return GymProfilePersistenceMapper.toDomain(updatedDoc);
     }

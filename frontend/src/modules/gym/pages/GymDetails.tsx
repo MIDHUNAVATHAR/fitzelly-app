@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
 import DashboardLayout from '../layouts/DashboardLayout';
-import { Pencil, Save, MapPin, Phone, Building, CheckCircle } from 'lucide-react';
-import { useAuth } from '../../landing/context/AuthContext';
-import { AuthService } from '../../landing/services/AuthService';
+import { Pencil, Save, MapPin, Phone, Building, Loader2 } from 'lucide-react';
+import { useGymProfile, useUpdateGymProfile } from '../hooks/useGymProfile';
+import ImageCropper from '../../../components/ImageCropper';
 
 interface InputGroupProps {
     label: string;
@@ -16,9 +15,11 @@ interface InputGroupProps {
 }
 
 export default function GymDetails() {
-    const { user, checkAuth } = useAuth();
+    const { data: user, isLoading } = useGymProfile();
+    const updateProfileMutation = useUpdateGymProfile();
     const [isEditing, setIsEditing] = useState(false);
-    const [showToast, setShowToast] = useState(false);
+    const [logoFile, setLogoFile] = useState<Blob | null>(null);
+    const [previewLogo, setPreviewLogo] = useState<string | null>(null);
 
     const [formData, setFormData] = useState({
         gymName: '',
@@ -52,6 +53,7 @@ export default function GymDetails() {
                     mapLink: u.address?.mapLink || ''
                 }
             });
+            if (u.logoUrl) setPreviewLogo(u.logoUrl);
         }
     }, [user]);
 
@@ -74,22 +76,37 @@ export default function GymDetails() {
         }
     };
 
-    const updateProfileMutation = useMutation({
-        mutationFn: AuthService.updateProfile,
-        onSuccess: async () => {
-            await checkAuth(false);
-            setIsEditing(false);
-            setShowToast(true);
-            setTimeout(() => setShowToast(false), 4000);
-        },
-        onError: (error) => {
-            console.error("Failed to save profile", error);
-        }
-    });
-
     const handleSave = () => {
-        const { email, ...payload } = formData;
-        updateProfileMutation.mutate(payload);
+        const payload = new FormData();
+        payload.append('gymName', formData.gymName);
+        payload.append('ownerName', formData.ownerName);
+        payload.append('description', formData.description);
+        payload.append('phone', formData.phone);
+        payload.append('address', JSON.stringify(formData.address));
+
+        if (logoFile) {
+            payload.append('profileImage', logoFile, 'logo.png');
+            console.log("Frontend: Appending profileImage to FormData", logoFile);
+        } else {
+            console.log("Frontend: No logoFile to append");
+        }
+
+        // Debugging: Log FormData entries
+        for (const pair of payload.entries()) {
+            console.log(pair[0], pair[1]);
+        }
+
+        updateProfileMutation.mutate(payload, {
+            onSuccess: () => {
+                setIsEditing(false);
+                setLogoFile(null);
+            }
+        });
+    };
+
+    const handleLogoCrop = (file: Blob) => {
+        setLogoFile(file);
+        setPreviewLogo(URL.createObjectURL(file));
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -98,17 +115,19 @@ export default function GymDetails() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <DashboardLayout>
+                <div className="flex h-[80vh] items-center justify-center">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#00ffd5]" />
+                </div>
+            </DashboardLayout>
+        );
+    }
+
     return (
         <DashboardLayout>
-            {/* Toast Notification */}
-            {showToast && (
-                <div className="fixed bottom-6 right-6 bg-slate-900 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-3 z-50 animate-bounce-in">
-                    <div className="w-6 h-6 bg-[#00ffd5] rounded-full flex items-center justify-center">
-                        <CheckCircle size={14} className="text-slate-900" strokeWidth={3} />
-                    </div>
-                    <span className="font-semibold">Profile updated successfully</span>
-                </div>
-            )}
+
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
@@ -129,7 +148,7 @@ export default function GymDetails() {
                     `}
                 >
                     {updateProfileMutation.isPending ? (
-                        <div className="w-5 h-5 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
+                        <Loader2 size={20} className="animate-spin text-slate-900" />
                     ) : isEditing ? (
                         <>
                             <Save size={18} />
@@ -148,10 +167,25 @@ export default function GymDetails() {
                 {/* Basic Information */}
                 <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 sm:p-8 h-full flex flex-col">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 bg-teal-50 rounded-lg flex items-center justify-center">
-                            <Building className="text-teal-600 w-5 h-5" />
-                        </div>
-                        <h2 className="text-lg font-bold text-slate-900">Basic Information</h2>
+                        {isEditing ? (
+                            <div className="w-full">
+                                <ImageCropper
+                                    image={previewLogo || undefined}
+                                    onCropComplete={handleLogoCrop}
+                                    label="Update Gym Logo"
+                                    circularCrop={true}
+                                />
+                            </div>
+                        ) : (
+                            <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-200 flex items-center justify-center bg-teal-50">
+                                {previewLogo ? (
+                                    <img src={previewLogo} alt="Gym Logo" className="w-full h-full object-cover" />
+                                ) : (
+                                    <Building className="text-teal-600 w-8 h-8" />
+                                )}
+                            </div>
+                        )}
+                        {!isEditing && <h2 className="text-lg font-bold text-slate-900">Basic Information</h2>}
                     </div>
 
                     <div className="space-y-5 flex-1">

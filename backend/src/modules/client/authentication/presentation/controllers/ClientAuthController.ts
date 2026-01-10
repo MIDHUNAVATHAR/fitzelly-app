@@ -119,13 +119,29 @@ export class ClientAuthController {
                 return res.status(HttpStatus.UNAUTHORIZED).json({ message: "Not authenticated" });
             }
 
+            // Fetch Gym Details to include branding
+            let gymName = 'FITZELLE';
+            let gymLogoUrl = '';
+
+            if (user.gymId) {
+                const { GymRepositoryImpl } = await import("../../../../gym/authentication/infrastructure/repositories/GymRepositoryImpl.js");
+                const gymRepo = new GymRepositoryImpl();
+                const gym = await gymRepo.findById(user.gymId);
+                if (gym) {
+                    gymName = gym.gymName || gymName;
+                    gymLogoUrl = gym.logoUrl || '';
+                }
+            }
+
             // Return user data, ensuring we don't send password
             const userData = {
                 id: user.id,
                 email: user.email,
                 fullName: user.fullName,
                 role: ROLES.CLIENT,
-                gymId: user.gymId
+                gymId: user.gymId,
+                gymName: gymName,
+                gymLogoUrl: gymLogoUrl
             };
 
             res.status(HttpStatus.OK).json({

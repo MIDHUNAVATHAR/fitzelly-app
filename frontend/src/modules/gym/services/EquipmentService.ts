@@ -38,7 +38,21 @@ export const EquipmentService = {
 
     create: async (data: CreateEquipmentDTO): Promise<GymEquipment> => {
         try {
-            const response = await api.post('/gym-equipment', data);
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('windowTime', data.windowTime.toString());
+            if (data.condition) formData.append('condition', data.condition);
+
+            if (data.photoUrl && data.photoUrl.startsWith('data:')) {
+                const blob = await (await fetch(data.photoUrl)).blob();
+                formData.append('photo', blob, 'equipment.jpg');
+            } else if (data.photoUrl) {
+                formData.append('photoUrl', data.photoUrl);
+            }
+
+            const response = await api.post('/gym-equipment', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             return response.data.data;
         } catch (error: any) {
             throw new Error(error.response?.data?.message || 'Failed to create equipment');
@@ -47,7 +61,21 @@ export const EquipmentService = {
 
     update: async (id: string, data: UpdateEquipmentDTO): Promise<GymEquipment> => {
         try {
-            const response = await api.put(`/gym-equipment/${id}`, data);
+            const formData = new FormData();
+            if (data.name) formData.append('name', data.name);
+            if (data.windowTime) formData.append('windowTime', data.windowTime.toString());
+            if (data.condition) formData.append('condition', data.condition);
+
+            if (data.photoUrl && data.photoUrl.startsWith('data:')) {
+                const blob = await (await fetch(data.photoUrl)).blob();
+                formData.append('photo', blob, 'equipment.jpg');
+            } else if (data.photoUrl) {
+                formData.append('photoUrl', data.photoUrl);
+            }
+
+            const response = await api.put(`/gym-equipment/${id}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
             return response.data.data;
         } catch (error: any) {
             throw new Error(error.response?.data?.message || 'Failed to update equipment');

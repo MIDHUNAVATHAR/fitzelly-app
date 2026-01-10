@@ -28,6 +28,8 @@
     "typescript-eslint": "^8.50.1"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.966.0",
+    "@types/multer": "^2.0.0",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -37,6 +39,7 @@
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.0.2",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.12",
     "zod": "^4.3.4"
   }

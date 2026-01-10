@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
 import ClientDashboardLayout from "../layouts/ClientDashboardLayout";
-import { ClientProfileService } from "../services/ClientProfileService";
-import type { Client } from "../../gym/services/ClientService";
-import { Loader2, Save, User, Mail, Phone, Calendar, HeartPulse, Pencil, X } from "lucide-react";
-import toast from "react-hot-toast";
+import { Loader2, Save, User, Mail, Phone, Calendar, HeartPulse, Pencil, X, Eye } from "lucide-react";
+import { useClientProfile, useUpdateClientProfile } from "../hooks/useClientProfile";
+import TrainerDetailsModal from "../components/TrainerDetailsModal";
+import ImageCropper from "../../../components/ImageCropper";
 
 export default function ClientProfile() {
-    const [profile, setProfile] = useState<Client | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [isSaving, setIsSaving] = useState(false);
+    const { data: profile, isLoading } = useClientProfile();
+    const updateMutation = useUpdateClientProfile();
     const [isEditing, setIsEditing] = useState(false);
+    const [showTrainerModal, setShowTrainerModal] = useState(false);
+    const [logoFile, setLogoFile] = useState<Blob | null>(null);
+    const [previewLogo, setPreviewLogo] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -20,42 +22,37 @@ export default function ClientProfile() {
     });
 
     useEffect(() => {
-        fetchProfile();
-    }, []);
-
-    const fetchProfile = async () => {
-        try {
-            const data = await ClientProfileService.getProfile();
-            setProfile(data);
-
+        if (profile) {
             // Format Date for Input
             let dob = "";
-            if (data.dateOfBirth) {
+            if (profile.dateOfBirth) {
                 // If it comes as ISO string
-                dob = new Date(data.dateOfBirth).toISOString().split('T')[0];
+                dob = new Date(profile.dateOfBirth).toISOString().split('T')[0];
             }
 
             setFormData({
-                fullName: data.fullName,
-                phone: data.phone,
-                emergencyContactNumber: data.emergencyContactNumber || "",
+                fullName: profile.fullName,
+                phone: profile.phone,
+                emergencyContactNumber: profile.emergencyContactNumber || "",
                 dateOfBirth: dob,
             });
-        } catch (error) {
-            console.error(error);
-            toast.error("Failed to load profile");
-        } finally {
-            setIsLoading(false);
+            if (profile.profilePicture) setPreviewLogo(profile.profilePicture);
         }
-    };
+    }, [profile]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleLogoCrop = (file: Blob) => {
+        setLogoFile(file);
+        setPreviewLogo(URL.createObjectURL(file));
+    };
+
     const handleCancel = () => {
         setIsEditing(false);
+        setLogoFile(null);
         if (profile) {
             let dob = "";
             if (profile.dateOfBirth) {
@@ -67,27 +64,33 @@ export default function ClientProfile() {
                 emergencyContactNumber: profile.emergencyContactNumber || "",
                 dateOfBirth: dob,
             });
+            setPreviewLogo(profile.profilePicture || null);
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSaving(true);
         try {
-            await ClientProfileService.updateProfile({
-                ...formData,
-                // Pass date only if present, or null? Service expects Partial<Client>.
-                // Backend expects Date object or string. DTO says Date. 
-                // JSON payload will send string "YYYY-MM-DD". Mongoose casts it.
-            });
-            toast.success("Profile updated successfully");
-            await fetchProfile(); // Refresh
+            const payload = new FormData();
+            payload.append('fullName', formData.fullName);
+            payload.append('phone', formData.phone);
+            payload.append('emergencyContactNumber', formData.emergencyContactNumber);
+            payload.append('dateOfBirth', formData.dateOfBirth);
+
+            if (logoFile) {
+                payload.append('profileImage', logoFile, 'profile.png');
+            }
+
+            // Debugging
+            // for (let pair of payload.entries()) {
+            //     console.log(pair[0]+ ', ' + pair[1]);
+            // }
+
+            await updateMutation.mutateAsync(payload);
             setIsEditing(false);
+            setLogoFile(null);
         } catch (error) {
             console.error(error);
-            toast.error("Failed to update profile");
-        } finally {
-            setIsSaving(false);
         }
     };
 
@@ -113,6 +116,31 @@ export default function ClientProfile() {
 
                 <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
                     <form onSubmit={handleSubmit} className="p-6 space-y-6">
+
+                        {/* PROFILE PICTURE */}
+                        <div className="flex flex-col items-center justify-center mb-6">
+                            {isEditing ? (
+                                <div className="w-full max-w-xs">
+                                    <ImageCropper
+                                        image={previewLogo || undefined}
+                                        onCropComplete={handleLogoCrop}
+                                        label="Update Profile Picture"
+                                        circularCrop={true}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="relative">
+                                    <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-slate-100 shadow-md flex items-center justify-center bg-slate-50">
+                                        {previewLogo ? (
+                                            <img src={previewLogo} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <User className="text-slate-300 w-16 h-16" />
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* READ ONLY FIELDS */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-2">
@@ -132,13 +160,24 @@ export default function ClientProfile() {
                                 <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
                                     <User size={16} /> Trainer
                                 </label>
-                                <input
-                                    type="text"
-                                    value={profile?.assignedTrainer ? "Assigned" : "None Assigned"}
-                                    // ideally we fetch trainer name, but for now just showing status or ID is complex without extra fetch.
-                                    disabled
-                                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed"
-                                />
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={profile?.assignedTrainer ? "Assigned" : "None Assigned"}
+                                        disabled
+                                        className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 cursor-not-allowed pr-12"
+                                    />
+                                    {profile?.assignedTrainer && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowTrainerModal(true)}
+                                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 hover:bg-slate-200 rounded-lg text-slate-500 transition-colors"
+                                            title="View Trainer Details"
+                                        >
+                                            <Eye size={18} />
+                                        </button>
+                                    )}
+                                </div>
                                 <p className="text-xs text-slate-400">Assigned by Gym.</p>
                             </div>
                         </div>
@@ -222,7 +261,7 @@ export default function ClientProfile() {
                                     <button
                                         type="button"
                                         onClick={handleCancel}
-                                        disabled={isSaving}
+                                        disabled={updateMutation.isPending}
                                         className="flex items-center gap-2 px-6 py-3 bg-slate-100 text-slate-600 font-bold rounded-xl hover:bg-slate-200 transition-all"
                                     >
                                         <X size={20} />
@@ -230,10 +269,10 @@ export default function ClientProfile() {
                                     </button>
                                     <button
                                         type="submit"
-                                        disabled={isSaving}
+                                        disabled={updateMutation.isPending}
                                         className="flex items-center gap-2 px-6 py-3 bg-[#00ffd5] text-slate-900 font-bold rounded-xl hover:bg-[#00ffd5]/90 transition-all hover:shadow-[0_4px_20px_rgba(0,255,213,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
-                                        {isSaving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
+                                        {updateMutation.isPending ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
                                         Save Changes
                                     </button>
                                 </>
@@ -242,6 +281,7 @@ export default function ClientProfile() {
                     </form>
                 </div>
             </div>
+            {showTrainerModal && <TrainerDetailsModal onClose={() => setShowTrainerModal(false)} />}
         </ClientDashboardLayout>
     );
 }
