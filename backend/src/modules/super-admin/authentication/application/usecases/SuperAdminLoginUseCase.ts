@@ -3,6 +3,7 @@ import { IPasswordHasher } from "../../../../gym/authentication/domain/services/
 import { TokenService } from "../../../../gym/authentication/infrastructure/services/TokenService.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 import { LoginRequestDTO, AuthResponseDTO } from "../dtos/SuperAdminAuthDTO.js";
 
 export class SuperAdminLoginUseCase {
@@ -32,7 +33,7 @@ export class SuperAdminLoginUseCase {
         const payload = {
             id: admin.id,
             email: admin.email,
-            role: 'super-admin'
+            role: ROLES.SUPER_ADMIN
         };
 
         const accessToken = TokenService.generateAccessToken(payload);
@@ -43,7 +44,7 @@ export class SuperAdminLoginUseCase {
                 id: admin.id,
                 email: admin.email,
                 fullName: admin.fullName,
-                role: 'super-admin'
+                role: ROLES.SUPER_ADMIN
             },
             tokens: {
                 accessToken,

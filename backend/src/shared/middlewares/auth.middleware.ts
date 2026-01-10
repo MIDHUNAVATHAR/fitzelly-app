@@ -5,9 +5,10 @@ import { GymRepositoryImpl } from '../../modules/gym/authentication/infrastructu
 import { GymClientRepositoryImpl } from '../../modules/gym/gym-client/infrastructure/repositories/GymClientRepositoryImpl.js';
 import { GymTrainerRepositoryImpl } from '../../modules/gym/gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js';
 import { SuperAdminRepositoryImpl } from '../../modules/super-admin/infrastructure/repositories/SuperAdminRepositoryImpl.js';
+import { ROLES, type Role } from '../../constants/roles.constants.js';
 
-const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET! ;
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET! ;
+const ACCESS_SECRET = process.env.JWT_ACCESS_SECRET!;
+const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 
 
 
@@ -30,16 +31,16 @@ const generateRefreshToken = (user: any) => {
 
 const checkUserStatus = async (id: string, role: string) => {
     let user = null;
-    if (role === 'client') {
+    if (role === ROLES.CLIENT) {
         const clientRepo = new GymClientRepositoryImpl();
         user = await clientRepo.findById(id);
-    } else if (role === 'trainer') {
+    } else if (role === ROLES.TRAINER) {
         const trainerRepo = new GymTrainerRepositoryImpl();
         user = await trainerRepo.findById(id);
-    } else if (role === 'super-admin') {
+    } else if (role === ROLES.SUPER_ADMIN) {
         const saRepo = new SuperAdminRepositoryImpl();
         user = await saRepo.findById(id);
-    } else if (role === 'gym') {
+    } else if (role === ROLES.GYM) {
         const repo = new GymRepositoryImpl();
         user = await repo.findById(id);
     }

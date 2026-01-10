@@ -9,6 +9,7 @@ export interface Client {
     isEmailVerified: boolean;
     isBlocked: boolean;
     createdAt: string;
+    assignedTrainer?: string | null;
 }
 
 export interface ClientListResponse {

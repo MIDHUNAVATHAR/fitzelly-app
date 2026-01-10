@@ -11,7 +11,8 @@ export class GymClientDTOMapper {
             status: client.status,
             isBlocked: client.isBlocked,
             isEmailVerified: client.isEmailVerified,
-            createdAt: client.createdAt
+            createdAt: client.createdAt,
+            assignedTrainer: client.assignedTrainer
         };
     }
 }

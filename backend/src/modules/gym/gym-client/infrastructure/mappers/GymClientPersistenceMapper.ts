@@ -16,7 +16,8 @@ export class GymClientPersistenceMapper {
             doc.isDelete,
             doc.createdAt,
             doc.updatedAt,
-            doc.password
+            doc.password,
+            doc.assignedTrainer ? doc.assignedTrainer.toString() : undefined
         );
     }
 
@@ -32,6 +33,7 @@ export class GymClientPersistenceMapper {
             isEmailVerified: entity.isEmailVerified,
             isBlocked: entity.isBlocked,
             isDelete: entity.isDelete,
+            assignedTrainer: entity.assignedTrainer ? new mongoose.Types.ObjectId(entity.assignedTrainer) : undefined
         };
     }
 }

@@ -8,6 +8,7 @@ import { CompleteSuperAdminPasswordResetUseCase } from "../../application/usecas
 import { SuperAdminLoginUseCase } from "../../application/usecases/SuperAdminLoginUseCase.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
 import { TokenService } from "../../../../gym/authentication/infrastructure/services/TokenService.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class SuperAdminAuthController {
     static async initiateReset(req: Request, res: Response, next: NextFunction) {
@@ -112,7 +113,7 @@ export class SuperAdminAuthController {
                     id: user.id,
                     email: user.email,
                     fullName: user.fullName,
-                    role: 'super-admin'
+                    role: ROLES.SUPER_ADMIN
                 }
             });
         } catch (error) {

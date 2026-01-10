@@ -1,6 +1,7 @@
 import { TokenService } from "../../../../gym/authentication/infrastructure/services/TokenService.js";
 import { GoogleAuthService } from "../../../../gym/authentication/infrastructure/services/GoogleAuthService.js";
 import { IGymClientRepository } from "../../../../gym/gym-client/domain/repositories/IGymClientRepository.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class GoogleAuthClientUseCase {
     constructor(
@@ -27,15 +28,15 @@ export class GoogleAuthClientUseCase {
         }
 
         // 3. Generate Tokens (Login)
-        const accessToken = TokenService.generateAccessToken({ id: client.id, role: 'client' });
-        const refreshToken = TokenService.generateRefreshToken({ id: client.id, role: 'client' });
+        const accessToken = TokenService.generateAccessToken({ id: client.id, role: ROLES.CLIENT });
+        const refreshToken = TokenService.generateRefreshToken({ id: client.id, role: ROLES.CLIENT });
 
         return {
             user: {
                 id: client.id,
                 email: client.email,
                 fullName: client.fullName,
-                role: 'client',
+                role: ROLES.CLIENT,
                 gymId: client.gymId
             },
             accessToken,

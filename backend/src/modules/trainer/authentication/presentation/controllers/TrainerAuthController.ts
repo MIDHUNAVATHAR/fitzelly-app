@@ -7,6 +7,7 @@ import { InitiateTrainerPasswordResetUseCase } from "../../application/usecases/
 import { CompleteTrainerPasswordResetUseCase } from "../../application/usecases/CompleteTrainerPasswordResetUseCase.js";
 import { TrainerLoginUseCase } from "../../application/usecases/TrainerLoginUseCase.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class TrainerAuthController {
 
@@ -106,7 +107,7 @@ export class TrainerAuthController {
                 id: user.id,
                 email: user.email,
                 fullName: user.fullName,
-                role: 'trainer',
+                role: ROLES.TRAINER,
                 gymId: user.gymId
             };
 

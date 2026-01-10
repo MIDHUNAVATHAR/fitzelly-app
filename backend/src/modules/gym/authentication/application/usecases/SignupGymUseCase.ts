@@ -7,6 +7,7 @@ import { AppError } from "../../../../../core/errors/AppError.js";
 import { SignupGymRequestDTO, SignupGymResponseDTO } from "../dtos/SignupGymDTO.js";
 import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export interface CompleteSignupRequest extends SignupGymRequestDTO {
     otp: string;
@@ -51,8 +52,8 @@ export class SignupGymUseCase {
         // No manual deletion needed
 
         // 6. Generate Token
-        const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: 'gym' });
-        const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: 'gym' });
+        const accessToken = TokenService.generateAccessToken({ id: createdGym.id, role: ROLES.GYM });
+        const refreshToken = TokenService.generateRefreshToken({ id: createdGym.id, role: ROLES.GYM });
 
 
         return GymDTOMapper.toResponseDTO(createdGym, accessToken, refreshToken);

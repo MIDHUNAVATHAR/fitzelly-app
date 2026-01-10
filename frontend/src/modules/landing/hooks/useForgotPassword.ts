@@ -1,20 +1,20 @@
 import { useState } from 'react';
 import { api } from '../../../services/api';
 
-type UserRole = 'gym' | 'client' | 'trainer' | 'super-admin';
+import { ROLES, type Role } from '../../../constants/roles';
 
 // Helper to get the correct auth endpoint based on role
-const getAuthEndpoint = (role: UserRole = 'gym'): string => {
-    const endpoints: Record<UserRole, string> = {
-        gym: 'gym-auth',
-        client: 'client-auth',
-        trainer: 'trainer-auth',
-        'super-admin': 'super-admin-auth'
+const getAuthEndpoint = (role: Role = ROLES.GYM): string => {
+    const endpoints: Record<Role, string> = {
+        [ROLES.GYM]: 'gym-auth',
+        [ROLES.CLIENT]: 'client-auth',
+        [ROLES.TRAINER]: 'trainer-auth',
+        [ROLES.SUPER_ADMIN]: 'super-admin-auth'
     };
     return endpoints[role];
 };
 
-export const useForgotPassword = (role: UserRole = 'gym') => {
+export const useForgotPassword = (role: Role = ROLES.GYM) => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 

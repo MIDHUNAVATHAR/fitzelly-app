@@ -2,6 +2,7 @@ import { Router } from "express";
 import { ClientAuthController } from "../controllers/ClientAuthController.js";
 
 import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 const clientAuthRoutes = Router();
 
@@ -15,6 +16,6 @@ clientAuthRoutes.post("/logout", ClientAuthController.logout);
 clientAuthRoutes.post("/login", ClientAuthController.login);
 
 // Protected
-clientAuthRoutes.get("/auth/me", protect(['client']), ClientAuthController.verifyToken);
+clientAuthRoutes.get("/auth/me", protect([ROLES.CLIENT]), ClientAuthController.verifyToken);
 
 export { clientAuthRoutes };

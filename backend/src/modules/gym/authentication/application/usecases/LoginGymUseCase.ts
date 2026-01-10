@@ -5,6 +5,7 @@ import { AppError } from "../../../../../core/errors/AppError.js";
 import { LoginGymRequestDTO, LoginGymResponseDTO } from "../dtos/LoginGymDTO.js";
 import { GymDTOMapper } from "../mappers/GymDTOMapper.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 
 export class LoginGymUseCase {
@@ -28,8 +29,8 @@ export class LoginGymUseCase {
 
         // 3. Generate Token
         // Use TokenService
-        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: 'gym' });
-        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: 'gym' });
+        const accessToken = TokenService.generateAccessToken({ id: gym.id, role: ROLES.GYM });
+        const refreshToken = TokenService.generateRefreshToken({ id: gym.id, role: ROLES.GYM });
 
 
         // 4. Return Response

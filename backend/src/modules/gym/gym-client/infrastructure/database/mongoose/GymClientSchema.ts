@@ -12,6 +12,7 @@ export interface IGymClientDocument extends Document {
     password?: string;
     createdAt: Date;
     updatedAt: Date;
+    assignedTrainer?: mongoose.Types.ObjectId;
 }
 
 const GymClientSchema = new Schema<IGymClientDocument>({
@@ -23,7 +24,8 @@ const GymClientSchema = new Schema<IGymClientDocument>({
     status: { type: String, enum: ['active', 'inactive', 'expired'], default: 'inactive' },
     isEmailVerified: { type: Boolean, default: false },
     isBlocked: { type: Boolean, default: false },
-    isDelete: { type: Boolean, default: false }
+    isDelete: { type: Boolean, default: false },
+    assignedTrainer: { type: Schema.Types.ObjectId, ref: 'GymTrainer', default: null }
 }, { timestamps: true });
 
 export const GymClientModel = mongoose.models.GymClient || mongoose.model<IGymClientDocument>('GymClient', GymClientSchema);

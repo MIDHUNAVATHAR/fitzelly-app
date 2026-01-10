@@ -12,6 +12,7 @@ import { GoogleAuthGymUseCase } from "../../application/usecases/GoogleAuthGymUs
 import { LoginGymRequestDTO } from "../../application/dtos/LoginGymDTO.js";
 import { UpdateGymProfileUseCase } from "../../application/usecases/UpdateGymProfileUseCase.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class GymController {
 
@@ -118,7 +119,7 @@ export class GymController {
     // Traditional Redirect Flow
     static async initiateGoogleLogin(req: Request, res: Response, next: NextFunction) {
         try {
-            const role = (req.query.role as string) || 'gym';
+            const role = (req.query.role as string) || ROLES.GYM;
             const state = JSON.stringify({ role });
 
             const googleAuthService = new GoogleAuthService();
@@ -142,19 +143,19 @@ export class GymController {
             }
 
             const decodedState = state ? JSON.parse(state as string) : {};
-            const role = decodedState.role || 'gym';
+            const role = decodedState.role || ROLES.GYM;
 
             const googleAuthService = new GoogleAuthService();
             let resultDTO: any;
 
-            if (role === 'client') {
+            if (role === ROLES.CLIENT) {
                 const { GymClientRepositoryImpl } = await import("../../../gym-client/infrastructure/repositories/GymClientRepositoryImpl.js");
                 const { GoogleAuthClientUseCase } = await import("../../../../client/authentication/application/usecases/GoogleAuthClientUseCase.js");
                 const clientRepo = new GymClientRepositoryImpl();
                 const useCase = new GoogleAuthClientUseCase(clientRepo, googleAuthService);
                 resultDTO = await useCase.execute(code as string);
 
-            } else if (role === 'trainer') {
+            } else if (role === ROLES.TRAINER) {
                 const { GymTrainerRepositoryImpl } = await import("../../../gym-trainer/infrastructure/repositories/GymTrainerRepositoryImpl.js");
                 const { GoogleAuthTrainerUseCase } = await import("../../../../trainer/authentication/application/usecases/GoogleAuthTrainerUseCase.js");
                 const trainerRepo = new GymTrainerRepositoryImpl();
@@ -207,7 +208,7 @@ export class GymController {
             const userPayload = (req as any).user;
 
             // Should verify specifically for 'gym' role if needed, or handle generically
-            if (userPayload.role === 'gym') {
+            if (userPayload.role === ROLES.GYM) {
                 const repo = new GymRepositoryImpl();
                 const user = await repo.findById(userPayload.id);
 
@@ -225,7 +226,7 @@ export class GymController {
                         description: user.description,
                         address: user.address,
                         email: user.email,
-                        role: 'gym'
+                        role: ROLES.GYM
                     }
                 });
             }

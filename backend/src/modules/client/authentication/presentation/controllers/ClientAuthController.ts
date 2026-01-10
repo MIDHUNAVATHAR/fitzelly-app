@@ -7,6 +7,7 @@ import { OtpRepositoryImpl } from "../../infrastructure/repositories/OtpReposito
 import { EmailServiceImpl } from "../../../../gym/authentication/infrastructure/services/EmailServiceImpl.js";
 import { BcryptPasswordHasher } from "../../../../gym/authentication/infrastructure/services/BcryptPasswordHasher.js";
 import { HttpStatus, ResponseStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class ClientAuthController {
     // Step 1: Request OTP
@@ -123,7 +124,7 @@ export class ClientAuthController {
                 id: user.id,
                 email: user.email,
                 fullName: user.fullName,
-                role: 'client',
+                role: ROLES.CLIENT,
                 gymId: user.gymId
             };
 

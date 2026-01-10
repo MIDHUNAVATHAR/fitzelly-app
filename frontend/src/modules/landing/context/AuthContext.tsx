@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { AuthService } from '../services/AuthService';
+import { ROLES, type Role } from '../../../constants/roles';
 
 interface User {
     id: string;
@@ -10,21 +11,21 @@ interface User {
 
 interface AuthContextType {
     user: User | null;
-    role: 'gym' | 'client' | 'trainer' | 'super-admin' | null;
+    role: Role | null;
     isLoading: boolean;
     checkAuth: (shouldLoading?: boolean) => Promise<void>;
     logout: () => Promise<void>;
-    setAuth: (user: any, role: 'gym' | 'client' | 'trainer' | 'super-admin') => void;
+    setAuth: (user: any, role: Role) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
-    const [role, setRole] = useState<'gym' | 'client' | 'trainer' | 'super-admin' | null>(null);
+    const [role, setRole] = useState<Role | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
-    const setAuth = (user: any, role: 'gym' | 'client' | 'trainer' | 'super-admin') => {
+    const setAuth = (user: any, role: Role) => {
         setUser(user);
         setRole(role);
         localStorage.setItem('userRole', role);
@@ -66,7 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             const storedRole = localStorage.getItem('userRole');
 
             // Helper to verify specific role
-            const verifyRole = async (roleToCheck: 'gym' | 'client' | 'trainer' | 'super-admin') => {
+            const verifyRole = async (roleToCheck: Role) => {
                 try {
                     const res = await AuthService.verifyToken(roleToCheck);
                     if (res && res.user) {
@@ -80,15 +81,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             };
 
             // 1. Try stored role first
-            if (storedRole && ['gym', 'client', 'trainer', 'super-admin'].includes(storedRole)) {
-                if (await verifyRole(storedRole as any)) return;
+            const availableRoles: string[] = Object.values(ROLES);
+            if (storedRole && availableRoles.includes(storedRole)) {
+                if (await verifyRole(storedRole as Role)) return;
             }
 
             // 2. Fallback sequence (Gym -> Client -> Trainer -> SuperAdmin), skipping what we already checked
-            if (storedRole !== 'gym' && await verifyRole('gym')) return;
-            if (storedRole !== 'client' && await verifyRole('client')) return;
-            if (storedRole !== 'trainer' && await verifyRole('trainer')) return;
-            if (storedRole !== 'super-admin' && await verifyRole('super-admin')) return;
+            if (storedRole !== ROLES.GYM && await verifyRole(ROLES.GYM)) return;
+            if (storedRole !== ROLES.CLIENT && await verifyRole(ROLES.CLIENT)) return;
+            if (storedRole !== ROLES.TRAINER && await verifyRole(ROLES.TRAINER)) return;
+            if (storedRole !== ROLES.SUPER_ADMIN && await verifyRole(ROLES.SUPER_ADMIN)) return;
 
             // If all fail
             setUser(null);

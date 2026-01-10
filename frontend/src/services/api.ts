@@ -33,7 +33,11 @@ api.interceptors.response.use(
     },
     (error) => {
         // Handle 401 Unauthorized
-        if (error.response && error.response.status === 401) {
+        // trigger logout only if it's NOT a login attempt
+        // (because a failed login attempt also returns 401, but shouldn't redirect payload)
+        const isLoginRequest = error.config?.url?.includes('/login');
+
+        if (error.response && error.response.status === 401 && !isLoginRequest) {
             // Dispatch a custom event so AuthContext can pick it up and clear state
             window.dispatchEvent(new Event('auth-logout'));
         }

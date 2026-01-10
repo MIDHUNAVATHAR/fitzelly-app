@@ -1,10 +1,11 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { ROLES, type Role } from "../../../constants/roles";
 
 interface AuthGuardProps {
     children: ReactNode;
-    allowedRoles?: ('gym' | 'client' | 'trainer' | 'super-admin')[];
+    allowedRoles?: Role[];
 }
 
 export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
@@ -20,18 +21,18 @@ export default function AuthGuard({ children, allowedRoles }: AuthGuardProps) {
     }
 
     if (!user) {
-        if (allowedRoles?.includes('super-admin')) {
+        if (allowedRoles?.includes(ROLES.SUPER_ADMIN)) {
             return <Navigate to="/fitzelly-hq/login" state={{ from: location }} replace />;
         }
         return <Navigate to="/" state={{ from: location }} replace />;
     }
 
-    if (allowedRoles && role && !allowedRoles.includes(role as any)) {
+    if (allowedRoles && role && !allowedRoles.includes(role)) {
         // Role mismatch redirect
-        if (role === 'gym') return <Navigate to="/gym/dashboard" replace />;
-        if (role === 'client') return <Navigate to="/client/dashboard" replace />;
-        if (role === 'trainer') return <Navigate to="/trainer/dashboard" replace />;
-        if (role === 'super-admin') return <Navigate to="/fitzelly-hq" replace />;
+        if (role === ROLES.GYM) return <Navigate to="/gym/dashboard" replace />;
+        if (role === ROLES.CLIENT) return <Navigate to="/client/dashboard" replace />;
+        if (role === ROLES.TRAINER) return <Navigate to="/trainer/dashboard" replace />;
+        if (role === ROLES.SUPER_ADMIN) return <Navigate to="/fitzelly-hq" replace />;
         return <Navigate to="/" replace />;
     }
 

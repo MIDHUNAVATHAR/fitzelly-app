@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { TrainerAuthController } from "../controllers/TrainerAuthController.js";
 import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 const trainerAuthRoutes = Router();
 
@@ -17,6 +18,6 @@ trainerAuthRoutes.post("/logout", TrainerAuthController.logout);
 trainerAuthRoutes.post("/login", TrainerAuthController.login);
 
 // Protected
-trainerAuthRoutes.get("/auth/me", protect(['trainer']), TrainerAuthController.verifyToken);
+trainerAuthRoutes.get("/auth/me", protect([ROLES.TRAINER]), TrainerAuthController.verifyToken);
 
 export { trainerAuthRoutes };

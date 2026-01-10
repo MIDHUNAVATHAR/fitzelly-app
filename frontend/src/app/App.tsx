@@ -19,6 +19,8 @@ import TrainerDashboard from '../modules/trainer/pages/TrainerDashboard';
 import SuperAdminDashboard from '../modules/super-admin/pages/SuperAdminDashboard';
 import SuperAdminLoginPage from '../modules/landing/pages/SuperAdminLoginPage';
 import GymsPage from '../modules/super-admin/pages/GymsPage';
+import NotFound from '../modules/landing/pages/NotFound';
+import { ROLES } from '../constants/roles';
 
 export default function App() {
 
@@ -41,7 +43,7 @@ export default function App() {
           <Route
             path="/gym/dashboard"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymDashboard />
               </AuthGuard>
             }
@@ -50,7 +52,7 @@ export default function App() {
           <Route
             path="/gym/details"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymDetails />
               </AuthGuard>
             }
@@ -59,7 +61,7 @@ export default function App() {
           <Route
             path="/gym/plans"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymPlans />
               </AuthGuard>
             }
@@ -68,7 +70,7 @@ export default function App() {
           <Route
             path="/gym/trainers"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymTrainers />
               </AuthGuard>
             }
@@ -77,7 +79,7 @@ export default function App() {
           <Route
             path="/gym/clients"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymClients />
               </AuthGuard>
             }
@@ -86,7 +88,7 @@ export default function App() {
           <Route
             path="/gym/memberships"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymMemberships />
               </AuthGuard>
             }
@@ -95,7 +97,7 @@ export default function App() {
           <Route
             path="/gym/equipment"
             element={
-              <AuthGuard allowedRoles={['gym']}>
+              <AuthGuard allowedRoles={[ROLES.GYM]}>
                 <GymEquipment />
               </AuthGuard>
             }
@@ -105,7 +107,7 @@ export default function App() {
           <Route
             path="/client/dashboard"
             element={
-              <AuthGuard allowedRoles={['client']}>
+              <AuthGuard allowedRoles={[ROLES.CLIENT]}>
                 <ClientDashboard />
               </AuthGuard>
             }
@@ -113,7 +115,7 @@ export default function App() {
           <Route
             path="/trainer/dashboard"
             element={
-              <AuthGuard allowedRoles={['trainer']}>
+              <AuthGuard allowedRoles={[ROLES.TRAINER]}>
                 <TrainerDashboard />
               </AuthGuard>
             }
@@ -127,7 +129,7 @@ export default function App() {
           <Route
             path="/fitzelly-hq"
             element={
-              <AuthGuard allowedRoles={['super-admin']}>
+              <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN]}>
                 <SuperAdminDashboard />
               </AuthGuard>
             }
@@ -136,14 +138,14 @@ export default function App() {
           <Route
             path="/fitzelly-hq/gyms"
             element={
-              <AuthGuard allowedRoles={['super-admin']}>
+              <AuthGuard allowedRoles={[ROLES.SUPER_ADMIN]}>
                 <GymsPage />
               </AuthGuard>
             }
           />
 
-          {/* 404 - Redirect to home for now */}
-          <Route path="*" element={<LandingPage />} />
+          {/* 404 - Page Not Found */}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

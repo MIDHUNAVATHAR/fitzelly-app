@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../../landing/context/AuthContext';
 import { AuthService } from '../../landing/services/AuthService';
 import { useNavigate } from 'react-router-dom';
+import { ROLES } from '../../../constants/roles';
 import { Lock, Mail, ArrowRight, Eye, EyeOff, Loader, ArrowLeft } from 'lucide-react';
 import { useForgotPassword } from '../../landing/hooks/useForgotPassword';
 
@@ -27,7 +28,7 @@ export default function SuperAdminLoginPage() {
         error: fpError,
         initiateForgotPassword,
         resetPassword
-    } = useForgotPassword('super-admin');
+    } = useForgotPassword(ROLES.SUPER_ADMIN);
 
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -38,7 +39,7 @@ export default function SuperAdminLoginPage() {
             await AuthService.login({
                 email,
                 password,
-                role: 'super-admin'
+                role: ROLES.SUPER_ADMIN
             });
             await checkAuth();
             navigate('/fitzelly-hq');

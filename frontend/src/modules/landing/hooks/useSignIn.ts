@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { AuthService } from '../services/AuthService';
 import { useAuth } from '../context/AuthContext';
 
-type UserRole = 'gym' | 'client' | 'trainer';
+import { ROLES, type Role } from '../../../constants/roles';
 
-export function useSignIn(role: UserRole = 'gym') {
+
+export function useSignIn(role: Role = ROLES.GYM) {
     const navigate = useNavigate();
     const { setAuth } = useAuth();
     const [email, setEmail] = useState('');
@@ -53,9 +54,10 @@ export function useSignIn(role: UserRole = 'gym') {
 
             // Navigate to role-specific dashboard
             const dashboardRoutes = {
-                gym: '/gym/dashboard',
-                client: '/client/dashboard',
-                trainer: '/trainer/dashboard'
+                [ROLES.GYM]: '/gym/dashboard',
+                [ROLES.CLIENT]: '/client/dashboard',
+                [ROLES.TRAINER]: '/trainer/dashboard',
+                [ROLES.SUPER_ADMIN]: '/fitzelly-hq' // Added for completeness, though modal might not use it
             };
 
             if (onSuccess) {

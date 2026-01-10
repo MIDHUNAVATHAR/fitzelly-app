@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { GymListingController } from "../controllers/GymListingController.js";
 import { protect } from "../../../../../shared/middlewares/auth.middleware.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 const gymListingRouter = Router();
 
@@ -9,6 +10,6 @@ const gymListingRouter = Router();
 // Super Admin token has role 'super-admin'. Middleware should handle fetching SuperAdmin user.
 // I updated auth.middleware previously to support 'super-admin'.
 
-gymListingRouter.get('/', protect(['super-admin']), GymListingController.getGyms);
+gymListingRouter.get('/', protect([ROLES.SUPER_ADMIN]), GymListingController.getGyms);
 
 export { gymListingRouter };

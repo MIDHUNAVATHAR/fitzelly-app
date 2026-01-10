@@ -1,4 +1,5 @@
 import { api } from "../../../services/api";
+import { ROLES, type Role } from "../../../constants/roles";
 
 export interface LoginResponse {
     message: string;
@@ -9,29 +10,29 @@ export interface LoginResponse {
 export interface LoginPayload {
     email: string;
     password: string;
-    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
+    role?: Role; // Add role
 }
 
 export interface SignupPayload {
     email: string;
     password: string;
     otp: string;
-    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
+    role?: Role; // Add role
 }
 
 export interface InitSignupPayload {
     email: string;
-    role?: 'gym' | 'client' | 'trainer' | 'super-admin'; // Add role
+    role?: Role; // Add role
 }
 
 // Helper to get the correct auth endpoint based on role
 // Helper to get the correct auth endpoint based on role
-const getAuthEndpoint = (role: string = 'gym'): string => {
+const getAuthEndpoint = (role: string = ROLES.GYM): string => {
     const endpoints: Record<string, string> = {
-        gym: 'gym-auth',
-        client: 'client-auth',
-        trainer: 'trainer-auth',
-        'super-admin': 'super-admin-auth'
+        [ROLES.GYM]: 'gym-auth',
+        [ROLES.CLIENT]: 'client-auth',
+        [ROLES.TRAINER]: 'trainer-auth',
+        [ROLES.SUPER_ADMIN]: 'super-admin-auth'
     };
     return endpoints[role] || 'gym-auth';
 };
@@ -39,7 +40,7 @@ const getAuthEndpoint = (role: string = 'gym'): string => {
 export const AuthService = {
     initiateSignup: async (payload: InitSignupPayload): Promise<{ status: string; message: string }> => {
         try {
-            const endpoint = getAuthEndpoint(payload.role || 'gym');
+            const endpoint = getAuthEndpoint(payload.role || ROLES.GYM);
             const response = await api.post(`/${endpoint}/signup/initiate`, payload);
             return response.data;
         } catch (error: any) {
@@ -50,7 +51,7 @@ export const AuthService = {
 
     register: async (payload: SignupPayload): Promise<LoginResponse> => {
         try {
-            const role = payload.role || 'gym';
+            const role = payload.role || ROLES.GYM;
             const endpoint = getAuthEndpoint(role);
             const response = await api.post(`/${endpoint}/signup/complete`, payload);
             const data = response.data;
@@ -69,7 +70,7 @@ export const AuthService = {
 
     login: async (payload: LoginPayload): Promise<LoginResponse> => {
         try {
-            const role = payload.role || 'gym';
+            const role = payload.role || ROLES.GYM;
             console.log("role : ", role)
             const endpoint = getAuthEndpoint(role);
             console.log(`AuthService: Logging in as ${role} at ${endpoint}`);
@@ -91,7 +92,7 @@ export const AuthService = {
         }
     },
 
-    googleLogin: async (credential: string, role: string = 'gym'): Promise<LoginResponse> => {
+    googleLogin: async (credential: string, role: string = ROLES.GYM): Promise<LoginResponse> => {
         try {
             const endpoint = getAuthEndpoint(role);
             const response = await api.post(`/${endpoint}/google-login`, { token: credential });
@@ -113,10 +114,10 @@ export const AuthService = {
         }
     },
 
-    verifyToken: async (role?: 'gym' | 'client' | 'trainer' | 'super-admin'): Promise<any> => {
+    verifyToken: async (role?: Role): Promise<any> => {
         try {
             // Prioritize passed role, fallback to localStorage (for persistence), default to gym
-            const targetRole = role || (localStorage.getItem('userRole') as any) || 'gym';
+            const targetRole = role || (localStorage.getItem('userRole') as any) || ROLES.GYM;
             const endpoint = getAuthEndpoint(targetRole);
 
             const response = await api.get(`/${endpoint}/auth/me`);
@@ -130,7 +131,7 @@ export const AuthService = {
 
     updateProfile: async (payload: any): Promise<any> => {
         try {
-            const role = localStorage.getItem('userRole') || 'gym';
+            const role = localStorage.getItem('userRole') || ROLES.GYM;
             const endpoint = getAuthEndpoint(role);
             const response = await api.put(`/${endpoint}/profile`, payload);
             return response.data;
@@ -143,7 +144,7 @@ export const AuthService = {
     logout: async (): Promise<void> => {
         try {
             const userRole = localStorage.getItem('userRole') as any;
-            const endpoint = getAuthEndpoint(userRole || 'gym');
+            const endpoint = getAuthEndpoint(userRole || ROLES.GYM);
 
             await api.post(`/${endpoint}/logout`);
 
@@ -160,11 +161,11 @@ export const AuthService = {
 
     confirmPasswordReset: async (payload: { email: string; otp: string; password: string; role?: string }): Promise<any> => {
         try {
-            const role = payload.role || 'gym';
+            const role = payload.role || ROLES.GYM;
             const endpoint = getAuthEndpoint(role);
 
             let path = '/forgot-password/reset'; // Default for gym
-            if (role === 'client' || role === 'trainer') {
+            if (role === ROLES.CLIENT || role === ROLES.TRAINER) {
                 path = '/forgot-password/complete';
             }
 

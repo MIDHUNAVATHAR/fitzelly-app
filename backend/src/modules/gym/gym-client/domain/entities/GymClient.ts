@@ -12,6 +12,7 @@ export class GymClient {
         public readonly createdAt: Date,
         public readonly updatedAt: Date,
         public readonly password?: string,
+        public readonly assignedTrainer?: string | null,
     ) { }
 
     setPassword(password: string): GymClient {
@@ -27,7 +28,8 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
-            password
+            password,
+            this.assignedTrainer
         );
     }
 
@@ -36,6 +38,7 @@ export class GymClient {
         email?: string;
         phone?: string;
         isBlocked?: boolean;
+        assignedTrainer?: string | null;
     }): GymClient {
         return new GymClient(
             this.id,
@@ -49,7 +52,8 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
-            this.password
+            this.password,
+            data.assignedTrainer !== undefined ? data.assignedTrainer : this.assignedTrainer
         );
     }
 
@@ -66,7 +70,8 @@ export class GymClient {
             true, // isDelete
             this.createdAt,
             new Date(),
-            this.password
+            this.password,
+            this.assignedTrainer
         );
     }
     updateStatus(newStatus: 'active' | 'inactive' | 'expired'): GymClient {
@@ -82,7 +87,8 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
-            this.password
+            this.password,
+            this.assignedTrainer
         );
     }
 
@@ -99,7 +105,8 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
-            this.password
+            this.password,
+            this.assignedTrainer
         );
     }
 
@@ -117,7 +124,8 @@ export class GymClient {
             this.isDelete,
             this.createdAt,
             new Date(),
-            this.password
+            this.password,
+            this.assignedTrainer
         );
     }
 }

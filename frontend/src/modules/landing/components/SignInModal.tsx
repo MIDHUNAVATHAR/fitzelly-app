@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import PasswordInput from './PasswordInput';
 import { useSignIn } from '../../landing/hooks/useSignIn';
 import { API_BASE_URL } from '../../../config/api';
+import { ROLES, type Role } from '../../../constants/roles';
 
 interface SignInModalProps {
     isOpen: boolean;
@@ -12,10 +13,10 @@ interface SignInModalProps {
     onForgotPassword?: () => void;
 }
 
-type UserRole = 'gym' | 'client' | 'trainer';
+
 
 export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgotPassword }: SignInModalProps) {
-    const [selectedRole, setSelectedRole] = useState<UserRole>('client');
+    const [selectedRole, setSelectedRole] = useState<Role>(ROLES.CLIENT);
     const {
         email, setEmail,
         password, setPassword,
@@ -73,8 +74,8 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                     <div className="flex gap-2 p-1 bg-slate-100 rounded-lg">
                         <button
                             type="button"
-                            onClick={() => setSelectedRole('gym')}
-                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'gym'
+                            onClick={() => setSelectedRole(ROLES.GYM)}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === ROLES.GYM
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
                                 } `}
@@ -83,8 +84,8 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                         </button>
                         <button
                             type="button"
-                            onClick={() => setSelectedRole('client')}
-                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'client'
+                            onClick={() => setSelectedRole(ROLES.CLIENT)}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === ROLES.CLIENT
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
                                 } `}
@@ -93,8 +94,8 @@ export default function SignInModal({ isOpen, onClose, onSwitchToSignUp, onForgo
                         </button>
                         <button
                             type="button"
-                            onClick={() => setSelectedRole('trainer')}
-                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === 'trainer'
+                            onClick={() => setSelectedRole(ROLES.TRAINER)}
+                            className={`flex-1 py-2 px-4 rounded-md font-medium transition-all ${selectedRole === ROLES.TRAINER
                                 ? 'bg-white text-slate-900 shadow-sm'
                                 : 'text-slate-600 hover:text-slate-900'
                                 } `}

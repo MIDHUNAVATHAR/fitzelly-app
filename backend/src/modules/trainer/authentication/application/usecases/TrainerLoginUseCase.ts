@@ -3,6 +3,7 @@ import { IPasswordHasher } from "../../../../gym/authentication/domain/services/
 import { TokenService } from "../../../../gym/authentication/infrastructure/services/TokenService.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 import { LoginRequestDTO, AuthResponseDTO } from "../dtos/TrainerAuthDTO.js";
 
 export class TrainerLoginUseCase {
@@ -32,7 +33,7 @@ export class TrainerLoginUseCase {
         const payload = {
             id: trainer.id,
             email: trainer.email,
-            role: 'trainer',
+            role: ROLES.TRAINER,
             gymId: trainer.gymId
         };
 
@@ -44,7 +45,7 @@ export class TrainerLoginUseCase {
                 id: trainer.id,
                 email: trainer.email,
                 fullName: trainer.fullName,
-                role: 'trainer',
+                role: ROLES.TRAINER,
                 gymId: trainer.gymId
             },
             tokens: {

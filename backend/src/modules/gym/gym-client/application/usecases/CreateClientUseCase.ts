@@ -18,8 +18,11 @@ export class CreateClientUseCase {
             'inactive', // Default status
             false, // isEmailVerified default
             false,
+            false, // isDelete
             new Date(),
             new Date(),
+            undefined, // password
+            request.assignedTrainer
         );
 
         const createdClient = await this.gymClientRepository.create(newClient);

@@ -4,6 +4,7 @@ import DashboardLayout from '../layouts/DashboardLayout';
 import { Plus, Edit2, Trash2, X, Search, CheckCircle, AlertTriangle, Eye, Filter, Check, ChevronDown, Mail, Loader2, Ban } from 'lucide-react';
 import { ClientService } from '../services/ClientService';
 import type { Client } from '../services/ClientService';
+import { TrainerService } from '../services/TrainerService';
 
 export default function GymClients() {
     const queryClient = useQueryClient();
@@ -13,11 +14,18 @@ export default function GymClients() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    // Query
+    // Query Clients
     const { data, isLoading: loading } = useQuery({
         queryKey: ['clients', page, debouncedSearch, statusFilter],
         queryFn: () => ClientService.getClients(page, limit, debouncedSearch, statusFilter)
     });
+
+    // Query Trainers for Dropdown
+    const { data: trainersData } = useQuery({
+        queryKey: ['trainers-list'],
+        queryFn: () => TrainerService.getTrainers(1, 100)
+    });
+    const trainers = trainersData?.trainers || [];
 
     const clients = data?.clients || [];
     const total = data?.total || 0;
@@ -56,7 +64,8 @@ export default function GymClients() {
     const [formData, setFormData] = useState<Partial<Client>>({
         fullName: '',
         email: '',
-        phone: ''
+        phone: '',
+        assignedTrainer: ''
     });
 
     useEffect(() => {
@@ -91,8 +100,6 @@ export default function GymClients() {
             showToastMessage("Failed to update client");
         }
     });
-
-
 
     const blockMutation = useMutation({
         mutationFn: ({ id, isBlocked }: { id: string; isBlocked: boolean }) => ClientService.updateClient(id, { isBlocked }),
@@ -142,14 +149,16 @@ export default function GymClients() {
             setFormData({
                 fullName: client.fullName,
                 email: client.email,
-                phone: client.phone
+                phone: client.phone,
+                assignedTrainer: client.assignedTrainer || ''
             });
         } else {
             setSelectedClient(null);
             setFormData({
                 fullName: '',
                 email: '',
-                phone: ''
+                phone: '',
+                assignedTrainer: ''
             });
         }
         setIsModalOpen(true);
@@ -163,10 +172,16 @@ export default function GymClients() {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Prepare data - if assignedTrainer is empty string, make it null/undefined or handle in backend
+        const submitData = {
+            ...formData,
+            assignedTrainer: formData.assignedTrainer === '' ? null : formData.assignedTrainer
+        };
+
         if (modalMode === 'edit' && selectedClient) {
-            updateMutation.mutate({ id: selectedClient.id, data: formData });
+            updateMutation.mutate({ id: selectedClient.id, data: submitData });
         } else if (modalMode === 'create') {
-            createMutation.mutate(formData as any);
+            createMutation.mutate(submitData as any);
         }
     };
 
@@ -293,6 +308,7 @@ export default function GymClients() {
                                 <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Name</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Phone</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Email</th>
+                                <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Trainer</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700 text-sm">Status</th>
                                 <th className="px-6 py-4 font-semibold text-slate-700 text-sm text-right">Actions</th>
                             </tr>
@@ -300,11 +316,11 @@ export default function GymClients() {
                         <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Loading...</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Loading...</td>
                                 </tr>
                             ) : clients.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No clients found.</td>
+                                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No clients found.</td>
                                 </tr>
                             ) : (
                                 clients.map(client => (
@@ -326,6 +342,9 @@ export default function GymClients() {
                                                     <div title="Email Unverified" className="w-2 h-2 rounded-full bg-red-500"></div>
                                                 )}
                                             </div>
+                                        </td>
+                                        <td className="px-6 py-4 text-slate-600">
+                                            {client.assignedTrainer ? trainers.find(t => t.id === client.assignedTrainer)?.fullName || 'Unknown' : <span className="text-slate-400 italic">Unassigned</span>}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${client.status === 'active'
@@ -445,6 +464,12 @@ export default function GymClients() {
                                     <div className="text-slate-900 font-medium">{selectedClient.phone}</div>
                                 </div>
                                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
+                                    <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Assigned Trainer</div>
+                                    <div className="text-slate-900 font-medium">
+                                        {selectedClient.assignedTrainer ? trainers.find(t => t.id === selectedClient.assignedTrainer)?.fullName || 'Unknown' : 'Unassigned'}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
                                     <div className="text-xs font-semibold text-slate-400 uppercase mb-1">Status</div>
                                     <div className="text-slate-900 font-medium capitalize">{selectedClient.status}</div>
                                 </div>
@@ -492,6 +517,22 @@ export default function GymClients() {
                                         placeholder="Phone number"
                                         className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
                                     />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-semibold text-slate-700 mb-1.5">Assign Trainer</label>
+                                    <select
+                                        value={formData.assignedTrainer || ''}
+                                        onChange={e => setFormData({ ...formData, assignedTrainer: e.target.value })}
+                                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00ffd5] focus:border-transparent transition-all"
+                                    >
+                                        <option value="">Select Trainer (Unassigned)</option>
+                                        {trainers.map(trainer => (
+                                            <option key={trainer.id} value={trainer.id}>
+                                                {trainer.fullName}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
 
                                 <button

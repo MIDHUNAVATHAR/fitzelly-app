@@ -4,6 +4,7 @@ import { TokenService } from "../../../../gym/authentication/infrastructure/serv
 import { AuthResponseDTO, LoginRequestDTO } from "../dtos/ClientAuthDTO.js";
 import { AppError } from "../../../../../core/errors/AppError.js";
 import { HttpStatus } from "../../../../../constants/statusCodes.constants.js";
+import { ROLES } from "../../../../../constants/roles.constants.js";
 
 export class ClientLoginUseCase {
     constructor(
@@ -36,7 +37,7 @@ export class ClientLoginUseCase {
         const payload = {
             id: client.id,
             email: client.email,
-            role: 'client',
+            role: ROLES.CLIENT,
             gymId: client.gymId
         };
 
@@ -48,7 +49,7 @@ export class ClientLoginUseCase {
                 id: client.id,
                 email: client.email,
                 fullName: client.fullName,
-                role: 'client',
+                role: ROLES.CLIENT,
                 gymId: client.gymId
             },
             tokens: {

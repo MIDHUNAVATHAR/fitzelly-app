@@ -5,6 +5,7 @@ import SignInModal from '../components/SignInModal';
 import SignUpModal from '../components/SignUpModal';
 import ForgotPasswordModal from '../components/ForgotPasswordModal';
 import { useAuth } from '../../landing/context/AuthContext';
+import { ROLES } from '../../../constants/roles';
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
@@ -18,14 +19,14 @@ export default function Header() {
 
     const getDashboardInfo = () => {
         // Explicitly check for super-admin role
-        if (role === 'super-admin') {
+        if (role === ROLES.SUPER_ADMIN) {
             return {
                 path: '/fitzelly-hq',
                 label: 'Super Admin Dashboard'
             };
         }
 
-        const currentRole = role || 'gym';
+        const currentRole = role || ROLES.GYM;
         return {
             path: `/${currentRole}/dashboard`,
             label: `${currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} Dashboard`
